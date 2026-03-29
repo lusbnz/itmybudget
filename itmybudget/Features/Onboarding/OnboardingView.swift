@@ -11,31 +11,30 @@ struct OnboardingView: View {
             VStack {
                 TabView(selection: $selection) {
                     OnboardingSlide(
-                        title: "Thiết lập cơ bản",
-                        description: "Chào mừng! Hãy cùng bắt đầu hành trình quản lý tài chính hiệu quả.",
+                        title: "Basic Setup",
+                        description: "Welcome! Let's start your journey to effective financial management.",
                         image: "gearshape.fill",
                         tag: 0
                     )
                     
                     OnboardingSlide(
-                        title: "Phân loại chi tiêu",
-                        description: "Sắp xếp mọi khoản thu chi của bạn theo từng danh mục rõ ràng và khoa học.",
+                        title: "Expense Categorization",
+                        description: "Organize all your income and expenses into clear and scientific categories.",
                         image: "list.bullet.rectangle.portrait.fill",
                         tag: 1
                     )
                     
                     OnboardingSlide(
-                        title: "Ngân sách đầu tiên",
-                        description: "Đặt ngay kế hoạch chi tiêu cho tháng này để đạt mục tiêu tài chính nhanh hơn.",
+                        title: "First Budget",
+                        description: "Set your spending plan for this month to reach your financial goals faster.",
                         image: "briefcase.fill",
                         tag: 2
                     )
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                 
-                // Footer Buttons
                 VStack(spacing: 16) {
-                    Button {
+                    Button(action: {
                         if selection < 2 {
                             withAnimation {
                                 selection += 1
@@ -43,8 +42,8 @@ struct OnboardingView: View {
                         } else {
                             appStateManager.moveToMain()
                         }
-                    } label: {
-                        Text(selection == 2 ? "Bắt đầu ngay" : "Tiếp theo")
+                    }) {
+                        Text(selection == 2 ? "Get Started" : "Next")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
@@ -54,10 +53,10 @@ struct OnboardingView: View {
                     }
                     
                     if selection < 2 {
-                        Button {
+                        Button(action: {
                             appStateManager.moveToMain()
-                        } label: {
-                            Text("Bỏ qua")
+                        }) {
+                            Text("Skip")
                                 .font(.body)
                                 .foregroundStyle(.white.opacity(0.6))
                         }

@@ -16,6 +16,6 @@ struct ContentView: View {
                 MainTabView()
             }
         }
-        .transition(.opacity) // Smooth transition between states
+        .transition(.opacity)
     }
 }

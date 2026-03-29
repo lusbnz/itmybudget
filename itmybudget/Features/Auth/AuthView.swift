@@ -6,58 +6,38 @@ struct AuthView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "0F172A").ignoresSafeArea()
+            Color.white.ignoresSafeArea()
             
             VStack(spacing: 32) {
                 Spacer()
                 
                 VStack(spacing: 8) {
                     Text("itmybudget")
-                        .font(.custom("Outfit-Bold", size: 40))
-                        .fontWeight(.black)
-                        .foregroundStyle(.white)
-                    
-                    Text("Chi tiêu thông minh, tương lai an tâm")
-                        .font(.body)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .font(.system(size: 44, weight: .black))
+                        .foregroundStyle(.blue)
                 }
                 
                 Spacer()
                 
-                // Login Buttons
                 VStack(spacing: 16) {
-                    // Apple Login Button
-                    SignInWithAppleButton { request in
-                        // Perform request
-                    } onCompletion: { result in
-                        // Handle result
+                    Button(action: {
                         appStateManager.moveToOnboarding()
-                    }
-                    .frame(height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(.white.opacity(0.1), lineWidth: 1)
-                    }
-                    
-                    // Google Login Button (UI Only)
-                    Button {
-                        appStateManager.moveToOnboarding()
-                    } label: {
+                    }) {
                         HStack(spacing: 12) {
-                            Image(systemName: "g.circle.fill") // Placeholder for Google logo
+                            Image(systemName: "g.circle.fill") 
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
                             
-                            Text("Tiếp tục với Google")
-                                .font(.headline)
+                            Text("Continue with Google")
+                                .font(.system(size: 17, weight: .bold))
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(.white)
+                        .background(Color(white: 0.96))
                         .foregroundStyle(.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 }
                 .padding(.horizontal, 24)
