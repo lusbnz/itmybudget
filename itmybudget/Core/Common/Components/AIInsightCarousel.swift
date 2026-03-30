@@ -10,6 +10,7 @@ struct AIInsightCarousel: View {
 }
 
 struct AIInsightCard: View {
+    @EnvironmentObject private var navState: AppNavigationState
     let content: String
     let cta: String
     
@@ -21,7 +22,11 @@ struct AIInsightCard: View {
                 .foregroundStyle(.white.opacity(0.95))
                 .fixedSize(horizontal: false, vertical: true)
             
-            Button(action: {}) {
+            Button(action: {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    navState.selectedTab = 3
+                }
+            }) {
                 HStack(spacing: 4) {
                     Text(cta)
                         .font(.system(size: 12, weight: .bold))

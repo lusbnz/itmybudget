@@ -1,24 +1,378 @@
 import SwiftUI
 
+enum BudgetSortOption: String, CaseIterable {
+    case recent = "Most Recent"
+    case leastRemaining = "Least Remaining"
+}
+
 struct PlanningView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navState: AppNavigationState
+    @State private var budgets: [Budget] = Budget.sampleData
+    @State private var sortOption: BudgetSortOption = .recent
+    @State private var isExpanded: Bool = false
+    @State private var showDetails: Bool = false
+    @State private var showContent: Bool = false
+    
+    var sortedBudgets: [Budget] {
+        switch sortOption {
+        case .recent:
+            return budgets.sorted { $0.lastTransactionDate > $1.lastTransactionDate }
+        case .leastRemaining:
+            return budgets.sorted { ($0.total - $0.spent) < ($1.total - $1.spent) }
+        }
+    }
+    
+    var displayedBudgets: [Budget] {
+        if isExpanded {
+            return sortedBudgets
+        } else {
+            return Array(sortedBudgets.prefix(5))
+        }
+    }
+    
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Budget Planning")
-                    .font(.title3)
-                    .foregroundStyle(.gray)
-                
-                Image(systemName: "calendar.badge.plus")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(.blue.opacity(0.3))
-                    .padding()
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Color.clear
+                            .frame(height: 1)
+                            .id("top")
+                        
+                        planningHeader
+                        
+                        budgetTrackerSection
+                        
+                        recurringExpensesSection
+                        
+                        personalGoalsSection
+                        
+                        Spacer(minLength: 100)
+                    }
+                }
+                .onChange(of: navState.selectedTab) { newValue in
+                    if newValue == 1 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                proxy.scrollTo("top", anchor: .top)
+                            }
+                        }
+                    }
+                }
             }
-            .navigationTitle("Planning")
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbarBackground(.hidden, for: .tabBar)
+            .background(
+                LinearGradient(
+                    colors: [Color(red: 1.0, green: 0.97, blue: 0.92), Color(red: 1.0, green: 0.94, blue: 0.88)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .ignoresSafeArea(edges: .top)
         }
-        .background(.clear)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .tabBar)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6).delay(0.1)) {
+                showContent = true
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var planningHeader: some View {
+        HStack(spacing: 16) {
+            Text("Planning")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.black)
+            
+            Spacer()
+            
+            Button(action: {
+                // Create new budget action
+            }) {
+                HStack(spacing: 4) {
+                    Text("Create New")
+                        .font(.system(size: 12, weight: .bold))
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Color.black)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(Color.black.opacity(0.1), lineWidth: 0.5)
+                )
+                .foregroundStyle(.white)
+            }
+            .buttonStyle(BouncyButtonStyle())
+        }
+        .padding(.top, 60)
+        .padding(.horizontal, 16)
+        .offset(y: showContent ? 0 : 20)
+        .opacity(showContent ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var budgetTrackerSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Text("Budget Tracker")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.black)
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showDetails.toggle()
+                        }
+                    }) {
+                        Image(systemName: showDetails ? "eye.fill" : "eye.slash.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(showDetails ? .black : .gray)
+                            .frame(width: 32, height: 32)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                    
+                    Menu {
+                        ForEach(BudgetSortOption.allCases, id: \.self) { option in
+                            Button(action: {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    sortOption = option
+                                }
+                            }) {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if sortOption == option {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.black)
+                            .frame(width: 32, height: 32)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            
+            VStack(spacing: 8) {
+                ForEach(displayedBudgets) { budget in
+                    BudgetItemView(budget: budget, showDetails: showDetails)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .bottom).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                }
+                
+                if sortedBudgets.count > 5 {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Text(isExpanded ? "Show Less" : "View More")
+                                .font(.system(size: 13, weight: .semibold))
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundStyle(.gray)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.white.opacity(0.4))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                    .padding(.top, 4)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .offset(y: showContent ? 0 : 30)
+        .opacity(showContent ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var recurringExpensesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Recurring Expenses",
+                extraActionTitle: "Create",
+                onExtraAction: {
+                    // Create action
+                }
+            )
+            .padding(.horizontal, 16)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(RecurringExpense.sampleData) { expense in
+                        RecurringExpenseCard(expense: expense)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+            }
+        }
+        .offset(y: showContent ? 0 : 40)
+        .opacity(showContent ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var personalGoalsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Personal Goals",
+                extraActionTitle: "Create",
+                onExtraAction: {
+                    // Create action
+                }
+            )
+            .padding(.horizontal, 16)
+            
+            VStack(spacing: 8) {
+                ForEach(PersonalGoal.sampleData) { goal in
+                    PersonalGoalItem(goal: goal)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .offset(y: showContent ? 0 : 50)
+        .opacity(showContent ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private func sectionHeader(title: String, extraActionTitle: String? = nil, onExtraAction: (() -> Void)? = nil) -> some View {
+        HStack(alignment: .center, spacing: 0) {
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.black)
+            
+            Spacer()
+            
+            if let extra = extraActionTitle {
+                Button(action: {
+                    onExtraAction?()
+                }) {
+                    Text(extra)
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .buttonStyle(BouncyButtonStyle())
+            }
+        }
+    }
+}
+
+struct RecurringExpenseCard: View {
+    let expense: RecurringExpense
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: "repeat.circle.fill")
+                        .font(.system(size: 16))
+                    Text(expense.nextDate)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.gray)
+                }
+                
+                Spacer()
+                
+                if expense.isActive {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.green)
+                }
+            }
+            
+            Text(expense.name)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.black)
+                .lineLimit(1)
+            
+            Text("$\(Int(expense.amount))")
+                .font(.system(size: 12))
+                .foregroundStyle(.gray)
+        }
+        .padding(16)
+        .frame(width: 180)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+    }
+}
+
+struct PersonalGoalItem: View {
+    let goal: PersonalGoal
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "dot.scope")
+                .font(.system(size: 16))
+                .foregroundStyle(.black)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(goal.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.black)
+                
+                HStack(alignment: .bottom) {
+                    HStack(spacing: 0) {
+                        Text("Completed by ")
+                        Text(goal.targetDate).fontWeight(.bold)
+                    }
+                    .font(.system(size: 12))
+                    .foregroundStyle(.gray)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 0) {
+                        Text("$\(goal.monthlyAmount)").fontWeight(.bold)
+                        Text(" every month")
+                    }
+                    .font(.system(size: 12))
+                    .foregroundStyle(.gray)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
     }
 }

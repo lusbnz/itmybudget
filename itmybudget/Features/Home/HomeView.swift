@@ -19,179 +19,37 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        HStack(spacing: 12) {
-                            Text("Quoc Viet")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundStyle(.black)
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "flame.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [.orange, .red],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )
-                                    )
-                                Text("12")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundStyle(.black)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                Capsule()
-                                    .fill(.orange.opacity(0.12))
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(.orange.opacity(0.2), lineWidth: 1)
-                            )
-                        }
-                        .offset(y: showHeader ? 0 : 10)
-                        .opacity(showHeader ? 1 : 0)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Color.clear
+                            .frame(height: 1)
+                            .id("top")
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        headerSection
                         
+                        overviewSection
+                        
+                        pulseSection
+                        
+                        transactionsSection
+                        
+                        budgetSection
+    
                         Spacer()
-                        
-                        Button(action: {
-                            showNotifications = true
-                        }) {
-                            Image(systemName: "bell.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(.black)
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(BouncyButtonStyle())
-                        .offset(y: showHeader ? 0 : 10)
-                        .opacity(showHeader ? 1 : 0)
                     }
-                                                
-                    HStack(spacing: 8) {
-                        Text("29 March 2026")
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.gray)
-                    .padding(.bottom, 12)
-                    .offset(y: showHeader ? 0 : 5)
-                    .opacity(showHeader ? 1 : 0)
-                
-                    HStack(spacing: 8) {
-                        badgeTag(text: "Savings Master", color: .orange)
-                        badgeTag(text: "Saving Streak", color: .green)
-                    }
-                    .padding(.bottom, 24)
-                    .offset(y: showHeader ? 0 : 5)
-                    .opacity(showHeader ? 1 : 0)
-                
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(
-                            title: "Weekly Overview",
-                        )
-                        
-                        AIInsightCarousel()
-                    }
-                    .padding(.bottom, 24)
-                    .offset(y: showSections ? 0 : 20)
-                    .opacity(showSections ? 1 : 0)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(
-                            title: "Financial Pulse",
-                        )
-                        
-                        HStack(spacing: 12) {
-                            FinancialPulseCard(
-                                title: "Balance",
-                                value: "$12.450",
-                                trend: "+2.4%",
-                                color: .teal,
-                                data: balanceSampleData
-                            )
-                            
-                            FinancialPulseCard(
-                                title: "Burn Rate",
-                                value: "$85",
-                                subtitle: "/day",
-                                trend: "-15%",
-                                color: .orange,
-                                data: burnRateSampleData
-                            )
-                        }
-                    }
-                    .padding(.bottom, 24)
-                    .offset(y: showSections ? 0 : 20)
-                    .opacity(showSections ? 1 : 0)
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        sectionHeader(
-                            title: "Latest Transactions",
-                            extraActionTitle: "All",
-                            onExtraAction: {
-                                showAllTransactions = true
-                            }
-                        )
-                        
-                        HStack(spacing: 8) {
-                            ForEach(TransactionType.allCases, id: \.self) { type in
-                                FilterTabView(
-                                    title: type.rawValue,
-                                    isSelected: selectedFilter == type,
-                                    namespace: filterNamespace,
-                                    action: { 
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                            selectedFilter = type 
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.bottom, 4)
-                        
-                        VStack(spacing: 8) {
-                            ForEach(filteredTransactions) { transaction in
-                                TransactionItemView(transaction: transaction)
-                                    .transition(.asymmetric(
-                                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                                        removal: .move(edge: .top).combined(with: .opacity)
-                                    ))
-                            }
-                        }
-                        .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0), value: filteredTransactions)
-                    }
-                    .padding(.bottom, 24)
-                    .offset(y: showSections ? 0 : 20)
-                    .opacity(showSections ? 1 : 0)
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        sectionHeader(
-                            title: "Budget Tracking",
-                            extraActionTitle: "All",
-                            onExtraAction: {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    navState.selectedTab = 1
-                                }
-                            }
-                        )
-                        
-                        VStack(spacing: 8) {
-                            ForEach(Budget.sampleData) { budget in
-                                BudgetItemView(budget: budget)
-                            }
-                        }
-                    }
-                    .padding(.bottom, 24)
-                    .offset(y: showSections ? 0 : 20)
-                    .opacity(showSections ? 1 : 0)
-
-                    Spacer()
+                    .padding(.horizontal, 12)
+                    .padding(.top, 60)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 60)
+                .onChange(of: navState.selectedTab) { newValue in
+                    if newValue == 0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                proxy.scrollTo("top", anchor: .top)
+                            }
+                        }
+                    }
+                }
             }
             .fullScreenCover(isPresented: $showNotifications) {
                 NotificationsView()
@@ -222,6 +80,190 @@ struct HomeView: View {
         }
     }
     
+    @ViewBuilder
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                HStack(spacing: 12) {
+                    Text("Quoc Viet")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(.black)
+                    
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.orange, .red],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        Text("12")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.black)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(.orange.opacity(0.12))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(.orange.opacity(0.2), lineWidth: 1)
+                    )
+                }
+                .offset(y: showHeader ? 0 : 10)
+                .opacity(showHeader ? 1 : 0)
+                
+                Spacer()
+                
+                Button(action: {
+                    showNotifications = true
+                }) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.black)
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(BouncyButtonStyle())
+                .offset(y: showHeader ? 0 : 10)
+                .opacity(showHeader ? 1 : 0)
+            }
+                                        
+            HStack(spacing: 8) {
+                Text("29 March 2026")
+            }
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.gray)
+            .padding(.bottom, 12)
+            .offset(y: showHeader ? 0 : 5)
+            .opacity(showHeader ? 1 : 0)
+        
+            HStack(spacing: 8) {
+                badgeTag(text: "Savings Master", color: .orange)
+                badgeTag(text: "Saving Streak", color: .green)
+            }
+            .padding(.bottom, 24)
+            .offset(y: showHeader ? 0 : 5)
+            .opacity(showHeader ? 1 : 0)
+        }
+    }
+
+    @ViewBuilder
+    private var overviewSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(
+                title: "Weekly Overview",
+            )
+            
+            AIInsightCarousel()
+        }
+        .padding(.bottom, 24)
+        .offset(y: showSections ? 0 : 20)
+        .opacity(showSections ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var pulseSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(
+                title: "Financial Pulse",
+            )
+            
+            HStack(spacing: 12) {
+                FinancialPulseCard(
+                    title: "Balance",
+                    value: "$12.450",
+                    trend: "+2.4%",
+                    color: .teal,
+                    data: balanceSampleData
+                )
+                
+                FinancialPulseCard(
+                    title: "Burn Rate",
+                    value: "$85",
+                    subtitle: "/day",
+                    trend: "-15%",
+                    color: .orange,
+                    data: burnRateSampleData
+                )
+            }
+        }
+        .padding(.bottom, 24)
+        .offset(y: showSections ? 0 : 20)
+        .opacity(showSections ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var transactionsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Latest Transactions",
+                extraActionTitle: "See All",
+                onExtraAction: {
+                    showAllTransactions = true
+                }
+            )
+            
+            HStack(spacing: 8) {
+                ForEach(TransactionType.allCases, id: \.self) { type in
+                    FilterTabView(
+                        title: type.rawValue,
+                        isSelected: selectedFilter == type,
+                        namespace: filterNamespace,
+                        action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedFilter = type 
+                            }
+                        }
+                    )
+                }
+            }
+            .padding(.bottom, 4)
+            
+            VStack(spacing: 8) {
+                ForEach(filteredTransactions) { transaction in
+                    TransactionItemView(transaction: transaction)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .bottom).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                }
+            }
+            .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0), value: filteredTransactions)
+        }
+        .padding(.bottom, 24)
+        .offset(y: showSections ? 0 : 20)
+        .opacity(showSections ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var budgetSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Budget Tracking",
+                extraActionTitle: "See All",
+                onExtraAction: {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        navState.selectedTab = 1
+                    }
+                }
+            )
+            
+            VStack(spacing: 8) {
+                ForEach(recentBudgets) { budget in
+                    BudgetItemView(budget: budget, showDetails: true)
+                }
+            }
+        }
+        .padding(.bottom, 24)
+        .offset(y: showSections ? 0 : 20)
+        .opacity(showSections ? 1 : 0)
+    }
+
     @ViewBuilder
     private func sectionHeader(title: String, extraActionTitle: String? = nil, onExtraAction: (() -> Void)? = nil) -> some View {
         HStack(alignment: .center, spacing: 0) {
@@ -323,6 +365,12 @@ struct FinancialPulseCard: View {
 }
 
 extension HomeView {
+    private var recentBudgets: [Budget] {
+        Array(Budget.sampleData
+            .sorted { $0.lastTransactionDate > $1.lastTransactionDate }
+            .prefix(5))
+    }
+
     private var filteredTransactions: [Transaction] {
         if selectedFilter == .all {
             return Transaction.sampleData

@@ -23,7 +23,6 @@ class NotificationsViewModel: ObservableObject {
         notifications.filter { !$0.isRead }.count
     }
     
-    // Grouped by date (relative date string: Today, Yesterday, Date)
     var groupedNotifications: [(String, [AppNotification])] {
         let calendar = Calendar.current
         let grouped = Dictionary(grouping: filteredNotifications) { notification in

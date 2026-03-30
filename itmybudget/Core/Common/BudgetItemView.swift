@@ -2,12 +2,13 @@ import SwiftUI
 
 struct BudgetItemView: View {
     let budget: Budget
+    var showDetails: Bool = false
     
     var body: some View {
         Button(action: {
             // Budget detail action
         }) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: showDetails ? 12 : 8) {
                 HStack {
                     Text(budget.name)
                         .font(.system(size: 14, weight: .semibold))
@@ -20,46 +21,61 @@ struct BudgetItemView: View {
                         .foregroundStyle(.gray)
                 }
                 
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.black.opacity(0.05))
-                            .frame(height: 8)
-                        
-                        Capsule()
-                            .fill(budgetColor)
-                            .frame(width: geo.size.width * budget.progress, height: 8)
+                if showDetails {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.black.opacity(0.05))
+                                .frame(height: 8)
+                            
+                            Capsule()
+                                .fill(budgetColor)
+                                .frame(width: geo.size.width * budget.progress, height: 8)
+                        }
                     }
-                }
-                .frame(height: 8)
-                
-                HStack {
-                    Text("Remain: $\(Int(budget.total - budget.spent))")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.black)
+                    .frame(height: 8)
                     
-                    Spacer()
+                    HStack {
+                        Text("Remain: $\(Int(budget.total - budget.spent))")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.black)
+                        
+                        Spacer()
+                        
+                        Text("Recommended: $\(Int(budget.dailyLimit)) / day")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.gray)
+                    }
                     
-                    Text("Recommended: $\(Int(budget.dailyLimit)) / day")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.gray)
+                    HStack(spacing: 4) {
+                        Text("Next refill: \(budget.nextTopUp)")
+                            .font(.system(size: 12))
+                    }
+                    .foregroundStyle(.gray.opacity(0.8))
+                    .padding(.top, -4)
+                } else {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.black.opacity(0.05))
+                                .frame(height: 4)
+                            
+                            Capsule()
+                                .fill(budgetColor)
+                                .frame(width: geo.size.width * budget.progress, height: 4)
+                        }
+                    }
+                    .frame(height: 4)
                 }
-                
-                HStack(spacing: 4) {
-                    Text("Next refill: \(budget.nextTopUp)")
-                        .font(.system(size: 12))
-                }
-                .foregroundStyle(.gray.opacity(0.8))
-                .padding(.top, -4)
             }
-            .padding(16)
+            .padding(showDetails ? 16 : 14)
             .background(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: showDetails ? 24 : 16)
                     .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.08), radius: 15, x: 0, y: 5)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: showDetails ? 24 : 16)
                     .stroke(Color.black.opacity(0.05), lineWidth: 1)
             )
         }
