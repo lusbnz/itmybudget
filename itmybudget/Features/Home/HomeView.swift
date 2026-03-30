@@ -9,8 +9,13 @@ struct PulseData: Identifiable {
 }
 
 struct HomeView: View {
+    @EnvironmentObject private var navState: AppNavigationState
     @State private var showHeader: Bool = false
     @State private var showSections: Bool = false
+    @State private var selectedFilter: TransactionType = .all
+    @State private var showAllTransactions: Bool = false
+    @State private var showNotifications: Bool = false
+    @Namespace private var filterNamespace
     
     var body: some View {
         NavigationStack {
@@ -53,20 +58,13 @@ struct HomeView: View {
                         Spacer()
                         
                         Button(action: {
+                            showNotifications = true
                         }) {
                             Image(systemName: "bell.fill")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
+                                .font(.system(size: 16))
+                                .foregroundColor(.black)
                                 .frame(width: 40, height: 40)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color(red: 0.15, green: 0.15, blue: 0.15), Color(red: 0.3, green: 0.3, blue: 0.3)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
                                 .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
                         }
                         .buttonStyle(BouncyButtonStyle())
                         .offset(y: showHeader ? 0 : 10)
@@ -129,10 +127,74 @@ struct HomeView: View {
                     .offset(y: showSections ? 0 : 20)
                     .opacity(showSections ? 1 : 0)
 
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader(
+                            title: "Latest Transactions",
+                            extraActionTitle: "All",
+                            onExtraAction: {
+                                showAllTransactions = true
+                            }
+                        )
+                        
+                        HStack(spacing: 8) {
+                            ForEach(TransactionType.allCases, id: \.self) { type in
+                                FilterTabView(
+                                    title: type.rawValue,
+                                    isSelected: selectedFilter == type,
+                                    namespace: filterNamespace,
+                                    action: { 
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            selectedFilter = type 
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.bottom, 4)
+                        
+                        VStack(spacing: 8) {
+                            ForEach(filteredTransactions) { transaction in
+                                TransactionItemView(transaction: transaction)
+                                    .transition(.asymmetric(
+                                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                                        removal: .move(edge: .top).combined(with: .opacity)
+                                    ))
+                            }
+                        }
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0), value: filteredTransactions)
+                    }
+                    .padding(.bottom, 24)
+                    .offset(y: showSections ? 0 : 20)
+                    .opacity(showSections ? 1 : 0)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader(
+                            title: "Budget Tracking",
+                            extraActionTitle: "All",
+                            onExtraAction: {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    navState.selectedTab = 1
+                                }
+                            }
+                        )
+                        
+                        VStack(spacing: 8) {
+                            ForEach(Budget.sampleData) { budget in
+                                BudgetItemView(budget: budget)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 24)
+                    .offset(y: showSections ? 0 : 20)
+                    .opacity(showSections ? 1 : 0)
+
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 60)
+            }
+            .fullScreenCover(isPresented: $showNotifications) {
+                NotificationsView()
             }
             .background(
                 LinearGradient(
@@ -142,6 +204,11 @@ struct HomeView: View {
                 )
             )
             .ignoresSafeArea(edges: .top)
+            .sheet(isPresented: $showAllTransactions) {
+                HistoryView()
+                    .presentationDetents([.fraction(0.85)])
+                    .presentationDragIndicator(.visible)
+            }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
@@ -156,12 +223,22 @@ struct HomeView: View {
     }
     
     @ViewBuilder
-    private func sectionHeader(title: String) -> some View {
+    private func sectionHeader(title: String, extraActionTitle: String? = nil, onExtraAction: (() -> Void)? = nil) -> some View {
         HStack(alignment: .center, spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.black)
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.black)
+            
+            Spacer()
+            
+            if let extra = extraActionTitle {
+                Button(action: {
+                    onExtraAction?()
+                }) {
+                    Text(extra)
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .buttonStyle(BouncyButtonStyle())
             }
         }
     }
@@ -234,18 +311,25 @@ struct FinancialPulseCard: View {
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(.white.opacity(0.9))
+                    .fill(Color.white)
                 
                 RoundedRectangle(cornerRadius: 24)
                     .stroke(Color.black.opacity(0.05), lineWidth: 1)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 8)
+        .shadow(color: Color.black.opacity(0.08), radius: 15, x: 0, y: 8)
     }
 }
 
 extension HomeView {
+    private var filteredTransactions: [Transaction] {
+        if selectedFilter == .all {
+            return Transaction.sampleData
+        }
+        return Transaction.sampleData.filter { $0.type == selectedFilter }
+    }
+    
     private var balanceSampleData: [PulseData] {
         let calendar = Calendar.current
         let now = Date()
@@ -271,14 +355,36 @@ extension HomeView {
     }
 }
 
-extension Color {
-    static let emerald = Color(red: 0.06, green: 0.69, blue: 0.44)
-}
-
-struct BouncyButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
-            .animation(.spring(response: 0.2, dampingFraction: 0.5), value: configuration.isPressed)
+struct FilterTabView: View {
+    let title: String
+    let isSelected: Bool
+    let namespace: Namespace.ID
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
+                .foregroundStyle(isSelected ? .white : .gray)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    ZStack {
+                        if isSelected {
+                            Capsule()
+                                .fill(Color.black)
+                                .matchedGeometryEffect(id: "filterTab", in: namespace)
+                        } else {
+                            Capsule()
+                                .fill(Color.white.opacity(0.8))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                                )
+                        }
+                    }
+                )
+        }
+        .buttonStyle(BouncyButtonStyle())
     }
 }

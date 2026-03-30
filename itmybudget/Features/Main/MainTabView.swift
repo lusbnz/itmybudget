@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: Int = 0
+    @StateObject private var navState = AppNavigationState()
     @State private var isShowingAddSheet: Bool = false
     @State private var isExpanded: Bool = false
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            TabView(selection: $selectedTab) {
+            TabView(selection: $navState.selectedTab) {
                 HomeView()
                     .tabItem {
                         Label("Home", systemImage: "house.fill")
@@ -83,5 +83,6 @@ struct MainTabView: View {
             }
             .presentationDetents([.medium, .large])
         }
+        .environmentObject(navState)
     }
 }
