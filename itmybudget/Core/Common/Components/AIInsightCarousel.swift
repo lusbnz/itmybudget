@@ -1,10 +1,15 @@
 import SwiftUI
 
 struct AIInsightCarousel: View {
+    var content: String = "Every time you go out for drinks on Friday night, you usually spend another **$20** on *online shopping* on Saturday. Watch out for this 'combo'!"
+    var cta: String = "View Journey Details"
+    var onCTATap: (() -> Void)? = nil
+
     var body: some View {
         AIInsightCard(
-            content: "Every time you go out for drinks on Friday night, you usually spend another **$20** on *online shopping* on Saturday. Watch out for this 'combo'!",
-            cta: "View Journey Details"
+            content: content,
+            cta: cta,
+            onCTATap: onCTATap
         )
     }
 }
@@ -13,6 +18,7 @@ struct AIInsightCard: View {
     @EnvironmentObject private var navState: AppNavigationState
     let content: String
     let cta: String
+    var onCTATap: (() -> Void)? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -23,8 +29,12 @@ struct AIInsightCard: View {
                 .fixedSize(horizontal: false, vertical: true)
             
             Button(action: {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                    navState.selectedTab = 3
+                if let onCTATap = onCTATap {
+                    onCTATap()
+                } else {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        navState.selectedTab = 3
+                    }
                 }
             }) {
                 HStack(spacing: 4) {

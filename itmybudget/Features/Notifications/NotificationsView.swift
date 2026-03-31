@@ -267,7 +267,6 @@ struct NotificationItem: View {
     }
 }
 
-// Helper for blur background
 struct VisualEffectView: UIViewRepresentable {
     var effect: UIVisualEffect?
     func makeUIView(context: Context) -> UIVisualEffectView {
@@ -276,8 +275,4 @@ struct VisualEffectView: UIViewRepresentable {
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
         uiView.effect = effect
     }
-}
-
-#Preview {
-    NotificationsView()
 }

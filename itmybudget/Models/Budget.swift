@@ -1,13 +1,23 @@
 import Foundation
 
 struct Budget: Identifiable, Equatable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let spent: Double
     let total: Double
     let dailyLimit: Double
     let nextTopUp: String
     let lastTransactionDate: Date
+    
+    init(id: UUID = UUID(), name: String, spent: Double, total: Double, dailyLimit: Double, nextTopUp: String, lastTransactionDate: Date) {
+        self.id = id
+        self.name = name
+        self.spent = spent
+        self.total = total
+        self.dailyLimit = dailyLimit
+        self.nextTopUp = nextTopUp
+        self.lastTransactionDate = lastTransactionDate
+    }
     
     var progress: Double {
         total > 0 ? spent / total : 0

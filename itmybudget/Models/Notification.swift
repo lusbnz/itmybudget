@@ -4,7 +4,7 @@ struct AppNotification: Identifiable, Hashable {
     let id: UUID
     let title: String
     let description: String
-    let icon: String // SF Symbol name
+    let icon: String
     let date: Date
     var isRead: Bool
     
@@ -35,7 +35,7 @@ extension AppNotification {
                 title: "New Achievement!",
                 description: "Congratulations! You've saved for 7 days in a row.",
                 icon: "trophy.fill",
-                date: now.addingTimeInterval(-3600), // 1 hour ago
+                date: now.addingTimeInterval(-3600),
                 isRead: true
             ),
             AppNotification(

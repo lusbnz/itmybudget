@@ -9,10 +9,16 @@ struct PlanningView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navState: AppNavigationState
     @State private var budgets: [Budget] = Budget.sampleData
+    @State private var goals: [PersonalGoal] = PersonalGoal.sampleData
     @State private var sortOption: BudgetSortOption = .recent
     @State private var isExpanded: Bool = false
     @State private var showDetails: Bool = false
     @State private var showContent: Bool = false
+    @State private var showingBudgetSheet: Bool = false
+    @State private var selectedBudgetToEdit: Budget? = nil
+    @State private var showingGoalSheet: Bool = false
+    @State private var selectedGoalToEdit: PersonalGoal? = nil
+    @State private var selectedBudgetForDetail: Budget? = nil
     
     var sortedBudgets: [Budget] {
         switch sortOption {
@@ -51,7 +57,7 @@ struct PlanningView: View {
                         Spacer(minLength: 100)
                     }
                 }
-                .onChange(of: navState.selectedTab) { newValue in
+                .onChange(of: navState.selectedTab) { oldValue, newValue in
                     if newValue == 1 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -69,6 +75,73 @@ struct PlanningView: View {
                 )
             )
             .ignoresSafeArea(edges: .top)
+            .sheet(isPresented: $showingBudgetSheet) {
+                BudgetFormSheet(
+                    budgetToEdit: selectedBudgetToEdit,
+                    onSave: { name, amount in
+                        if let edited = selectedBudgetToEdit {
+                            if let index = budgets.firstIndex(where: { $0.id == edited.id }) {
+                                let updated = Budget(
+                                    id: edited.id,
+                                    name: name,
+                                    spent: edited.spent,
+                                    total: amount,
+                                    dailyLimit: amount / 30,
+                                    nextTopUp: edited.nextTopUp,
+                                    lastTransactionDate: Date()
+                                )
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    budgets[index] = updated
+                                }
+                            }
+                        } else {
+                            let newBudget = Budget(
+                                name: name,
+                                spent: 0,
+                                total: amount,
+                                dailyLimit: amount / 30,
+                                nextTopUp: "Next month",
+                                lastTransactionDate: Date()
+                            )
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                budgets.insert(newBudget, at: 0)
+                            }
+                        }
+                    },
+                    onDelete: {
+                        if let edited = selectedBudgetToEdit {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                budgets.removeAll(where: { $0.id == edited.id })
+                            }
+                        }
+                    }
+                )
+                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showingGoalSheet) {
+                GoalFormSheet(
+                    goalToEdit: selectedGoalToEdit,
+                    budgets: budgets,
+                    onSave: { newGoal in
+                        if let index = goals.firstIndex(where: { $0.id == newGoal.id }) {
+                            goals[index] = newGoal
+                        } else {
+                            goals.insert(newGoal, at: 0)
+                        }
+                    },
+                    onDelete: {
+                        if let edited = selectedGoalToEdit {
+                            goals.removeAll(where: { $0.id == edited.id })
+                        }
+                    }
+                )
+                .presentationDetents([.fraction(0.92)])
+                .presentationDragIndicator(.visible)
+            }
+            .fullScreenCover(item: $selectedBudgetForDetail) { budget in
+                BudgetDetailView(budget: budget)
+            }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
@@ -89,7 +162,8 @@ struct PlanningView: View {
             Spacer()
             
             Button(action: {
-                // Create new budget action
+                selectedBudgetToEdit = nil
+                showingBudgetSheet = true
             }) {
                 HStack(spacing: 4) {
                     Text("Create New")
@@ -177,11 +251,13 @@ struct PlanningView: View {
             
             VStack(spacing: 8) {
                 ForEach(displayedBudgets) { budget in
-                    BudgetItemView(budget: budget, showDetails: showDetails)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .opacity
-                        ))
+                    BudgetItemView(budget: budget, showDetails: showDetails, onTap: {
+                        selectedBudgetForDetail = budget
+                    })
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
                 }
                 
                 if sortedBudgets.count > 5 {
@@ -251,14 +327,18 @@ struct PlanningView: View {
                 title: "Personal Goals",
                 extraActionTitle: "Create",
                 onExtraAction: {
-                    // Create action
+                    selectedGoalToEdit = nil
+                    showingGoalSheet = true
                 }
             )
             .padding(.horizontal, 16)
             
             VStack(spacing: 8) {
-                ForEach(PersonalGoal.sampleData) { goal in
-                    PersonalGoalItem(goal: goal)
+                ForEach(goals) { goal in
+                    PersonalGoalItem(goal: goal, onTap: {
+                        selectedGoalToEdit = goal
+                        showingGoalSheet = true
+                    })
                 }
             }
             .padding(.horizontal, 16)
@@ -335,10 +415,14 @@ struct RecurringExpenseCard: View {
 
 struct PersonalGoalItem: View {
     let goal: PersonalGoal
+    var onTap: (() -> Void)? = nil
     
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: "dot.scope")
+        Button(action: {
+            onTap?()
+        }) {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: "dot.scope")
                 .font(.system(size: 16))
                 .foregroundStyle(.black)
             
@@ -358,7 +442,7 @@ struct PersonalGoalItem: View {
                     Spacer()
                     
                     HStack(spacing: 0) {
-                        Text("$\(goal.monthlyAmount)").fontWeight(.bold)
+                        Text("$\(Int(goal.monthlyAmount))").fontWeight(.bold)
                         Text(" every month")
                     }
                     .font(.system(size: 12))
@@ -374,5 +458,7 @@ struct PersonalGoalItem: View {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
         )
+        }
+        .buttonStyle(BouncyButtonStyle())
     }
 }

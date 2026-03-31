@@ -15,6 +15,7 @@ struct HomeView: View {
     @State private var selectedFilter: TransactionType = .all
     @State private var showAllTransactions: Bool = false
     @State private var showNotifications: Bool = false
+    @State private var selectedBudgetForDetail: Budget? = nil
     @Namespace private var filterNamespace
     
     var body: some View {
@@ -41,7 +42,7 @@ struct HomeView: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 60)
                 }
-                .onChange(of: navState.selectedTab) { newValue in
+                .onChange(of: navState.selectedTab) { oldValue, newValue in
                     if newValue == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -66,6 +67,9 @@ struct HomeView: View {
                 HistoryView()
                     .presentationDetents([.fraction(0.85)])
                     .presentationDragIndicator(.visible)
+            }
+            .fullScreenCover(item: $selectedBudgetForDetail) { budget in
+                BudgetDetailView(budget: budget)
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -255,7 +259,9 @@ struct HomeView: View {
             
             VStack(spacing: 8) {
                 ForEach(recentBudgets) { budget in
-                    BudgetItemView(budget: budget, showDetails: true)
+                    BudgetItemView(budget: budget, showDetails: true, onTap: {
+                        selectedBudgetForDetail = budget
+                    })
                 }
             }
         }
