@@ -209,7 +209,7 @@ struct PlanningView: View {
                             .font(.system(size: 13))
                             .foregroundStyle(showDetails ? .black : .gray)
                             .frame(width: 32, height: 32)
-                            .background(Color.white.opacity(0.8))
+                            .background(Color.white)
                             .clipShape(Circle())
                             .overlay(
                                 Circle()

@@ -16,15 +16,13 @@ struct TransactionItemView: View {
                 
                 TransactionAmountView(transaction: transaction)
             }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 5)
-            )
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.black.opacity(0.04), lineWidth: 1)
             )
         }
         .buttonStyle(BouncyButtonStyle())
@@ -51,13 +49,13 @@ private struct TransactionIconView: View {
         } else {
             ZStack {
                 Circle()
-                    .fill(transaction.type == .income ? .green.opacity(0.12) : .orange.opacity(0.12))
+                    .fill(transaction.type == .income ? Color.green.opacity(0.15) : Color.blue.opacity(0.1))
                 
                 Image(systemName: transaction.icon)
                     .font(.system(size: 16))
-                    .foregroundStyle(transaction.type == .income ? .green : .orange)
+                    .foregroundStyle(transaction.type == .income ? Color.green : Color.blue)
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 44, height: 44)
         }
     }
 }
@@ -101,12 +99,14 @@ private struct TransactionAmountView: View {
                 .foregroundStyle(transaction.type == .income ? .green : .black)
             
             Text(transaction.budgetName)
-                .font(.system(size: 10))
-                .foregroundStyle(.gray)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.black.opacity(0.05))
-                .clipShape(Capsule())
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Color.black.opacity(0.6))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(Color.black.opacity(0.05))
+                )
         }
     }
 }

@@ -87,7 +87,7 @@ struct BudgetDetailView: View {
                     recentTransactionsSection
                         .padding(.horizontal, 20)
                     
-                    Spacer(minLength: 120)
+                    Spacer(minLength: 100)
                 }
                 .padding(.top, 20)
             }

@@ -299,7 +299,7 @@ struct GoalFormSheet: View {
                 
                 Button(action: { dismiss() }) {
                     Text("Maybe later")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
                 .buttonStyle(BouncyButtonStyle())
