@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navState: AppNavigationState
     
     @State private var showContent: Bool = false
@@ -20,37 +21,35 @@ struct ProfileView: View {
     
     var body: some View {
       NavigationStack {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 32) { // Increased main spacing
-                        Color.clear
-                            .frame(height: 1)
-                            .id("top")
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    Color.clear
+                        .frame(height: 1)
+                        .id("top")
 
-                        profileHeader
-                        
-                        personalInfoCard
-                        
-                        upgradeBanner
-                        
-                        transactionImagesSection
-                        
-                        badgesSection
-                        
-                        premiumToolsSection
-                        
-                        permissionsSection
-                        
-                        dataSection
-                        
-                        applicationSection
-                        
-                        accountSection
-                        
-                        Spacer(minLength: 100)
-                    }
-                    .padding(.horizontal, 16)
+                    profileHeader
+                    
+                    personalInfoCard
+                    
+                    upgradeBanner
+                    
+                    transactionImagesSection
+                    
+                    badgesSection
+                    
+                    premiumToolsSection
+                    
+                    permissionsSection
+                    
+                    dataSection
+                    
+                    applicationSection
+                    
+                    accountSection
+                    
+                    Spacer(minLength: 100)
                 }
+                .padding(.horizontal, 16)
             }
             .background(
                 LinearGradient(
@@ -111,15 +110,25 @@ struct ProfileView: View {
     
     @ViewBuilder
     private var profileHeader: some View {
-        HStack {
+        HStack(spacing: 16) {
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16))
+                    .foregroundColor(.black)
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(BouncyButtonStyle())
+
             Text("Profile")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
-            Spacer()
         }
         .padding(.top, 60)
-        .padding(.horizontal, 16)
-        .offset(y: showContent ? 0 : 20)
+        .padding(.bottom, 8)
+        .offset(y: showContent ? 0 : 10)
         .opacity(showContent ? 1 : 0)
     }
     

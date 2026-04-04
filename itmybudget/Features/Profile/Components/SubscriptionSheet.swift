@@ -55,11 +55,6 @@ struct SubscriptionSheet: View {
     private var header: some View {
         HStack {
             Spacer()
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.3))
-            }
         }
         .padding(.horizontal, 24)
         .padding(.top, 25)

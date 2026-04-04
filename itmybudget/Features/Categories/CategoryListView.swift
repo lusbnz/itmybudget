@@ -34,6 +34,10 @@ struct CategoryListView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
+                    Color.clear
+                        .frame(height: 1)
+                        .id("top")
+
                     header
                     
                     subtitle
@@ -81,7 +85,7 @@ struct CategoryListView: View {
     }
     
     private var header: some View {
-      HStack(spacing: 16) {
+        HStack(spacing: 16) {
             Button(action: {
                 dismiss()
             }) {

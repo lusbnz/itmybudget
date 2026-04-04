@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var showAllTransactions: Bool = false
     @State private var showNotifications: Bool = false
     @State private var selectedBudgetForDetail: Budget? = nil
+    @State private var isShowingProfile: Bool = false
     @Namespace private var filterNamespace
     
     var body: some View {
@@ -71,6 +72,9 @@ struct HomeView: View {
             .fullScreenCover(item: $selectedBudgetForDetail) { budget in
                 BudgetDetailView(budget: budget)
             }
+            .fullScreenCover(isPresented: $isShowingProfile) {
+                ProfileView()
+            }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
@@ -88,36 +92,45 @@ struct HomeView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                HStack(spacing: 12) {
-                    Text("Quoc Viet")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(.black)
-                    
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.orange, .red],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                        Text("12")
-                            .font(.system(size: 14, weight: .bold))
+                Button(action: {
+                    isShowingProfile = true
+                }) {
+                    HStack(spacing: 12) {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black)
+                            .frame(width: 4, height: 24)
+                        
+                        Text("Quoc Viet")
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(.black)
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.orange, .red],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                            Text("12")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.black)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(.orange.opacity(0.12))
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(.orange.opacity(0.2), lineWidth: 1)
+                        )
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule()
-                            .fill(.orange.opacity(0.12))
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(.orange.opacity(0.2), lineWidth: 1)
-                    )
                 }
+                .buttonStyle(BouncyButtonStyle())
                 .offset(y: showHeader ? 0 : 10)
                 .opacity(showHeader ? 1 : 0)
                 

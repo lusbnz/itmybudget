@@ -31,12 +31,6 @@ struct MainTabView: View {
                         Label("Analytics", systemImage: "chart.bar.xaxis")
                     }
                     .tag(3)
-                
-                ProfileView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.crop.circle")
-                    }
-                    .tag(4)
             }
             .tint(.blue)
             

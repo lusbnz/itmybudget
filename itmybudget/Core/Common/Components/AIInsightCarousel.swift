@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AIInsightCarousel: View {
     var content: String = "Every time you go out for drinks on Friday night, you usually spend another **$20** on *online shopping* on Saturday. Watch out for this 'combo'!"
-    var cta: String = "View Journey Details"
+    var cta: String? = "View Journey Details"
     var onCTATap: (() -> Void)? = nil
 
     var body: some View {
@@ -17,7 +17,7 @@ struct AIInsightCarousel: View {
 struct AIInsightCard: View {
     @EnvironmentObject private var navState: AppNavigationState
     let content: String
-    let cta: String
+    let cta: String?
     var onCTATap: (() -> Void)? = nil
     
     var body: some View {
@@ -28,32 +28,34 @@ struct AIInsightCard: View {
                 .foregroundStyle(.white.opacity(0.95))
                 .fixedSize(horizontal: false, vertical: true)
             
-            Button(action: {
-                if let onCTATap = onCTATap {
-                    onCTATap()
-                } else {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        navState.selectedTab = 3
+            if let cta = cta {
+                Button(action: {
+                    if let onCTATap = onCTATap {
+                        onCTATap()
+                    } else {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            navState.selectedTab = 3
+                        }
                     }
+                }) {
+                    HStack(spacing: 4) {
+                        Text(cta)
+                            .font(.system(size: 12, weight: .bold))
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.white.opacity(0.2))
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(.white.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .foregroundStyle(.white)
                 }
-            }) {
-                HStack(spacing: 4) {
-                    Text(cta)
-                        .font(.system(size: 12, weight: .bold))
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 12, weight: .bold))
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(.white.opacity(0.2))
-                .clipShape(Capsule())
-                .overlay(
-                    Capsule()
-                        .stroke(.white.opacity(0.3), lineWidth: 0.5)
-                )
-                .foregroundStyle(.white)
+                .buttonStyle(CardButtonStyle())
             }
-            .buttonStyle(CardButtonStyle())
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
