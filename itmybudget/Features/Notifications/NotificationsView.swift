@@ -72,7 +72,7 @@ struct NotificationsView: View {
     }
     
     private var tabSelection: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 0) {
             ForEach(NotificationsViewModel.NotificationTab.allCases, id: \.self) { tab in
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -95,21 +95,14 @@ struct NotificationsView: View {
                                 )
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
                     .background(
                         ZStack {
                             if viewModel.selectedTab == tab {
                                 Capsule()
                                     .fill(.black)
                                     .matchedGeometryEffect(id: "tab", in: tabNamespace)
-                            } else {
-                                Capsule()
-                                    .fill(Color.white.opacity(0.8))
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.black.opacity(0.05), lineWidth: 1)
-                                    )
                             }
                         }
                     )
@@ -117,8 +110,13 @@ struct NotificationsView: View {
                 }
                 .buttonStyle(BouncyButtonStyle())
             }
-            Spacer()
         }
+        .padding(4)
+        .background(
+            Capsule()
+                .fill(Color.white.opacity(0.5))
+                .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
+        )
         .padding(.horizontal, 16)
         .padding(.bottom, 20)
     }
