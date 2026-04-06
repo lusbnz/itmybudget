@@ -1,0 +1,50 @@
+name: Notify Team on Commit
+
+on:
+  push:
+    branches:
+      - '**' # Trigger on all branches
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification via API
+        run: |
+          curl -X POST "https://open.larksuite.com/open-apis/bot/v2/hook/6287cc04-7614-41f8-8bce-31017d429c2d" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "msg_type": "interactive",
+              "card": {
+                "elements": [
+                  {
+                    "tag": "div",
+                    "text": {
+                      "content": "**Actor:** ${{ github.actor }}\n**Branch:** ${{ github.ref_name }}\n**Message:** ${{ github.event.head_commit.message }}",
+                      "tag": "lark_md"
+                    }
+                  },
+                  {
+                    "actions": [
+                      {
+                        "tag": "button",
+                        "text": {
+                          "content": "Link",
+                          "tag": "plain_text"
+                        },
+                        "type": "primary",
+                        "url": "${{ github.event.head_commit.url }}"
+                      }
+                    ],
+                    "tag": "action"
+                  }
+                ],
+                "header": {
+                  "template": "turquoise",
+                  "title": {
+                    "content": "New application update",
+                    "tag": "plain_text"
+                  }
+                }
+              }
+            }'
