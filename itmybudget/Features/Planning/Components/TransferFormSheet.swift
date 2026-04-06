@@ -30,7 +30,6 @@ struct TransferFormSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, -8)
                     
-                    // Amount Field
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Amount")
                             .font(.system(size: 14, weight: .bold))
@@ -41,7 +40,7 @@ struct TransferFormSheet: View {
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .bold))
                             
-                            Text("VNĐ")
+                            Text("USD")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.gray)
                         }
@@ -53,7 +52,6 @@ struct TransferFormSheet: View {
                                 .stroke(Color.black.opacity(0.06), lineWidth: 1)
                         )
                         
-                        // Quick Amount Selectors
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
                                 ForEach(quickAmounts, id: \.self) { val in
@@ -79,7 +77,6 @@ struct TransferFormSheet: View {
                         }
                     }
                     
-                    // Source Budget
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Source Budget")
                             .font(.system(size: 14, weight: .bold))
@@ -122,7 +119,6 @@ struct TransferFormSheet: View {
             
             Spacer()
             
-            // Buttons
             VStack(spacing: 12) {
                 Button(action: {
                     if let amount = Double(amountString), let sourceId = selectedSourceBudgetId {
@@ -130,7 +126,7 @@ struct TransferFormSheet: View {
                         dismiss()
                     }
                 }) {
-                    Text("Xác nhận")
+                    Text("Confirm")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -175,7 +171,7 @@ struct TransferFormSheet: View {
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.groupingSeparator = "."
+        formatter.groupingSeparator = ","
         return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
     }
 }

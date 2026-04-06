@@ -45,7 +45,6 @@ struct CategoryFormSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
-                    // Name Input
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Category Name")
                             .font(.system(size: 14, weight: .bold))
@@ -62,7 +61,6 @@ struct CategoryFormSheet: View {
                             )
                     }
                     
-                    // Icon Selection
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Choose Icon")
                             .font(.system(size: 14, weight: .bold))
@@ -91,7 +89,6 @@ struct CategoryFormSheet: View {
                         }
                     }
                     
-                    // Color Selection
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Choose Color")
                             .font(.system(size: 14, weight: .bold))
@@ -122,7 +119,6 @@ struct CategoryFormSheet: View {
                         }
                     }
                     
-                    // Status Toggle
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {

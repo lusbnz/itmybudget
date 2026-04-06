@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var selectedBudgetForDetail: Budget? = nil
     @State private var isShowingProfile: Bool = false
     @Namespace private var filterNamespace
+    @State private var selectedTransaction: Transaction? = nil
     
     var body: some View {
         NavigationStack {
@@ -64,10 +65,16 @@ struct HomeView: View {
                 )
             )
             .ignoresSafeArea(edges: .top)
+            .fullScreenCover(item: $selectedTransaction) { transaction in
+                TransactionDetailView(transaction: transaction)
+            }
             .sheet(isPresented: $showAllTransactions) {
-                HistoryView()
-                    .presentationDetents([.fraction(0.85)])
-                    .presentationDragIndicator(.visible)
+                SimpleTransactionListSheet(
+                    title: "Latest",
+                    transactions: filteredTransactions
+                )
+                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(item: $selectedBudgetForDetail) { budget in
                 BudgetDetailView(budget: budget)
@@ -242,12 +249,14 @@ struct HomeView: View {
             .padding(.bottom, 4)
             
             VStack(spacing: 8) {
-                ForEach(filteredTransactions) { transaction in
-                    TransactionItemView(transaction: transaction)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .opacity
-                        ))
+                ForEach(filteredTransactions.prefix(3)) { transaction in
+                    TransactionItemView(transaction: transaction) {
+                        selectedTransaction = transaction
+                    }
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0), value: filteredTransactions)
@@ -419,39 +428,5 @@ extension HomeView {
                 isPrediction: false
             )
         }
-    }
-}
-
-struct FilterTabView: View {
-    let title: String
-    let isSelected: Bool
-    let namespace: Namespace.ID
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .white : .gray)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    ZStack {
-                        if isSelected {
-                            Capsule()
-                                .fill(Color.black)
-                                .matchedGeometryEffect(id: "filterTab", in: namespace)
-                        } else {
-                            Capsule()
-                                .fill(Color.white.opacity(0.8))
-                                .overlay(
-                                    Capsule()
-                                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
-                                )
-                        }
-                    }
-                )
-        }
-        .buttonStyle(BouncyButtonStyle())
     }
 }

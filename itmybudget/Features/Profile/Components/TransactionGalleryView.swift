@@ -10,7 +10,6 @@ struct TransactionGalleryView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showContent = false
     
-    // Mock grouped images matching Notification-style time periods
     private let groupedImages: [ImageGroup] = [
         ImageGroup(title: "Date Today", images: (1...6).map { "https://picsum.photos/400?random=\($0+10)" }),
         ImageGroup(title: "Yesterday", images: (7...12).map { "https://picsum.photos/400?random=\($0+20)" }),
@@ -88,7 +87,7 @@ struct TransactionGalleryView: View {
                 .padding(.vertical, 8)
             Spacer()
         }
-        .background(Color(red: 1.0, green: 0.97, blue: 0.92).opacity(0.95)) // Slight blur/opacity for pinned effect
+        .background(Color(red: 1.0, green: 0.97, blue: 0.92).opacity(0.95))
     }
 }
 

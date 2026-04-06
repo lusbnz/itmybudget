@@ -189,7 +189,6 @@ struct AnalyticsView: View {
                     }
                 }
                 
-                // Custom Legend
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(spendingCategories) { category in
                         HStack(spacing: 8) {
@@ -378,33 +377,65 @@ struct AnalyticsView: View {
     
     @ViewBuilder
     private var dateRangePickerSheet: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                DatePicker("Start Date", selection: .constant(Date()), displayedComponents: .date)
-                    .datePickerStyle(.graphical)
-                    .padding(16)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
-                    .padding(.horizontal, 16)
-                
+        VStack(spacing: 0) {
+            HStack {
+                Text("Select Date Range")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.black)
                 Spacer()
-                
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 20)
+            
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        DatePicker("Range", selection: .constant(Date()), displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .padding(16)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 28))
+                            .overlay(RoundedRectangle(cornerRadius: 28).stroke(Color.black.opacity(0.05), lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
+                    }
+                    
+                    Spacer(minLength: 40)
+                }
+                .padding(24)
+            }
+            
+            VStack(spacing: 12) {
                 Button(action: { showDatePicker = false }) {
                     Text("Apply Range")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 18)
                         .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                .buttonStyle(BouncyButtonStyle())
+                
+                Button(action: { showDatePicker = false }) {
+                    Text("Cancel")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.gray)
+                }
+                .buttonStyle(BouncyButtonStyle())
+                .padding(.bottom, 20)
             }
-            .background(Color(red: 0.98, green: 0.98, blue: 0.98))
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 14)
         }
+        .background(
+            LinearGradient(
+                colors: [Color(red: 1.0, green: 0.98, blue: 0.96), Color(red: 1.0, green: 0.95, blue: 0.90)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
     }
 }
 

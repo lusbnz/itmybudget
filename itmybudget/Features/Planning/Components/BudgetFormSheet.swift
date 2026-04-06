@@ -40,7 +40,7 @@ struct BudgetFormSheet: View {
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("e.g., Daily Spending", text: $name)
+                        TextField("e.g., Daily", text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -61,7 +61,7 @@ struct BudgetFormSheet: View {
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .bold))
                             
-                            Text("VNĐ")
+                            Text("USD")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.gray)
                         }
@@ -79,7 +79,7 @@ struct BudgetFormSheet: View {
                                     Button(action: {
                                         amount = String(format: "%.0f", val)
                                     }) {
-                                        Text("\(formatCurrency(val)) VNĐ")
+                                        Text("$\(formatCurrency(val))")
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundStyle(.black)
                                             .padding(.horizontal, 16)
@@ -182,7 +182,7 @@ struct BudgetFormSheet: View {
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.groupingSeparator = "."
+        formatter.groupingSeparator = ","
         return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
     }
 }

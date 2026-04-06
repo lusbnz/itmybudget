@@ -120,7 +120,6 @@ struct SubscriptionSheet: View {
     
     private var pricingCardsGrid: some View {
         HStack(spacing: 16) {
-            // Standard
             pricingCard(
                 title: isYearly ? "Annual" : "1 Month",
                 price: isYearly ? "$29.99" : "$4.99",
@@ -128,7 +127,6 @@ struct SubscriptionSheet: View {
                 isPopular: isYearly
             )
             
-            // Lifetime
             pricingCard(
                 title: "Lifetime",
                 price: "$79.99",

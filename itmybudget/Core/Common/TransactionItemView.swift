@@ -2,10 +2,11 @@ import SwiftUI
 
 struct TransactionItemView: View {
     let transaction: Transaction
+    var onTap: (() -> Void)? = nil
     
     var body: some View {
         Button(action: {
-            // Transaction Detail Action
+            onTap?()
         }) {
             HStack(spacing: 12) {
                 TransactionIconView(transaction: transaction)
@@ -19,9 +20,9 @@ struct TransactionItemView: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.black.opacity(0.04), lineWidth: 1)
             )
         }
@@ -55,7 +56,7 @@ private struct TransactionIconView: View {
                     .font(.system(size: 16))
                     .foregroundStyle(transaction.type == .income ? Color.green : Color.blue)
             }
-            .frame(width: 44, height: 44)
+            .frame(width: 36, height: 36)
         }
     }
 }
@@ -113,11 +114,15 @@ private struct TransactionAmountView: View {
 
 extension Transaction {
     static var sampleData: [Transaction] {
-        [
+        let now = Date()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now)!
+        let fewDaysAgo = Calendar.current.date(byAdding: .day, value: -3, to: now)!
+        
+        return [
             Transaction(
                 name: "Starbucks Coffee",
                 description: "Morning coffee",
-                date: Date(),
+                date: now,
                 images: ["starbucks1"],
                 location: "New York, NY",
                 amount: 5.50,
@@ -127,9 +132,9 @@ extension Transaction {
                 isImageIcon: false
             ),
             Transaction(
-                name: "Salary",
-                description: "Monthly salary",
-                date: Date(),
+                name: "Monthly Salary",
+                description: "Salary deposit",
+                date: now,
                 images: [],
                 location: "Remote",
                 amount: 5000.00,
@@ -141,7 +146,7 @@ extension Transaction {
             Transaction(
                 name: "Apple Store",
                 description: "iPhone Case",
-                date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+                date: yesterday,
                 images: ["case1", "case2"],
                 location: "Apple Fifth Avenue",
                 amount: 49.00,
@@ -151,15 +156,39 @@ extension Transaction {
                 isImageIcon: true
             ),
             Transaction(
-                name: "Uber",
-                description: "Ride to office",
-                date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+                name: "Whole Foods",
+                description: "Weekly groceries",
+                date: yesterday,
                 images: [],
                 location: "San Francisco",
-                amount: 15.20,
-                budgetName: "Transport",
+                amount: 125.20,
+                budgetName: "Groceries",
+                type: .outcome,
+                icon: "cart.fill",
+                isImageIcon: false
+            ),
+            Transaction(
+                name: "Uber",
+                description: "Ride to airport",
+                date: fewDaysAgo,
+                images: [],
+                location: "JFK Airport",
+                amount: 45.00,
+                budgetName: "Travel",
                 type: .outcome,
                 icon: "car.fill",
+                isImageIcon: false
+            ),
+            Transaction(
+                name: "Netflix",
+                description: "Monthly subscription",
+                date: fewDaysAgo,
+                images: [],
+                location: "Online",
+                amount: 15.99,
+                budgetName: "Entertainment",
+                type: .outcome,
+                icon: "play.tv.fill",
                 isImageIcon: false
             )
         ]

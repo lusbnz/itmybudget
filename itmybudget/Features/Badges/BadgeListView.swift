@@ -5,14 +5,13 @@ struct Badge: Identifiable {
     let name: String
     let icon: String
     let description: String
-    let dateEarned: String? // nil means locked
+    let dateEarned: String?
     let color: Color
 }
 
 extension Badge {
     static var sampleData: [Badge] {
         [
-            // Earned
             Badge(name: "Savings Master", icon: "bolt.shield.fill", description: "Saved 20% of income for 3 months.", dateEarned: "Mar 12, 2026", color: .orange),
             Badge(name: "Budget King", icon: "crown.fill", description: "Stayed within budget for 30 consecutive days.", dateEarned: "Feb 28, 2026", color: .yellow),
             Badge(name: "Smart Spender", icon: "brain.head.profile.fill", description: "Zero emotional purchases detected in a week.", dateEarned: "Jan 15, 2026", color: .blue),
@@ -20,7 +19,6 @@ extension Badge {
             Badge(name: "Goal Crusher", icon: "target", description: "Completely funded your first personal goal.", dateEarned: "Mar 25, 2026", color: .red),
             Badge(name: "Cloud Saver", icon: "icloud.and.arrow.up.fill", description: "Synced backup for the first time.", dateEarned: "Dec 30, 2025", color: .teal),
             
-            // Locked
             Badge(name: "Iron Will", icon: "lock.shield.fill", description: "Maintain a budget for 6 consecutive months.", dateEarned: nil, color: .gray),
             Badge(name: "Investor Mind", icon: "chart.line.uptrend.xyaxis", description: "Start an automated investment plan.", dateEarned: nil, color: .gray),
             Badge(name: "Diamond Hand", icon: "suit.diamond.fill", description: "Hold your savings without withdrawals for a year.", dateEarned: nil, color: .gray),

@@ -114,7 +114,7 @@ struct GoalFormSheet: View {
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .bold))
                             
-                            Text("VNĐ")
+                            Text("USD")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.gray)
                         }
@@ -132,7 +132,7 @@ struct GoalFormSheet: View {
                                     Button(action: {
                                         targetAmount = String(format: "%.0f", val)
                                     }) {
-                                        Text("\(formatCurrency(val)) VNĐ")
+                                        Text("$\(formatCurrency(val))")
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundStyle(.black)
                                             .padding(.horizontal, 16)
@@ -233,7 +233,7 @@ struct GoalFormSheet: View {
                                 .foregroundStyle(.black)
                         }
                         
-                        Text("\(formatCurrency(estimatedMonthlySaving)) VNĐ")
+                        Text("$\(formatCurrency(estimatedMonthlySaving))")
                             .font(.system(size: 24, weight: .bold))
                         
                         ZStack(alignment: .leading) {
@@ -373,7 +373,7 @@ struct GoalFormSheet: View {
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.groupingSeparator = "."
+        formatter.groupingSeparator = ","
         return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
     }
 }

@@ -7,7 +7,6 @@ struct ProfileView: View {
     @State private var showContent: Bool = false
     @State private var autoDetectLocation: Bool = true
     
-    // Sheets & Alerts
     @State private var isShowingEditProfile = false
     @State private var isShowingUpgrade = false
     @State private var isShowingCurrency = false
@@ -64,7 +63,6 @@ struct ProfileView: View {
                     showContent = true
                 }
             }
-            // Sheets
             .sheet(isPresented: $isShowingEditProfile) {
                 EditProfileSheet()
             }
@@ -92,7 +90,6 @@ struct ProfileView: View {
             .alert("Logout", isPresented: $isShowingLogoutAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Logout", role: .destructive) {
-                    // Actual logout logic
                 }
             } message: {
                 Text("Are you sure you want to log out?")
@@ -100,7 +97,6 @@ struct ProfileView: View {
             .alert("Delete Account", isPresented: $isShowingDeleteAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) {
-                    // Actual account deletion logic
                 }
             } message: {
                 Text("Are you sure you want to delete your account? This action is permanent and all your data will be lost.")
@@ -462,7 +458,6 @@ struct ProfileView: View {
         }
     }
     
-    // Helper UI Methods
     private func sectionHeader(title: String, actionTitle: String? = nil, onAction: (() -> Void)? = nil) -> some View {
         HStack {
             Text(title)
@@ -599,7 +594,6 @@ struct ProfileView: View {
     
     private func currencyRow(flag: String, code: String, name: String) -> some View {
         Button(action: {
-            // Update app currency logic
             isShowingCurrency = false
         }) {
             HStack {
@@ -618,7 +612,6 @@ struct ProfileView: View {
     }
 }
 
-// FlowLayout for badges
 struct FlowLayout: Layout {
     var spacing: CGFloat
     

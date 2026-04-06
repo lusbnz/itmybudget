@@ -69,7 +69,7 @@ struct EditProfileSheet: View {
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.white, lineWidth: 3).shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5))
                 
-                Button(action: { /* Change photo logic */ }) {
+                Button(action: {}) {
                     ZStack {
                         Circle()
                             .fill(Color.black)
@@ -115,7 +115,6 @@ struct EditProfileSheet: View {
     
     private var saveButton: some View {
         Button(action: {
-            // Save logic
             dismiss()
         }) {
             Text("Save Changes")

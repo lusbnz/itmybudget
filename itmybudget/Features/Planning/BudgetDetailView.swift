@@ -12,6 +12,7 @@ struct BudgetDetailView: View {
     @State private var showingHistorySheet = false
     @EnvironmentObject private var navState: AppNavigationState
     @Namespace private var tabNamespace
+    @State private var selectedTransaction: Transaction? = nil
     
     init(budget: Budget) {
         self.budget = budget
@@ -73,8 +74,8 @@ struct BudgetDetailView: View {
                         .padding(.horizontal, 20)
                     
                     AIInsightCarousel(
-                        content: "Dự kiến bạn sẽ vượt ngân sách vào ngày 26 của tháng này.",
-                        cta: "Xem chi tiết phân tích",
+                        content: "You are projected to exceed your budget on the 26th of this month.",
+                        cta: "View detailed analysis",
                         onCTATap: {
                             showingAnalyticsSheet = true
                         }
@@ -102,6 +103,9 @@ struct BudgetDetailView: View {
             
             bottomActionButtons
         }
+        .fullScreenCover(item: $selectedTransaction) { transaction in
+            TransactionDetailView(transaction: transaction)
+        }
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showingTopUpSheet) {
@@ -109,7 +113,6 @@ struct BudgetDetailView: View {
                 budgets: Budget.sampleData,
                 currentBudget: currentBudget,
                 onConfirm: { amount, sourceId in
-                    // Mock top up logic
                     print("Topping up \(amount) to \(currentBudget.name)")
                 }
             )
@@ -138,9 +141,18 @@ struct BudgetDetailView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingHistorySheet) {
-            HistoryView()
-                .presentationDetents([.fraction(0.85)])
-                .presentationDragIndicator(.visible)
+            let budgetTransactions = Transaction.sampleData.filter { 
+                let bName = $0.budgetName.lowercased()
+                let cName = currentBudget.name.lowercased()
+                return bName.contains(cName) || cName.contains(bName) || bName.prefix(3) == cName.prefix(3)
+            }
+            
+            SimpleTransactionListSheet(
+                title: "Latest",
+                transactions: budgetTransactions.isEmpty ? Array(Transaction.sampleData.prefix(10)) : budgetTransactions
+            )
+            .presentationDetents([.fraction(0.85)])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticsSheet) {
             AnalyticsView()
@@ -152,7 +164,6 @@ struct BudgetDetailView: View {
                 budgets: Budget.sampleData,
                 currentBudget: currentBudget,
                 onConfirm: { amount, sourceId in
-                    // Logic to handle transfer can be added here
                     print("Transfering \(amount) from \(sourceId) to \(currentBudget.id)")
                 }
             )
@@ -328,7 +339,7 @@ struct BudgetDetailView: View {
     private var dailySpendingSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack {
-                Text("Daily Spending")
+                Text("Daily")
                     .font(.system(size: 16, weight: .bold))
                 
                 Spacer()
@@ -397,7 +408,7 @@ struct BudgetDetailView: View {
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Recent Transactions")
+                Text("Lastest Transactions")
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
                 Button(action: {
@@ -416,10 +427,12 @@ struct BudgetDetailView: View {
                     return bName.contains(cName) || cName.contains(bName) || bName.prefix(3) == cName.prefix(3)
                 }
                 
-                let displayTransactions = budgetTransactions.isEmpty ? Array(Transaction.sampleData.prefix(4)) : Array(budgetTransactions.prefix(4))
+                let displayTransactions = budgetTransactions.isEmpty ? Array(Transaction.sampleData.prefix(3)) : Array(budgetTransactions.prefix(3))
                 
                 ForEach(displayTransactions) { transaction in
-                    TransactionItemView(transaction: transaction)
+                    TransactionItemView(transaction: transaction) {
+                        selectedTransaction = transaction
+                    }
                 }
             }
         }

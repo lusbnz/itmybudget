@@ -301,7 +301,6 @@ struct PlanningView: View {
                 title: "Recurring Expenses",
                 extraActionTitle: "Create",
                 onExtraAction: {
-                    // Create action
                 }
             )
             .padding(.horizontal, 16)
