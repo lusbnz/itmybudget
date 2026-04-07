@@ -31,7 +31,7 @@ struct SearchSheetView: View {
             ScrollView(showsIndicators: false) {
                 resultsContent
                 
-                Spacer(minLength: 40)
+                Spacer(minLength: 100)
             }
         }
         .background(

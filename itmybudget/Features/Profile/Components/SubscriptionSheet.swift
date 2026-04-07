@@ -28,7 +28,7 @@ struct SubscriptionSheet: View {
                     
                     comparisonTable
                     
-                    Spacer(minLength: 60)
+                    Spacer(minLength: 100)
                 }
                 .padding(20)
             }

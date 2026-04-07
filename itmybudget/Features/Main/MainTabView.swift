@@ -62,20 +62,9 @@ struct MainTabView: View {
         }
         .background(Color(red: 1.0, green: 0.97, blue: 0.92).ignoresSafeArea())
         .sheet(isPresented: $isShowingAddSheet) {
-            NavigationStack {
-                Text("Add New Transaction Page")
-                    .navigationTitle("Add Transaction")
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button(action: {
-                                isShowingAddSheet = false
-                            }) {
-                                Text("Done")
-                            }
-                        }
-                    }
-            }
-            .presentationDetents([.medium, .large])
+            TransactionFormView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .environmentObject(navState)
     }

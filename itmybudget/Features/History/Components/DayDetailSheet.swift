@@ -4,6 +4,7 @@ struct DayDetailSheet: View {
     let date: Date?
     let transactions: [Transaction]?
     @Binding var isPresented: Bool
+    @State private var showingAddSheet = false
     @State private var selectedTransaction: Transaction? = nil
     
     var body: some View {
@@ -18,12 +19,12 @@ struct DayDetailSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    isPresented = false
+                    showingAddSheet = true
                 }) {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .bold))
                         Text("Add New")
+                            .font(.system(size: 14, weight: .bold))
+                        Image(systemName: "plus")
                             .font(.system(size: 14, weight: .bold))
                     }
                     .foregroundColor(.white)
@@ -69,7 +70,7 @@ struct DayDetailSheet: View {
                 }
                 .padding(.horizontal, 12)
                 
-                Spacer(minLength: 40)
+                Spacer(minLength: 100)
             }
         }
         .background(
@@ -82,6 +83,11 @@ struct DayDetailSheet: View {
         )
         .fullScreenCover(item: $selectedTransaction) { transaction in
             TransactionDetailView(transaction: transaction)
+        }
+        .sheet(isPresented: $showingAddSheet) {
+            TransactionFormView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
 }

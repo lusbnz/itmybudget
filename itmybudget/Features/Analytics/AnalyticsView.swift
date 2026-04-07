@@ -30,6 +30,7 @@ struct AnalyticsView: View {
     @Namespace private var tabNamespace
     @State private var showDatePicker = false
     @State private var showContent = false
+    @State private var showingAnalyticDetail = false
     
     private let spendingCategories = [
         SpendingCategory(name: "Food & Drink", icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "Warning"),
@@ -87,6 +88,10 @@ struct AnalyticsView: View {
                 }
                 .sheet(isPresented: $showDatePicker) {
                     dateRangePickerSheet
+                }
+                .sheet(isPresented: $showingAnalyticDetail) {
+                    AnalyticDetailSheet(title: "Detailed Analysis")
+                        .presentationDetents([.fraction(0.85)])
                 }
             }
         }
@@ -400,7 +405,7 @@ struct AnalyticsView: View {
                             .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
                     }
                     
-                    Spacer(minLength: 40)
+                    Spacer(minLength: 100)
                 }
                 .padding(24)
             }

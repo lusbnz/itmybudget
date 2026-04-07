@@ -6,6 +6,8 @@ struct SimpleTransactionListSheet: View {
     let transactions: [Transaction]
     @State private var selectedTransaction: Transaction? = nil
     
+    @State private var showingAddSheet = false
+    
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -16,12 +18,12 @@ struct SimpleTransactionListSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    dismiss()
+                    showingAddSheet = true
                 }) {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .bold))
                         Text("Add New")
+                            .font(.system(size: 14, weight: .bold))
+                        Image(systemName: "plus")
                             .font(.system(size: 14, weight: .bold))
                     }
                     .foregroundColor(.white)
@@ -77,7 +79,7 @@ struct SimpleTransactionListSheet: View {
                 }
                 .padding(.horizontal, 12)
                 
-                Spacer(minLength: 40)
+                Spacer(minLength: 100)
             }
         }
         .background(
@@ -90,6 +92,11 @@ struct SimpleTransactionListSheet: View {
         )
         .fullScreenCover(item: $selectedTransaction) { transaction in
             TransactionDetailView(transaction: transaction)
+        }
+        .sheet(isPresented: $showingAddSheet) {
+            TransactionFormView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
 }

@@ -18,7 +18,7 @@ struct FilterSheetView: View {
                     
                     categorySection
                     
-                    Spacer(minLength: 40)
+                    Spacer(minLength: 100)
                 }
                 .padding(24)
             }

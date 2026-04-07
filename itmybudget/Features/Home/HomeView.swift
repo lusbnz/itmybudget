@@ -19,6 +19,8 @@ struct HomeView: View {
     @State private var isShowingProfile: Bool = false
     @Namespace private var filterNamespace
     @State private var selectedTransaction: Transaction? = nil
+    @State private var showingJourneySheet = false
+    @State private var showingAnalyticSheet = false
     
     var body: some View {
         NavigationStack {
@@ -81,6 +83,14 @@ struct HomeView: View {
             }
             .fullScreenCover(isPresented: $isShowingProfile) {
                 ProfileView()
+            }
+            .sheet(isPresented: $showingJourneySheet) {
+                JourneyDetailSheet(title: "Journey Details")
+                    .presentationDetents([.fraction(0.85)])
+            }
+            .sheet(isPresented: $showingAnalyticSheet) {
+                AnalyticDetailSheet(title: "Detailed Analysis")
+                    .presentationDetents([.fraction(0.85)])
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -183,7 +193,13 @@ struct HomeView: View {
                 title: "Weekly Overview",
             )
             
-            AIInsightCarousel()
+            AIInsightCarousel(
+                content: "Every time you go out for drinks on Friday night, you usually spend another **$20** on *online shopping* on Saturday.",
+                cta: "View Journey Detail",
+                onCTATap: {
+                    showingJourneySheet = true
+                }
+            )
         }
         .padding(.bottom, 24)
         .offset(y: showSections ? 0 : 20)

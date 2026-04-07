@@ -108,7 +108,7 @@ struct CategoryListView: View {
                 showingFormSheet = true
             }) {
                 HStack(spacing: 4) {
-                    Text("Create")
+                    Text("Create New")
                         .font(.system(size: 12, weight: .bold))
                     Image(systemName: "plus")
                         .font(.system(size: 10, weight: .bold))

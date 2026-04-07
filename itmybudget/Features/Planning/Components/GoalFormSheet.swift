@@ -13,6 +13,7 @@ struct GoalFormSheet: View {
     @State private var selectedBudgetId: UUID?
     @State private var targetMonths: Int = 1
     @State private var isActive: Bool = true
+    @State private var isShowingBudgetSelector = false
     
     @Namespace private var tagNamespace
     
@@ -79,19 +80,13 @@ struct GoalFormSheet: View {
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        Menu {
-                            ForEach(budgets) { budget in
-                                Button(budget.name) {
-                                    selectedBudgetId = budget.id
-                                }
-                            }
-                        } label: {
+                        Button(action: { isShowingBudgetSelector = true }) {
                             HStack {
                                 Text(budgets.first(where: { $0.id == selectedBudgetId })?.name ?? "Select Budget")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(selectedBudgetId == nil ? .gray : .black)
                                 Spacer()
-                                Image(systemName: "chevron.down")
+                                Image(systemName: "chevron.right")
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundStyle(.gray)
                             }
@@ -103,6 +98,7 @@ struct GoalFormSheet: View {
                                     .stroke(Color.black.opacity(0.06), lineWidth: 1)
                             )
                         }
+                        .buttonStyle(BouncyButtonStyle())
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
@@ -319,6 +315,12 @@ struct GoalFormSheet: View {
         }
         .onChange(of: goalToEdit) { oldValue, newValue in
             loadGoalData()
+        }
+        .sheet(isPresented: $isShowingBudgetSelector) {
+            BudgetSelectorSheet { budget in
+                selectedBudgetId = budget.id
+            }
+            .presentationDetents([.fraction(0.85)])
         }
     }
     

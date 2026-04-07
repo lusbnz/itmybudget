@@ -35,6 +35,7 @@ struct BudgetDetailView: View {
     
     @State private var showingTransferSheet = false
     @State private var showingAnalyticsSheet = false
+    @State private var showingJourneySheet = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -43,29 +44,7 @@ struct BudgetDetailView: View {
                     headerSection
                         .padding(.horizontal, 20)
                     
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(currentBudget.name)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(.black)
-                        
-                        HStack(spacing: 4) {
-                            Text("You spent")
-                            Text(formatCurrency(currentBudget.spent))
-                                .fontWeight(.bold)
-                            Text("of")
-                            Text(formatCurrency(currentBudget.total))
-                                .fontWeight(.bold)
-                        }
-                        .font(.system(size: 14))
-                        
-                        HStack(spacing: 8) {
-                            Image(systemName: "arrow.left.arrow.right")
-                                .font(.system(size: 14))
-                            Text("**\(transactionsCount) transactions** this month")
-                        }
-                        .font(.system(size: 14))
-                    }
-                    .padding(.horizontal, 20)
+                    mainTransactionInfo
                     
                     limitBox
                         .padding(.horizontal, 20)
@@ -75,7 +54,7 @@ struct BudgetDetailView: View {
                     
                     AIInsightCarousel(
                         content: "You are projected to exceed your budget on the 26th of this month.",
-                        cta: "View detailed analysis",
+                        cta: "View Detail Analysis",
                         onCTATap: {
                             showingAnalyticsSheet = true
                         }
@@ -155,7 +134,12 @@ struct BudgetDetailView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticsSheet) {
-            AnalyticsView()
+            AnalyticDetailSheet(title: "\(currentBudget.name) Analysis")
+                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingJourneySheet) {
+            JourneyDetailSheet(title: "\(currentBudget.name) Journey")
                 .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
         }
@@ -170,6 +154,32 @@ struct BudgetDetailView: View {
             .presentationDetents([.fraction(0.85)])
             .presentationDragIndicator(.visible)
         }
+    }
+    
+    private var mainTransactionInfo: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(currentBudget.name)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.black)
+            
+            HStack(spacing: 4) {
+                Text("You spent")
+                Text(formatCurrency(currentBudget.spent))
+                    .fontWeight(.bold)
+                Text("of")
+                Text(formatCurrency(currentBudget.total))
+                    .fontWeight(.bold)
+            }
+            .font(.system(size: 14))
+            
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14))
+                Text("**\(transactionsCount) transactions** this month")
+            }
+            .font(.system(size: 14))
+        }
+        .padding(.horizontal, 20)
     }
     
     private var headerSection: some View {
@@ -439,37 +449,49 @@ struct BudgetDetailView: View {
     }
     
     private var bottomActionButtons: some View {
-        HStack(spacing: 8) {
-            Button(action: { showingTopUpSheet = true }) {
-                HStack {
+        HStack(spacing: 0) {
+            Button(action: { 
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showingTopUpSheet = true 
+                }
+            }) {
+                HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
                     Text("Top-up")
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .padding(.vertical, 14)
                 .background(Color.black)
                 .clipShape(Capsule())
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Button(action: { showingTransferSheet = true }) {
-                HStack {
+            Button(action: { 
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showingTransferSheet = true 
+                }
+            }) {
+                HStack(spacing: 8) {
                     Image(systemName: "arrow.left.arrow.right")
                     Text("Transfer")
                 }
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.black)
+                .foregroundStyle(.black.opacity(0.8))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.white)
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.black.opacity(0.1), lineWidth: 1))
+                .padding(.vertical, 14)
             }
             .buttonStyle(BouncyButtonStyle())
         }
-        .padding(.horizontal, 20)
+        .padding(4)
+        .background(Color.white)
+        .clipShape(Capsule())
+        .overlay(
+            Capsule()
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+        )
+        .padding(.horizontal, 25)
         .padding(.top, 16)
         .padding(.bottom, 40)
         .background(
