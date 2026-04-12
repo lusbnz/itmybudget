@@ -4,6 +4,7 @@ struct MainTabView: View {
     @StateObject private var navState = AppNavigationState()
     @State private var isShowingAddSheet: Bool = false
     @State private var isExpanded: Bool = false
+    @State private var initialFormMode: TransactionEntryMode = .manual
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -48,23 +49,26 @@ struct MainTabView: View {
                 isExpanded: $isExpanded,
                 onManual: {
                     isExpanded = false
+                    initialFormMode = .manual
                     isShowingAddSheet = true
                 },
                 onChat: {
                     isExpanded = false
+                    initialFormMode = .chat
+                    isShowingAddSheet = true
                 },
                 onCamera: {
                     isExpanded = false
+                    initialFormMode = .camera
+                    isShowingAddSheet = true
                 }
             )
             .padding(.trailing, 20)
             .padding(.bottom, 70)
         }
         .background(Color(red: 1.0, green: 0.97, blue: 0.92).ignoresSafeArea())
-        .sheet(isPresented: $isShowingAddSheet) {
-            TransactionFormView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+        .fullScreenCover(isPresented: $isShowingAddSheet) {
+            TransactionFormView(initialMode: initialFormMode)
         }
         .environmentObject(navState)
     }

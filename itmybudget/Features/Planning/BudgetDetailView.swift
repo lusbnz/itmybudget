@@ -69,7 +69,6 @@ struct BudgetDetailView: View {
                     
                     Spacer(minLength: 100)
                 }
-                .padding(.top, 20)
             }
             .background(
                 LinearGradient(
@@ -95,7 +94,6 @@ struct BudgetDetailView: View {
                     print("Topping up \(amount) to \(currentBudget.name)")
                 }
             )
-            .presentationDetents([.fraction(0.85)])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingBudgetSheet) {
@@ -116,7 +114,6 @@ struct BudgetDetailView: View {
                     dismiss()
                 }
             )
-            .presentationDetents([.fraction(0.85)])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingHistorySheet) {
@@ -130,17 +127,14 @@ struct BudgetDetailView: View {
                 title: "Latest",
                 transactions: budgetTransactions.isEmpty ? Array(Transaction.sampleData.prefix(10)) : budgetTransactions
             )
-            .presentationDetents([.fraction(0.85)])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticsSheet) {
             AnalyticDetailSheet(title: "\(currentBudget.name) Analysis")
-                .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingJourneySheet) {
             JourneyDetailSheet(title: "\(currentBudget.name) Journey")
-                .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingTransferSheet) {
@@ -151,7 +145,6 @@ struct BudgetDetailView: View {
                     print("Transfering \(amount) from \(sourceId) to \(currentBudget.id)")
                 }
             )
-            .presentationDetents([.fraction(0.85)])
             .presentationDragIndicator(.visible)
         }
     }
@@ -206,7 +199,7 @@ struct BudgetDetailView: View {
                     Label("Edit Details", systemImage: "pencil")
                 }
                 
-                Button(action: { /* set default logic */ }) {
+                Button(action: {}) {
                     Label("Set as Default", systemImage: "star")
                 }
                 

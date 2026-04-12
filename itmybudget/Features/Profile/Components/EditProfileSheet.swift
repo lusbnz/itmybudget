@@ -131,7 +131,3 @@ struct EditProfileSheet: View {
         .padding(.bottom, 10)
     }
 }
-
-#Preview {
-    EditProfileSheet()
-}

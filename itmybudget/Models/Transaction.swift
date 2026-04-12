@@ -34,3 +34,21 @@ struct Transaction: Identifiable, Equatable {
         return formatter.string(from: date)
     }
 }
+
+extension Transaction {
+    static func from(recurring: RecurringExpense) -> Transaction {
+        Transaction(
+            name: recurring.name,
+            description: "",
+            date: Date(),
+            images: [],
+            location: "Select Location",
+            amount: recurring.amount,
+            budgetName: "Main Budget",
+            type: .outcome,
+            icon: recurring.categoryIcon,
+            isImageIcon: false
+        )
+    }
+}
+

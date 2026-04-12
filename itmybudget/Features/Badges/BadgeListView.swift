@@ -79,9 +79,9 @@ struct BadgeListView: View {
             
             Spacer()
         }
-        .padding(.top, 20)
-        .offset(y: showContent ? 0 : 10)
-        .opacity(showContent ? 1 : 0)
+        .padding(.horizontal, 16)
+        .padding(.top, 25)
+        .padding(.bottom, 15)
     }
     
     private var progressCard: some View {
@@ -206,8 +206,4 @@ struct BadgeCard: View {
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
         )
     }
-}
-
-#Preview {
-    BadgeListView()
 }

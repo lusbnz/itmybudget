@@ -31,37 +31,32 @@ struct CategoryListView: View {
     @State private var selectedCategoryToEdit: Category? = nil
     
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    Color.clear
-                        .frame(height: 1)
-                        .id("top")
-
-                    header
-                    
-                    subtitle
-                    
-                    categoryGrid
-                    
-                    Spacer(minLength: 100)
-                }
-                .padding(.horizontal, 16)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                header
+                
+                subtitle
+                
+                categoryGrid
+                
+                Spacer(minLength: 100)
             }
-            .background(
-                LinearGradient(
-                    colors: [Color(red: 1.0, green: 0.97, blue: 0.92), Color(red: 1.0, green: 0.94, blue: 0.88)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+            .padding(.horizontal, 16)
+        }
+        .background(
+            LinearGradient(
+                colors: [Color(red: 1.0, green: 0.97, blue: 0.92), Color(red: 1.0, green: 0.94, blue: 0.88)],
+                startPoint: .top,
+                endPoint: .bottom
             )
-            .navigationBarHidden(true)
-            .onAppear {
-                withAnimation(.easeOut(duration: 0.6)) {
-                    showContent = true
-                }
+            .ignoresSafeArea()
+        )
+        .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6)) {
+                showContent = true
             }
+        }
             .sheet(isPresented: $showingFormSheet) {
                 CategoryFormSheet(
                     categoryToEdit: selectedCategoryToEdit,
@@ -78,11 +73,9 @@ struct CategoryListView: View {
                         }
                     }
                 )
-                .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
             }
         }
-    }
     
     private var header: some View {
         HStack(spacing: 16) {
@@ -121,7 +114,6 @@ struct CategoryListView: View {
             }
             .buttonStyle(BouncyButtonStyle())
         }
-        .padding(.top, 20)
         .padding(.bottom, 8)
         .offset(y: showContent ? 0 : 10)
         .opacity(showContent ? 1 : 0)
@@ -197,8 +189,4 @@ struct CategoryItemCard: View {
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
         )
     }
-}
-
-#Preview {
-    CategoryListView()
 }

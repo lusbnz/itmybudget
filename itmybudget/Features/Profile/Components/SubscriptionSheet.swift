@@ -228,7 +228,3 @@ struct SubscriptionSheet: View {
         .padding(.bottom, 10)
     }
 }
-
-#Preview {
-    SubscriptionSheet()
-}

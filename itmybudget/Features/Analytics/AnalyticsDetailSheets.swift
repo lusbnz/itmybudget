@@ -11,7 +11,6 @@ struct JourneyDetailSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Spending Journey Card
                     VStack(alignment: .leading, spacing: 20) {
                         HStack {
                             Text("Spending Journey")
@@ -33,7 +32,6 @@ struct JourneyDetailSheet: View {
                     .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
                     .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.black.opacity(0.05), lineWidth: 1))
                     
-                    // Detailed Journey Breakdown
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Detailed Journey Breakdown")
                             .font(.system(size: 14, weight: .bold))
@@ -105,7 +103,6 @@ struct AnalyticDetailSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Spending Distribution Card
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Spending Breakdown")
                             .font(.system(size: 16, weight: .bold))
@@ -139,7 +136,6 @@ struct AnalyticDetailSheet: View {
                     .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
                     .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.black.opacity(0.05), lineWidth: 1))
                     
-                    // Comparison Stats Grid
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         comparisonstatBox(title: "This Month", value: "$1,240", diff: "+12%", isUp: true)
                         comparisonstatBox(title: "Avg Monthly", value: "$980", diff: "-5%", isUp: false)

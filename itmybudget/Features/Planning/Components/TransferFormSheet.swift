@@ -8,6 +8,7 @@ struct TransferFormSheet: View {
     
     @State private var amountString: String = ""
     @State private var selectedSourceBudgetId: UUID?
+    @State private var isShowingBudgetSelector = false
     
     private let quickAmounts: [Double] = [100000, 200000, 500000, 1000000]
     
@@ -82,19 +83,15 @@ struct TransferFormSheet: View {
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        Menu {
-                            ForEach(budgets.filter { $0.id != currentBudget.id }) { budget in
-                                Button(budget.name) {
-                                    selectedSourceBudgetId = budget.id
-                                }
-                            }
-                        } label: {
+                        Button(action: {
+                            isShowingBudgetSelector = true
+                        }) {
                             HStack {
                                 Text(budgets.first(where: { $0.id == selectedSourceBudgetId })?.name ?? "Select Source")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(selectedSourceBudgetId == nil ? .gray : .black)
                                 Spacer()
-                                Image(systemName: "chevron.down")
+                                Image(systemName: "chevron.right")
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundStyle(.gray)
                             }
@@ -153,6 +150,12 @@ struct TransferFormSheet: View {
                 endPoint: .bottom
             )
         )
+        .sheet(isPresented: $isShowingBudgetSelector) {
+            BudgetSelectorSheet(budgets: budgets.filter { $0.id != currentBudget.id }) { budget in
+                selectedSourceBudgetId = budget.id
+            }
+            .presentationDragIndicator(.visible)
+        }
     }
     
     private var header: some View {

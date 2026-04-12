@@ -93,10 +93,8 @@ struct SimpleTransactionListSheet: View {
         .fullScreenCover(item: $selectedTransaction) { transaction in
             TransactionDetailView(transaction: transaction)
         }
-        .sheet(isPresented: $showingAddSheet) {
+        .fullScreenCover(isPresented: $showingAddSheet) {
             TransactionFormView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
     }
 }

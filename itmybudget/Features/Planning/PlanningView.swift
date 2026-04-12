@@ -19,6 +19,7 @@ struct PlanningView: View {
     @State private var showingGoalSheet: Bool = false
     @State private var selectedGoalToEdit: PersonalGoal? = nil
     @State private var selectedBudgetForDetail: Budget? = nil
+    @State private var selectedRecurringTransaction: RecurringExpense? = nil
     
     var sortedBudgets: [Budget] {
         switch sortOption {
@@ -116,7 +117,6 @@ struct PlanningView: View {
                         }
                     }
                 )
-                .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingGoalSheet) {
@@ -136,11 +136,16 @@ struct PlanningView: View {
                         }
                     }
                 )
-                .presentationDetents([.fraction(0.92)])
                 .presentationDragIndicator(.visible)
             }
             .fullScreenCover(item: $selectedBudgetForDetail) { budget in
                 BudgetDetailView(budget: budget)
+            }
+            .fullScreenCover(item: $selectedRecurringTransaction) { expense in
+                TransactionFormView(
+                    transactionToEdit: expense.name == "New Recurring" ? nil : Transaction.from(recurring: expense),
+                    startWithRecurring: true
+                )
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -301,6 +306,14 @@ struct PlanningView: View {
                 title: "Recurring Expenses",
                 extraActionTitle: "Create",
                 onExtraAction: {
+                    selectedRecurringTransaction = RecurringExpense(
+                        name: "New Recurring",
+                        amount: 0,
+                        frequency: "Monthly",
+                        nextDate: "Today",
+                        isActive: true,
+                        categoryIcon: "repeat"
+                    )
                 }
             )
             .padding(.horizontal, 16)
@@ -308,7 +321,12 @@ struct PlanningView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(RecurringExpense.sampleData) { expense in
-                        RecurringExpenseCard(expense: expense)
+                        Button(action: {
+                            selectedRecurringTransaction = expense
+                        }) {
+                            RecurringExpenseCard(expense: expense)
+                        }
+                        .buttonStyle(BouncyButtonStyle())
                     }
                 }
                 .padding(.horizontal, 16)

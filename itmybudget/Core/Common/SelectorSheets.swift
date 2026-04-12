@@ -53,11 +53,13 @@ struct CategorySelectorSheet: View {
             }
         }
         .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
+        .presentationDragIndicator(.visible)
     }
 }
 
 struct BudgetSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    var budgets: [Budget] = Budget.sampleData
     var onSelect: (Budget) -> Void
     
     var body: some View {
@@ -71,7 +73,7 @@ struct BudgetSelectorSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
-                    ForEach(Budget.sampleData) { budget in
+                    ForEach(budgets) { budget in
                         BudgetItemView(budget: budget, showDetails: true, onTap: {
                             onSelect(budget)
                             dismiss()
@@ -82,6 +84,7 @@ struct BudgetSelectorSheet: View {
             }
         }
         .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -140,6 +143,7 @@ struct LocationSelectorSheet: View {
             .padding(24)
         }
         .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
+        .presentationDragIndicator(.visible)
     }
     
     private var header: some View {
@@ -177,21 +181,23 @@ struct TimeSelectorSheet: View {
                             RoundedRectangle(cornerRadius: 24)
                                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
                         )
-                    
-                    Button(action: { dismiss() }) {
-                        Text("Confirm Date & Time")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.black)
-                            .clipShape(Capsule())
-                    }
                 }
                 .padding(24)
             }
+            
+            Button(action: { dismiss() }) {
+                Text("Confirm Date & Time")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(Color.black)
+                    .clipShape(Capsule())
+            }
+            .padding(24)
         }
         .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
+        .presentationDragIndicator(.visible)
     }
     
     private var header: some View {

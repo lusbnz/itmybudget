@@ -21,6 +21,7 @@ struct HomeView: View {
     @State private var selectedTransaction: Transaction? = nil
     @State private var showingJourneySheet = false
     @State private var showingAnalyticSheet = false
+    @State private var showingBadgeList = false
     
     var body: some View {
         NavigationStack {
@@ -75,7 +76,6 @@ struct HomeView: View {
                     title: "Latest",
                     transactions: filteredTransactions
                 )
-                .presentationDetents([.fraction(0.85)])
                 .presentationDragIndicator(.visible)
             }
             .fullScreenCover(item: $selectedBudgetForDetail) { budget in
@@ -86,11 +86,15 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingJourneySheet) {
                 JourneyDetailSheet(title: "Journey Details")
-                    .presentationDetents([.fraction(0.85)])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingAnalyticSheet) {
                 AnalyticDetailSheet(title: "Detailed Analysis")
-                    .presentationDetents([.fraction(0.85)])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showingBadgeList) {
+                BadgeListView()
+                    .presentationDragIndicator(.visible)
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -177,8 +181,15 @@ struct HomeView: View {
             .opacity(showHeader ? 1 : 0)
         
             HStack(spacing: 8) {
-                badgeTag(text: "Savings Master", color: .orange)
-                badgeTag(text: "Saving Streak", color: .green)
+                Button(action: { showingBadgeList = true }) {
+                    badgeTag(text: "Savings Master", color: .orange)
+                }
+                .buttonStyle(BouncyButtonStyle())
+                
+                Button(action: { showingBadgeList = true }) {
+                    badgeTag(text: "Saving Streak", color: .green)
+                }
+                .buttonStyle(BouncyButtonStyle())
             }
             .padding(.bottom, 24)
             .offset(y: showHeader ? 0 : 5)

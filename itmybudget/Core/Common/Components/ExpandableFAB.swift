@@ -12,11 +12,12 @@ struct ExpandableFAB: View {
                 fabSubButton(icon: "square.and.pencil", label: "Manual", action: onManual)
                     .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale))
                 
+                fabSubButton(icon: "camera.fill", label: "Camera", action: onCamera)
+                    .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale))
+
                 fabSubButton(icon: "bubble.left.and.bubble.right.fill", label: "Chat", action: onChat)
                     .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale))
                 
-                fabSubButton(icon: "camera.fill", label: "Camera", action: onCamera)
-                    .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale))
             }
             
             Button(action: {

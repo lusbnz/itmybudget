@@ -65,27 +65,34 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $isShowingEditProfile) {
                 EditProfileSheet()
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $isShowingUpgrade) {
                 SubscriptionSheet()
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $isShowingCurrency) {
                 currencySelectionSheet
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $isShowingBadges) {
                 BadgeListView()
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $isShowingGallery) {
                 TransactionGalleryView()
+                    .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $isShowingCategories) {
                 CategoryListView()
             }
             .sheet(isPresented: $isShowingNotifications) {
                 NotificationSettingsSheet()
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $isShowingSuggest) {
                 FeatureSuggestSheet()
+                    .presentationDragIndicator(.visible)
             }
             .alert("Logout", isPresented: $isShowingLogoutAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -119,7 +126,7 @@ struct ProfileView: View {
             .buttonStyle(BouncyButtonStyle())
 
             Text("Profile")
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
         }
         .padding(.top, 60)
@@ -348,10 +355,10 @@ struct ProfileView: View {
                     Spacer()
                     
                     Menu {
-                        Button("USD ($)") { /* Set USD */ }
-                        Button("VND (đ)") { /* Set VND */ }
-                        Button("EUR (€)") { /* Set EUR */ }
-                        Button("JPY (¥)") { /* Set JPY */ }
+                        Button("USD ($)") {}
+                        Button("VND (đ)") {}
+                        Button("EUR (€)") {}
+                        Button("JPY (¥)") {}
                     } label: {
                         HStack(spacing: 4) {
                             Text("USD ($)")
@@ -609,49 +616,5 @@ struct ProfileView: View {
             .padding(.vertical, 4)
         }
         .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var lineHeight: CGFloat = 0
-        var maxWidth: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX + size.width > width {
-                currentX = 0
-                currentY += lineHeight + spacing
-                lineHeight = 0
-            }
-            currentX += size.width + spacing
-            lineHeight = max(lineHeight, size.height)
-            maxWidth = max(maxWidth, currentX)
-        }
-        
-        return CGSize(width: maxWidth, height: currentY + lineHeight)
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var currentX: CGFloat = bounds.minX
-        var currentY: CGFloat = bounds.minY
-        var lineHeight: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX + size.width > bounds.maxX {
-                currentX = bounds.minX
-                currentY += lineHeight + spacing
-                lineHeight = 0
-            }
-            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: .unspecified)
-            currentX += size.width + spacing
-            lineHeight = max(lineHeight, size.height)
-        }
     }
 }

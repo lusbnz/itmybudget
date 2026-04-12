@@ -74,8 +74,8 @@ struct TransactionGalleryView: View {
             Spacer()
         }
         .padding(.horizontal, 16)
-        .padding(.top, 12)
-        .padding(.bottom, 16)
+        .padding(.top, 25)
+        .padding(.bottom, 15)
     }
     
     private func sectionHeader(_ title: String) -> some View {
@@ -89,8 +89,4 @@ struct TransactionGalleryView: View {
         }
         .background(Color(red: 1.0, green: 0.97, blue: 0.92).opacity(0.95))
     }
-}
-
-#Preview {
-    TransactionGalleryView()
 }

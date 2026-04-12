@@ -51,21 +51,21 @@ struct MonthPickerSheet: View {
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: Color.black.opacity(0.04), radius: 15, x: 0, y: 8)
-                    
-                    Button(action: { isPresented = false }) {
-                        Text("Apply Selection")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
-                            .background(Color.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                    }
-                    .buttonStyle(BouncyButtonStyle())
-                    .padding(.top, 8)
                 }
                 .padding(24)
             }
+            
+            Button(action: { isPresented = false }) {
+                Text("Apply Selection")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(Color.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+            }
+            .buttonStyle(BouncyButtonStyle())
+            .padding(24)
         }
         .background(
             LinearGradient(

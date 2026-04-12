@@ -105,7 +105,3 @@ struct FeatureSuggestSheet: View {
         .padding(.bottom, 10)
     }
 }
-
-#Preview {
-    FeatureSuggestSheet()
-}

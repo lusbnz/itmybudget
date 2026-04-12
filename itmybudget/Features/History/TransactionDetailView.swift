@@ -51,18 +51,16 @@ struct TransactionDetailView: View {
         } message: {
             Text("Are you sure you want to delete this transaction? This action cannot be undone.")
         }
-        .sheet(isPresented: $showingEditSheet) {
+        .fullScreenCover(isPresented: $showingEditSheet) {
             TransactionFormView(transactionToEdit: transaction)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingJourneySheet) {
             JourneyDetailSheet(title: "Journey Details")
-                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticSheet) {
             AnalyticDetailSheet(title: "Detailed Analysis")
-                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
         }
     }
     
@@ -112,7 +110,6 @@ struct TransactionDetailView: View {
             .buttonStyle(BouncyButtonStyle())
         }
         .padding(.horizontal, 12)
-        .padding(.top, 20)
         .padding(.bottom, 8)
         .offset(y: showContent ? 0 : 10)
         .opacity(showContent ? 1 : 0)
@@ -140,20 +137,13 @@ struct TransactionDetailView: View {
     }
     
     private var tagsFlowLayout: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                tagItem(text: transaction.location, icon: "mappin.and.ellipse", color: .red)
-                tagItem(text: transaction.date.formatted(date: .abbreviated, time: .shortened), icon: "calendar", color: .purple)
-            }
-            
-            HStack(spacing: 12) {
-                tagItem(text: transaction.budgetName, icon: "wallet.pass.fill", color: .blue)
-                tagItem(text: "Eating", icon: "fork.knife", color: .orange)
-                tagItem(text: "Recurring", icon: "repeat", color: .green)
-            }
+        FlowLayout(spacing: 8) {
+            tagItem(text: transaction.date.formatted(date: .abbreviated, time: .shortened), icon: "calendar", color: .purple)
+            tagItem(text: transaction.budgetName, icon: "wallet.pass.fill", color: .blue)
+            tagItem(text: "Eating", icon: "fork.knife", color: .orange)
+            tagItem(text: "Recurring", icon: "repeat", color: .green)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 12)
     }
 
     private func tagItem(text: String, icon: String, color: Color) -> some View {
@@ -165,6 +155,8 @@ struct TransactionDetailView: View {
             Text(text)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.black.opacity(0.8))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -221,55 +213,6 @@ struct TransactionDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
                 .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
-
-                ZStack {
-                    // Stylized map background (Zoomed out)
-                    Rectangle()
-                        .fill(Color(red: 0.95, green: 0.97, blue: 1.0))
-                    
-                    Canvas { context, size in
-                        // Denser grid for "zoomed out" effect
-                        let gridPath = Path { p in
-                            for i in 1...12 {
-                                let x = CGFloat(i) * size.width / 13
-                                p.move(to: CGPoint(x: x, y: 0))
-                                p.addLine(to: CGPoint(x: x, y: size.height))
-                                
-                                let y = CGFloat(i) * size.height / 13
-                                p.move(to: CGPoint(x: 0, y: y))
-                                p.addLine(to: CGPoint(x: size.width, y: y))
-                            }
-                        }
-                        context.stroke(gridPath, with: .color(Color.blue.opacity(0.03)), lineWidth: 0.5)
-                        
-                        // Smaller/More roads
-                        for j in 1...3 {
-                            let road = Path { p in
-                                p.move(to: CGPoint(x: 0, y: size.height * (0.2 * CGFloat(j))))
-                                p.addCurve(to: CGPoint(x: size.width, y: size.height * (0.3 * CGFloat(j))), 
-                                          control1: CGPoint(x: size.width * 0.4, y: size.height * 0.1), 
-                                          control2: CGPoint(x: size.width * 0.6, y: size.height * 0.8))
-                            }
-                            context.stroke(road, with: .color(Color.blue.opacity(0.05)), lineWidth: 2)
-                        }
-                    }
-                    
-                    // Smaller Pin for zoomed out feel
-                    VStack(spacing: 0) {
-                        Image(systemName: "mappin")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.blue)
-                            .shadow(color: .blue.opacity(0.3), radius: 3, y: 2)
-                        
-                        Circle()
-                            .fill(Color.blue.opacity(0.2))
-                            .frame(width: 6, height: 3)
-                            .scaleEffect(x: 1.5, y: 1)
-                    }
-                }
-                .frame(height: 140)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
             }
         }
     }
@@ -331,3 +274,4 @@ struct SectionContainer<Content: View>: View {
         .padding(.horizontal, 20)
     }
 }
+

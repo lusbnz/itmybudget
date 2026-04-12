@@ -22,19 +22,16 @@ struct TransactionFormView: View {
     @State private var selectedMode: TransactionEntryMode = .manual
     @Namespace private var modeNamespace
     
-    // State for manual input
     @State private var name: String = ""
     @State private var amount: String = ""
     @State private var transactionType: TransactionType = .outcome
     @Namespace private var typeNamespace
     
-    // Selectors
     @State private var isShowingCategorySelector = false
     @State private var isShowingBudgetSelector = false
     @State private var isShowingLocationMap = false
     @State private var isShowingTimePicker = false
     
-    // Recurring States
     @State private var isRecurring: Bool = false
     @State private var frequency: String = "Monthly"
     @State private var isNonFixed: Bool = false
@@ -42,10 +39,29 @@ struct TransactionFormView: View {
     @State private var frequencyOptions = ["Weekly", "Monthly", "Yearly"]
     @Namespace private var tagNamespace
     
+    @State private var isCaptured: Bool = false
+    @State private var capturedImage: UIImage? = nil
+    @State private var cameraAmount: String = "500.000"
+    @State private var cameraName: String = ""
+    @State private var showContent = false
+    @State private var selectedImages: [UIImage] = []
+    @State private var selectedLocationName: String = ""
+    @State private var isRecurringOpen: Bool = false
+    
+    @State private var chatMessages: [ChatMessage] = [
+        ChatMessage(text: "Hello! I'm your financial assistant. How can I help you today?", isAI: true, time: "9:41 AM"),
+        ChatMessage(text: "I spent 45k on eating Pho", isAI: false, time: "9:42 AM"),
+        ChatMessage(isTransactionCard: true, transactionName: "Ăn phở", amount: "45.000", time: "9:42 AM")
+    ]
+    @State private var chatInputText: String = ""
+    
     let transactionToEdit: Transaction?
     
-    init(transactionToEdit: Transaction? = nil) {
+    init(transactionToEdit: Transaction? = nil, startWithRecurring: Bool = false, initialMode: TransactionEntryMode = .manual) {
         self.transactionToEdit = transactionToEdit
+        _isRecurring = State(initialValue: startWithRecurring)
+        _selectedLocationName = State(initialValue: transactionToEdit?.location ?? "Add Location")
+        _selectedMode = State(initialValue: initialMode)
     }
     
     var body: some View {
@@ -67,79 +83,102 @@ struct TransactionFormView: View {
             modeSelectorTabs
         }
         .navigationBarHidden(true)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6)) {
+                showContent = true
+            }
+        }
         .sheet(isPresented: $isShowingCategorySelector) {
             CategorySelectorSheet { category in
-                // Update selected category logic
             }
-            .presentationDetents([.fraction(0.85)])
         }
         .sheet(isPresented: $isShowingBudgetSelector) {
             BudgetSelectorSheet { budget in
-                // Update selected budget logic
             }
-            .presentationDetents([.fraction(0.85)])
         }
         .sheet(isPresented: $isShowingLocationMap) {
             LocationSelectorSheet()
-                .presentationDetents([.large])
         }
         .sheet(isPresented: $isShowingTimePicker) {
             TimeSelectorSheet()
-                .presentationDetents([.fraction(0.85)])
         }
     }
     
     private var headerSection: some View {
         HStack(spacing: 16) {
-            Text(transactionToEdit == nil ? "Create New" : "Edit")
-                .font(.system(size: 22, weight: .bold))
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16))
+                    .foregroundColor(.black)
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(BouncyButtonStyle())
+            
+            Text(transactionToEdit == nil ? "New Transaction" : "Edit Transaction")
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
             Spacer()
             
-            HStack(spacing: 8) {
-                Button(action: {
-                    // Drafts logic
-                }) {
-                    HStack(spacing: 6) {
-                        Text(transactionToEdit == nil ? "Add New" : "Edit")
-                            .font(.system(size: 14, weight: .bold))
-                        Image(systemName: transactionToEdit == nil ? "plus" : "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.black)
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(BouncyButtonStyle())
-                
-                Menu {
-                    if transactionToEdit == nil {
-                        Button(action: { }) {
-                            Label("Save as Draft", systemImage: "pencil.and.outline")
+            if selectedMode == .manual || (selectedMode == .camera && isCaptured) {
+                HStack(spacing: 8) {
+                    if transactionToEdit != nil || (selectedMode == .camera && isCaptured) {
+                        Menu {
+                            if selectedMode == .camera && isCaptured {
+                                Button(action: {
+                                    withAnimation(.spring()) { isCaptured = false }
+                                }) {
+                                    Label("Retry", systemImage: "arrow.uturn.backward")
+                                }
+                            }
+                            
+                            Button(action: {}) {
+                                Label("Save draft", systemImage: "square.and.pencil")
+                            }
+                            
+                            Button(role: .destructive, action: { 
+                                dismiss() 
+                            }) {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 14))
+                                .foregroundColor(.black)
+                                .frame(width: 32, height: 32)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
                         }
-                    } else {
-                        Button(role: .destructive, action: { }) {
-                            Label("Remove", systemImage: "trash")
-                        }
+                        .buttonStyle(BouncyButtonStyle())
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.black)
-                        .frame(width: 36, height: 36)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                    
+                    saveButton
                 }
-                .buttonStyle(BouncyButtonStyle())
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 25)
-        .padding(.bottom, 15)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 16)
+        .offset(y: showContent ? 0 : 10)
+        .opacity(showContent ? 1 : 0)
+    }
+    
+    private var saveButton: some View {
+        Button(action: {
+            dismiss()
+        }) {
+            Text("Save")
+                .font(.system(size: 13, weight: .bold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.black)
+                .clipShape(Capsule())
+                .foregroundStyle(.white)
+        }
+        .buttonStyle(BouncyButtonStyle())
     }
     
     private var modeSelectorTabs: some View {
@@ -182,7 +221,7 @@ struct TransactionFormView: View {
         )
         .padding(.horizontal, 25)
         .padding(.top, 15)
-        .padding(.bottom, 40)
+        .padding(.bottom, 20)
         .background(
             LinearGradient(
                 colors: [Color.white.opacity(0), Color.white.opacity(0.9), Color.white],
@@ -210,7 +249,6 @@ struct TransactionFormView: View {
     
     private var manualEntryView: some View {
         VStack(spacing: 24) {
-            // Name Input
             VStack(alignment: .leading, spacing: 10) {
                 Text("Transaction Name")
                     .font(.system(size: 14, weight: .bold))
@@ -228,7 +266,6 @@ struct TransactionFormView: View {
             }
             .padding(.horizontal, 20)
             
-            // Amount Input
             VStack(alignment: .leading, spacing: 10) {
                 Text("Amount")
                     .font(.system(size: 14, weight: .bold))
@@ -237,7 +274,7 @@ struct TransactionFormView: View {
                 HStack {
                     TextField("0", text: $amount)
                         .keyboardType(.decimalPad)
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 16, weight: .bold))
                     
                     Text("USD")
                         .font(.system(size: 14, weight: .bold))
@@ -251,7 +288,6 @@ struct TransactionFormView: View {
                         .stroke(Color.black.opacity(0.06), lineWidth: 1)
                 )
                 
-                // Quick selection slugs
                 HStack(spacing: 8) {
                     ForEach(dynamicQuickAmounts, id: \.self) { val in
                         Button(action: {
@@ -277,137 +313,166 @@ struct TransactionFormView: View {
             }
             .padding(.horizontal, 20)
             
-            // Transaction Type Tabs (Capsule Style)
-            HStack(spacing: 0) {
-                typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
-                typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
-            }
-            .padding(4)
-            .background(Color.white)
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
-            .padding(.horizontal, 20)
-            
-            // Interactive Tags (Leading Aligned)
             VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 12) {
+                Text("Type")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 24)
+                
+                HStack(spacing: 0) {
+                    typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
+                    typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
+                }
+                .padding(4)
+                .background(Color.white)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                .padding(.horizontal, 20)
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Metadata")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 24)
+                
+                FlowLayout(spacing: 8) {
                     metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
                         isShowingCategorySelector = true
                     }
                     metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
                         isShowingBudgetSelector = true
                     }
-                }
-                
-                HStack(spacing: 12) {
                     metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
                         isShowingTimePicker = true
                     }
-                    metadataTag(text: "Add Location", icon: "location.fill", color: .red) {
-                        isShowingLocationMap = true
-                    }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
             
             recurringSection
+            
+            locationSelectionSection
+            
+            photoSelectionSection
         }
     }
     
     private var recurringSection: some View {
-        VStack(spacing: 12) {
-            HStack {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 24, height: 24)
+                    Image(systemName: "repeat")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+                
                 Text("Recurring Transaction")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.8))
+                    .foregroundStyle(.black)
                 
                 Spacer()
                 
                 Toggle("", isOn: $isRecurring.animation(.spring()))
                     .labelsHidden()
+                    .tint(.black)
+                    .scaleEffect(0.8)
+                    .frame(width: 44, height: 28)
             }
-            .padding(.bottom, isRecurring ? 8 : 0)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
             
             if isRecurring {
-                VStack(spacing: 20) {
+                VStack(spacing: 24) {
                     Divider()
                         .background(Color.black.opacity(0.05))
+                        .padding(.horizontal, 20)
                     
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 16) {
                         Text("Frequency")
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.gray)
+                            .padding(.horizontal, 20)
                         
-                        HStack(spacing: 8) {
-                            ForEach(frequencyOptions, id: \.self) { option in
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        frequency = option
-                                    }
-                                }) {
-                                    Text(option)
-                                        .font(.system(size: 13, weight: frequency == option ? .bold : .medium))
-                                        .foregroundStyle(frequency == option ? .white : .black)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 10)
-                                        .background(
-                                            ZStack {
-                                                if frequency == option {
-                                                    Capsule()
-                                                        .fill(Color.black)
-                                                        .matchedGeometryEffect(id: "freqTab", in: tagNamespace)
-                                                } else {
-                                                    Capsule()
-                                                        .fill(Color.black.opacity(0.05))
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(frequencyOptions, id: \.self) { option in
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            frequency = option
+                                        }
+                                    }) {
+                                        Text(option)
+                                            .font(.system(size: 13, weight: frequency == option ? .bold : .medium))
+                                            .foregroundStyle(frequency == option ? .white : .black)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                ZStack {
+                                                    if frequency == option {
+                                                        Capsule()
+                                                            .fill(Color.black)
+                                                            .matchedGeometryEffect(id: "freqTab", in: tagNamespace)
+                                                    } else {
+                                                        Capsule()
+                                                            .fill(Color.black.opacity(0.05))
+                                                    }
                                                 }
-                                            }
-                                        )
+                                            )
+                                    }
+                                    .buttonStyle(BouncyButtonStyle())
                                 }
-                                .buttonStyle(BouncyButtonStyle())
                             }
+                            .padding(.horizontal, 20)
                         }
                     }
                     
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Variable Amount")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.black)
-                            Text("Hide amount until due date")
-                                .font(.system(size: 11))
-                                .foregroundStyle(.gray)
+                    VStack(spacing: 16) {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Variable Amount")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.black)
+                                Text("Hide amount until due date")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.gray)
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $isNonFixed)
+                                .labelsHidden()
+                                .tint(.black)
+                                .scaleEffect(0.8)
+                                .frame(width: 44, height: 28)
                         }
                         
-                        Spacer()
-                        
-                        Toggle("", isOn: $isNonFixed)
-                            .labelsHidden()
-                    }
-                    
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Start Date")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.black)
-                            Text("When to begin this cycle")
-                                .font(.system(size: 11))
-                                .foregroundStyle(.gray)
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Start Date")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.black)
+                                Text("When to begin this cycle")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.gray)
+                            }
+                            
+                            Spacer()
+                            
+                            DatePicker("", selection: $startDate, displayedComponents: .date)
+                                .labelsHidden()
+                                .tint(.black)
+                                .scaleEffect(0.8)
+                                .frame(width: 80, height: 28)
                         }
-                        
-                        Spacer()
-                        
-                        DatePicker("", selection: $startDate, displayedComponents: .date)
-                            .labelsHidden()
-                            .scaleEffect(0.9)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .padding(20)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(
@@ -416,7 +481,98 @@ struct TransactionFormView: View {
         )
         .shadow(color: .black.opacity(0.02), radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
-        .padding(.bottom, 20)
+    }
+    
+    private var locationSelectionSection: some View {
+        SectionContainer(title: "Location") {
+            Button(action: { isShowingLocationMap = true }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.blue)
+                        .frame(width: 40, height: 40)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Circle())
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(selectedLocationName)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.black)
+                        Text(selectedLocationName == "Add Location" ? "Where did this happen?" : "Tap to change location")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.gray)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.gray.opacity(0.3))
+                }
+                .padding(12)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+                .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+            }
+            .buttonStyle(BouncyButtonStyle())
+        }
+    }
+    
+    private var photoSelectionSection: some View {
+        SectionContainer(title: "Photos") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    Button(action: {}) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "plus.viewfinder")
+                                .font(.system(size: 24))
+                            Text("Add Photo")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundStyle(.gray)
+                        .frame(width: 120, height: 120)
+                        .background(Color.black.opacity(0.03))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(style: StrokeStyle(lineWidth: 1, dash: [4]))
+                                .foregroundStyle(.gray.opacity(0.3))
+                        )
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                    
+                    if transactionToEdit != nil {
+                        ForEach(transactionToEdit?.images ?? [], id: \.self) { img in
+                            photoCard(url: img)
+                        }
+                    }
+                    
+                    ForEach(1...2, id: \.self) { i in
+                        photoCard(url: "https://picsum.photos/600/600?random=\(i + 40)")
+                            .opacity(0.5)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+    
+    private func photoCard(url: String) -> some View {
+        AsyncImage(url: URL(string: url)) { image in
+            image.resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            ZStack {
+                Color.black.opacity(0.02)
+                ProgressView()
+                    .scaleEffect(0.6)
+            }
+        }
+        .frame(width: 120, height: 120)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
     }
     
     private func metadataTag(text: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
@@ -429,6 +585,8 @@ struct TransactionFormView: View {
                 Text(text)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.black.opacity(0.8))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -485,70 +643,437 @@ struct TransactionFormView: View {
     }
     
     private var cameraEntryView: some View {
-        VStack(spacing: 20) {
-            TransactionCard {
-                VStack(spacing: 16) {
-                    Image(systemName: "camera.viewfinder")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.blue.opacity(0.5))
-                    
-                    Text("Scan Receipt")
-                        .font(.system(size: 20, weight: .bold))
-                    
-                    Text("Point your camera at a receipt to automatically extract transaction details.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                    
-                    Button(action: {}) {
-                        Text("Open Camera")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.blue)
-                            .clipShape(Capsule())
-                    }
-                    .padding(.top, 10)
-                }
-                .padding(.vertical, 20)
+        VStack(spacing: 0) {
+            if isCaptured {
+                capturedFormView
+            } else {
+                cameraScannerView
             }
+        }
+    }
+    
+    private var cameraScannerView: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: 10)
+            
+            ZStack {
+                RoundedRectangle(cornerRadius: 32)
+                    .fill(Color.black.opacity(0.05))
+                    .frame(height: 380)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 32)
+                            .stroke(Color.black.opacity(0.1), lineWidth: 1)
+                    )
+                
+                VStack {
+                    HStack {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 14))
+                            .padding(10)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
+                        Spacer()
+                        Text("1x")
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(10)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
+                    }
+                    Spacer()
+                    HStack {
+                        Spacer()
+                    }
+                }
+                .padding(25)
+                
+                cornerDecorators
+            }
+            .padding(.horizontal, 20)
+            
+            Spacer()
+            
+            HStack(spacing: 60) {
+                Button(action: {
+                    withAnimation(.spring()) { isCaptured = true }
+                }) {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.gray)
+                }
+                
+                Button(action: {
+                    withAnimation(.spring()) {
+                        isCaptured = true
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.black.opacity(0.1), lineWidth: 4)
+                            .frame(width: 80, height: 80)
+                        Circle()
+                            .fill(Color.black.opacity(0.05))
+                            .frame(width: 65, height: 65)
+                    }
+                }
+                
+                Button(action: {}) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.gray)
+                }
+            }
+            .padding(.bottom, 40)
+        }
+    }
+    
+    private var cornerDecorators: some View {
+        ZStack {
+            VStack {
+                HStack {
+                    decoratorLines(rotation: 0)
+                    Spacer()
+                    decoratorLines(rotation: 90)
+                }
+                Spacer()
+                HStack {
+                    decoratorLines(rotation: 270)
+                    Spacer()
+                    decoratorLines(rotation: 180)
+                }
+            }
+        }
+        .padding(40)
+    }
+    
+    private func decoratorLines(rotation: Double) -> some View {
+        Path { path in
+            path.move(to: CGPoint(x: 0, y: 40))
+            path.addLine(to: CGPoint(x: 0, y: 0))
+            path.addLine(to: CGPoint(x: 40, y: 0))
+        }
+        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        .frame(width: 40, height: 40)
+        .rotationEffect(.degrees(rotation))
+    }
+    
+    private var capturedFormView: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    ZStack(alignment: .bottom) {
+                        RoundedRectangle(cornerRadius: 32)
+                            .fill(Color.black.opacity(0.05))
+                            .frame(height: 380)
+                            .overlay(
+                                ZStack {
+                                    if let image = capturedImage {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    } else {
+                                        Image(systemName: "camera.viewfinder")
+                                            .font(.system(size: 60))
+                                            .foregroundStyle(.black.opacity(0.05))
+                                    }
+                                }
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 32))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 32)
+                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    VStack(spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            TextField("0", text: $cameraAmount)
+                                .font(.system(size: 28, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .keyboardType(.decimalPad)
+                                .frame(minWidth: 100)
+                            
+                            Text("USD")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.black.opacity(0.6))
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 5)
+                    .padding(16)
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Transaction Name")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 4)
+                            
+                            TextField("Enter name...", text: $cameraName)
+                                .font(.system(size: 16, weight: .semibold))
+                                .padding(16)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.05), lineWidth: 1))
+                                .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Type")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 4)
+                            
+                            HStack(spacing: 0) {
+                                typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
+                                typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
+                            }
+                            .padding(4)
+                            .background(Color.white)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Metadata")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 4)
+                                
+                            FlowLayout(spacing: 8) {
+                                metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
+                                    isShowingCategorySelector = true
+                                }
+                                metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
+                                    isShowingBudgetSelector = true
+                                }
+                                metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
+                                    isShowingTimePicker = true
+                                }
+                            }
+                        }
+                        
+                        locationSelectionSection
+                            .padding(.horizontal, -20)
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    Spacer(minLength: 40)
+                }
+                .padding(.top, 10)
+        }
+    }
+    
+    private func miniTag(text: String, icon: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+            Text(text)
+                .font(.system(size: 11, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.black.opacity(0.05))
+        .clipShape(Capsule())
+        .foregroundStyle(.black.opacity(0.6))
+    }
+    
+    private var chatEntryView: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    // Date Separator
+                    Text("Today")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.gray.opacity(0.6))
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(Color.black.opacity(0.05))
+                        .clipShape(Capsule())
+                    
+                    ForEach(chatMessages) { message in
+                        if message.isTransactionCard {
+                            aiTransactionCard(message: message)
+                        } else {
+                            chatBubble(message: message)
+                        }
+                    }
+                    
+                    Spacer(minLength: 120) // Space for input bar
+                }
+                .padding(.top, 20)
+            }
+            
+            chatInputBar
+        }
+    }
+    
+    private func chatBubble(message: ChatMessage) -> some View {
+        HStack {
+            if !message.isAI { Spacer() }
+            
+            VStack(alignment: message.isAI ? .leading : .trailing, spacing: 4) {
+                Text(message.text)
+                    .font(.system(size: 15))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(message.isAI ? Color.white : Color.black)
+                    .foregroundStyle(message.isAI ? .black : .white)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+                
+                Text(message.time)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.gray.opacity(0.6))
+                    .padding(.horizontal, 4)
+            }
+            
+            if message.isAI { Spacer() }
         }
         .padding(.horizontal, 20)
     }
     
-    private var chatEntryView: some View {
-        VStack(spacing: 20) {
-            TransactionCard {
-                VStack(spacing: 16) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.orange.opacity(0.5))
-                    
-                    Text("AI Assistant")
-                        .font(.system(size: 20, weight: .bold))
-                    
-                    Text("Simply describe your transaction, for example:\n\"Spent $10 on coffee at Starbucks this morning\"")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                    
-                    TextField("Tell me about your spending...", text: .constant(""))
-                        .padding()
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.black.opacity(0.05), lineWidth: 1)
-                        )
-                }
-                .padding(.vertical, 20)
+    private func aiTransactionCard(message: ChatMessage) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Hệ thống vừa ghi nhận giao dịch **\(message.transactionName)** hết **\(message.amount)đ**. Bạn có muốn ghi chú thêm gì không?")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.black)
+                
+                Text(message.time)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.gray.opacity(0.6))
             }
+            .padding(.horizontal, 16)
+            
+            TransactionCard {
+                VStack(spacing: 20) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(message.transactionName)
+                                .font(.system(size: 16, weight: .bold))
+                            Text("Outcome")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.gray)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("\(message.amount)")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.black)
+                        Text("VND")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.gray)
+                    }
+                    
+                    HStack {
+                        miniTag(text: "Food & Drinks", icon: "fork.knife")
+                        miniTag(text: "Main Budget", icon: "wallet.pass.fill")
+                        Spacer()
+                    }
+                    
+                    Divider()
+                        .background(Color.black.opacity(0.05))
+                    
+                    HStack(spacing: 8) {
+                        actionMiniButton(title: "Edit", icon: "pencil", color: .blue) {
+                            withAnimation { selectedMode = .manual }
+                        }
+                        
+                        actionMiniButton(title: "Draft", icon: "square.and.pencil", color: .orange)
+                        
+                        actionMiniButton(title: "Confirm", icon: "checkmark.circle.fill", color: .green) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
     }
+    
+    private func actionMiniButton(title: String, icon: String, color: Color, action: @escaping () -> Void = {}) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                Text(title)
+                    .font(.system(size: 13, weight: .bold))
+            }
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .background(color.opacity(0.1))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(BouncyButtonStyle())
+    }
+    
+    private var chatInputBar: some View {
+        VStack(spacing: 0) {
+            Divider().background(Color.black.opacity(0.05))
+            
+            HStack(spacing: 12) {
+                Button(action: {}) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(.black)
+                        .frame(width: 44, height: 44)
+                        .background(Color.black.opacity(0.05))
+                        .clipShape(Circle())
+                }
+                
+                HStack {
+                    TextField("Tell me about your spending...", text: $chatInputText)
+                        .font(.system(size: 15))
+                    
+                    Button(action: {}) {
+                        Image(systemName: "mic.fill")
+                            .foregroundStyle(.gray)
+                            .font(.system(size: 18))
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
+                
+                Button(action: {
+                    if !chatInputText.isEmpty {
+                        chatMessages.append(ChatMessage(text: chatInputText, isAI: false, time: "Now"))
+                        chatInputText = ""
+                    }
+                }) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.black)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 36)
+            .background(Color(red: 1.0, green: 0.98, blue: 0.96))
+        }
+    }
+}
+
+// Model for Chat
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    var text: String = ""
+    var isAI: Bool = false
+    var isTransactionCard: Bool = false
+    var transactionName: String = ""
+    var amount: String = ""
+    var time: String = ""
 }
 
 struct TransactionCard<Content: View>: View {
@@ -572,4 +1097,12 @@ struct TransactionCard<Content: View>: View {
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
         )
     }
+}
+
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }

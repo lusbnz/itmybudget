@@ -320,7 +320,7 @@ struct GoalFormSheet: View {
             BudgetSelectorSheet { budget in
                 selectedBudgetId = budget.id
             }
-            .presentationDetents([.fraction(0.85)])
+            .presentationDragIndicator(.visible)
         }
     }
     

@@ -53,22 +53,18 @@ struct HistoryView: View {
         }
         .sheet(isPresented: $showFilter) {
             FilterSheetView(selectedType: $selectedType, selectedBudgetId: $selectedBudgetId, selectedCategory: $selectedCategory)
-                .presentationDetents([.fraction(0.9)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingSearchSheet) {
             SearchSheetView(searchText: $searchText)
-                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showMonthPicker) {
             MonthPickerSheet(selectedDate: $selectedDate, isPresented: $showMonthPicker)
-                .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showDayDetail) {
             DayDetailSheet(date: selectedDayDate, transactions: selectedDayTransactions, isPresented: $showDayDetail)
-                .presentationDetents([.fraction(0.85), .large])
                 .presentationDragIndicator(.visible)
         }
         .fullScreenCover(item: $selectedTransaction) { transaction in

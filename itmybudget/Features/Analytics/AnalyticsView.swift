@@ -88,10 +88,11 @@ struct AnalyticsView: View {
                 }
                 .sheet(isPresented: $showDatePicker) {
                     dateRangePickerSheet
+                        .presentationDragIndicator(.visible)
                 }
                 .sheet(isPresented: $showingAnalyticDetail) {
                     AnalyticDetailSheet(title: "Detailed Analysis")
-                        .presentationDetents([.fraction(0.85)])
+                        .presentationDragIndicator(.visible)
                 }
             }
         }
@@ -384,66 +385,53 @@ struct AnalyticsView: View {
     private var dateRangePickerSheet: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Select Date Range")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(.black)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Select Date Range")
+                        .font(.system(size: 20, weight: .bold))
+                    Text("Filter your analytics by a specific period")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.gray)
+                }
                 Spacer()
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 32)
-            .padding(.bottom, 20)
+            .padding(24)
             
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        DatePicker("Range", selection: .constant(Date()), displayedComponents: .date)
-                            .datePickerStyle(.graphical)
-                            .padding(16)
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 28))
-                            .overlay(RoundedRectangle(cornerRadius: 28).stroke(Color.black.opacity(0.05), lineWidth: 1))
-                            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
-                    }
-                    
-                    Spacer(minLength: 100)
+                VStack(alignment: .leading, spacing: 32) {
+                    DatePicker("", selection: .constant(Date()), displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .accentColor(.black)
+                        .padding(16)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                        )
                 }
-                .padding(24)
+                .padding(.horizontal, 24)
             }
             
             VStack(spacing: 12) {
                 Button(action: { showDatePicker = false }) {
                     Text("Apply Range")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
+                        .padding(.vertical, 16)
                         .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .clipShape(Capsule())
                 }
-                .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { showDatePicker = false }) {
                     Text("Cancel")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
-                .buttonStyle(BouncyButtonStyle())
-                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 14)
+            .padding(24)
+            .background(Color(red: 1.0, green: 0.98, blue: 0.96))
         }
-        .background(
-            LinearGradient(
-                colors: [Color(red: 1.0, green: 0.98, blue: 0.96), Color(red: 1.0, green: 0.95, blue: 0.90)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
+        .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
     }
-}
-
-#Preview {
-    AnalyticsView()
 }
