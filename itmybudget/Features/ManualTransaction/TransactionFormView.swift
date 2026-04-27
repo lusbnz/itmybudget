@@ -47,6 +47,8 @@ struct TransactionFormView: View {
     @State private var selectedImages: [UIImage] = []
     @State private var selectedLocationName: String = ""
     @State private var isRecurringOpen: Bool = false
+    @State private var isShowingImagePicker: Bool = false
+    @State private var inputImage: UIImage? = nil
     
     @State private var chatMessages: [ChatMessage] = [
         ChatMessage(text: "Hello! I'm your financial assistant. How can I help you today?", isAI: true, time: "9:41 AM"),
@@ -102,6 +104,14 @@ struct TransactionFormView: View {
         .sheet(isPresented: $isShowingTimePicker) {
             TimeSelectorSheet()
         }
+        .fullScreenCover(isPresented: $isShowingImagePicker) {
+            ImagePicker(image: $inputImage, sourceType: .camera)
+        }
+        .onChange(of: inputImage) { oldValue, newValue in
+            if let image = newValue {
+                selectedImages.append(image)
+            }
+        }
     }
     
     private var headerSection: some View {
@@ -123,41 +133,31 @@ struct TransactionFormView: View {
             
             Spacer()
             
-            if selectedMode == .manual || (selectedMode == .camera && isCaptured) {
-                HStack(spacing: 8) {
-                    if transactionToEdit != nil || (selectedMode == .camera && isCaptured) {
-                        Menu {
-                            if selectedMode == .camera && isCaptured {
-                                Button(action: {
-                                    withAnimation(.spring()) { isCaptured = false }
-                                }) {
-                                    Label("Retry", systemImage: "arrow.uturn.backward")
-                                }
-                            }
-                            
-                            Button(action: {}) {
-                                Label("Save draft", systemImage: "square.and.pencil")
-                            }
-                            
-                            Button(role: .destructive, action: { 
-                                dismiss() 
-                            }) {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 14))
-                                .foregroundColor(.black)
-                                .frame(width: 32, height: 32)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
+            if selectedMode == .manual {
+                saveButton
+                
+                Menu {
+                    if transactionToEdit == nil {
+                        Button(action: {}) {
+                            Label("Save draft", systemImage: "square.and.pencil")
                         }
-                        .buttonStyle(BouncyButtonStyle())
+                    } else {
+                        Button(role: .destructive, action: { 
+                            dismiss() 
+                        }) {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
-                    
-                    saveButton
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 14))
+                        .foregroundColor(.black)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
                 }
+                .buttonStyle(BouncyButtonStyle())
             }
         }
         .padding(.bottom, 8)
@@ -233,7 +233,7 @@ struct TransactionFormView: View {
     
     @ViewBuilder
     private var contentView: some View {
-        VStack {
+        VStack(alignment: .leading) {
             switch selectedMode {
             case .manual:
                 manualEntryView
@@ -248,7 +248,8 @@ struct TransactionFormView: View {
     }
     
     private var manualEntryView: some View {
-        VStack(spacing: 24) {
+        VStack(alignment: .leading, spacing: 24) {
+            // Transaction Name
             VStack(alignment: .leading, spacing: 10) {
                 Text("Transaction Name")
                     .font(.system(size: 14, weight: .bold))
@@ -264,8 +265,9 @@ struct TransactionFormView: View {
                             .stroke(Color.black.opacity(0.06), lineWidth: 1)
                     )
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
             
+            // Amount Section
             VStack(alignment: .leading, spacing: 10) {
                 Text("Amount")
                     .font(.system(size: 14, weight: .bold))
@@ -311,13 +313,13 @@ struct TransactionFormView: View {
                 }
                 .padding(.vertical, 4)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
             
+            // Type Section
             VStack(alignment: .leading, spacing: 10) {
                 Text("Type")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black)
-                    .padding(.horizontal, 24)
                 
                 HStack(spacing: 0) {
                     typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
@@ -327,14 +329,13 @@ struct TransactionFormView: View {
                 .background(Color.white)
                 .clipShape(Capsule())
                 .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
-                .padding(.horizontal, 20)
             }
+            .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 10) {
                 Text("Metadata")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black)
-                    .padding(.horizontal, 24)
                 
                 FlowLayout(spacing: 8) {
                     metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
@@ -348,6 +349,7 @@ struct TransactionFormView: View {
                     }
                 }
             }
+            .padding(.horizontal, 16)
             
             recurringSection
             
@@ -356,7 +358,7 @@ struct TransactionFormView: View {
             photoSelectionSection
         }
     }
-    
+
     private var recurringSection: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
@@ -523,7 +525,7 @@ struct TransactionFormView: View {
         SectionContainer(title: "Photos") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    Button(action: {}) {
+                    Button(action: { isShowingImagePicker = true }) {
                         VStack(spacing: 8) {
                             Image(systemName: "plus.viewfinder")
                                 .font(.system(size: 24))
@@ -541,6 +543,16 @@ struct TransactionFormView: View {
                         )
                     }
                     .buttonStyle(BouncyButtonStyle())
+
+                    ForEach(selectedImages, id: \.self) { img in
+                        Image(uiImage: img)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 120, height: 120)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+                            .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+                    }
                     
                     if transactionToEdit != nil {
                         ForEach(transactionToEdit?.images ?? [], id: \.self) { img in
@@ -579,7 +591,7 @@ struct TransactionFormView: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 12))
+                    .font(.system(size: 11))
                     .foregroundStyle(color)
                 
                 Text(text)
@@ -589,14 +601,14 @@ struct TransactionFormView: View {
                     .fixedSize(horizontal: true, vertical: false)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
             .background(Color.white)
             .clipShape(Capsule())
             .overlay(
                 Capsule()
                     .stroke(Color.black.opacity(0.06), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+            .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
         }
         .buttonStyle(BouncyButtonStyle())
     }
@@ -643,86 +655,100 @@ struct TransactionFormView: View {
     }
     
     private var cameraEntryView: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
             if isCaptured {
                 capturedFormView
             } else {
                 cameraScannerView
             }
+            
+            if isCaptured {
+                cameraActionButtons
+            }
         }
     }
     
-    private var cameraScannerView: some View {
-        VStack(spacing: 0) {
-            Color.clear.frame(height: 10)
+    private var cameraActionButtons: some View {
+        VStack(spacing: 12) {
+            Divider().background(Color.black.opacity(0.05))
             
-            ZStack {
-                RoundedRectangle(cornerRadius: 32)
-                    .fill(Color.black.opacity(0.05))
-                    .frame(height: 380)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 32)
-                            .stroke(Color.black.opacity(0.1), lineWidth: 1)
-                    )
-                
-                VStack {
-                    HStack {
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 14))
-                            .padding(10)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                        Spacer()
-                        Text("1x")
-                            .font(.system(size: 10, weight: .bold))
-                            .padding(10)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                    }
-                    Spacer()
-                    HStack {
-                        Spacer()
-                    }
+            HStack(spacing: 12) {
+                Button(action: {
+                    withAnimation(.spring()) { isCaptured = false }
+                }) {
+                    Text("Retry")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.gray)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color.black.opacity(0.1), lineWidth: 1))
                 }
-                .padding(25)
+                .buttonStyle(BouncyButtonStyle())
+                
+                Button(action: { dismiss() }) {
+                    Text("Confirm and Create")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.black)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(BouncyButtonStyle())
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 36)
+            .background(Color.white)
+        }
+        .transition(.move(edge: .bottom))
+    }
+    
+    private var cameraScannerView: some View {
+        VStack(spacing: 24) {
+            ZStack {
+                CameraView()
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .frame(height: 380)
                 
                 cornerDecorators
             }
             .padding(.horizontal, 20)
+            .padding(.top, 10)
+            
+            VStack(spacing: 16) {
+                Text("Scan Receipt or Invoice")
+                    .font(.system(size: 18, weight: .bold))
+                
+                Text("Align your receipt within the frame to automatically detect transaction details.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.gray.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
             
             Spacer()
             
-            HStack(spacing: 60) {
-                Button(action: {
-                    withAnimation(.spring()) { isCaptured = true }
-                }) {
-                    Image(systemName: "photo.on.rectangle")
+            // Capture Button
+            Button(action: {
+                withAnimation(.spring()) { isCaptured = true }
+            }) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.black.opacity(0.1), lineWidth: 4)
+                        .frame(width: 80, height: 80)
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 66, height: 66)
+                    Image(systemName: "camera.fill")
+                        .foregroundStyle(.white)
                         .font(.system(size: 24))
-                        .foregroundStyle(.gray)
-                }
-                
-                Button(action: {
-                    withAnimation(.spring()) {
-                        isCaptured = true
-                    }
-                }) {
-                    ZStack {
-                        Circle()
-                            .stroke(Color.black.opacity(0.1), lineWidth: 4)
-                            .frame(width: 80, height: 80)
-                        Circle()
-                            .fill(Color.black.opacity(0.05))
-                            .frame(width: 65, height: 65)
-                    }
-                }
-                
-                Button(action: {}) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.gray)
                 }
             }
-            .padding(.bottom, 40)
+            .buttonStyle(BouncyButtonStyle())
+            .padding(.bottom, 120) // Extra padding to keep it above tab area
         }
     }
     
@@ -757,112 +783,86 @@ struct TransactionFormView: View {
     }
     
     private var capturedFormView: some View {
-        ZStack(alignment: .bottom) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    ZStack(alignment: .bottom) {
-                        RoundedRectangle(cornerRadius: 32)
-                            .fill(Color.black.opacity(0.05))
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                // Photo and Amount Section
+                ZStack(alignment: .bottom) {
+                    if let image = capturedImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                             .frame(height: 380)
-                            .overlay(
-                                ZStack {
-                                    if let image = capturedImage {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                    } else {
-                                        Image(systemName: "camera.viewfinder")
-                                            .font(.system(size: 60))
-                                            .foregroundStyle(.black.opacity(0.05))
-                                    }
-                                }
-                            )
                             .clipShape(RoundedRectangle(cornerRadius: 32))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 32)
-                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                        )
+                    } else {
+                        Image("receipt_placeholder") // Using placeholder if image nil
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 380)
+                            .clipShape(RoundedRectangle(cornerRadius: 32))
                     }
-                    .padding(.horizontal, 20)
                     
-                    VStack(spacing: 4) {
-                        HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            TextField("0", text: $cameraAmount)
-                                .font(.system(size: 28, weight: .bold))
-                                .multilineTextAlignment(.center)
-                                .keyboardType(.decimalPad)
-                                .frame(minWidth: 100)
-                            
-                            Text("USD")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.black.opacity(0.6))
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 5)
-                    .padding(16)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
+                    // Amount Card inside ZStack, floating above bottom
+                    amountGlassCard
+                        .padding(.bottom, 20)
+                        .padding(.horizontal, 20)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Text("Transaction Name")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black)
-                            .padding(.horizontal, 4)
                             
-                            TextField("Enter name...", text: $cameraName)
-                                .font(.system(size: 16, weight: .semibold))
-                                .padding(16)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.05), lineWidth: 1))
-                                .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Type")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.black)
-                                .padding(.horizontal, 4)
-                            
-                            HStack(spacing: 0) {
-                                typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
-                                typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
-                            }
-                            .padding(4)
+                        TextField("Enter name...", text: $cameraName)
+                            .font(.system(size: 16, weight: .semibold))
+                            .padding(16)
                             .background(Color.white)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
-                        }
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06), lineWidth: 1))
+                            .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Type")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.black)
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Metadata")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.black)
-                                .padding(.horizontal, 4)
-                                
-                            FlowLayout(spacing: 8) {
-                                metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
-                                    isShowingCategorySelector = true
-                                }
-                                metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
-                                    isShowingBudgetSelector = true
-                                }
-                                metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
-                                    isShowingTimePicker = true
-                                }
+                        HStack(spacing: 0) {
+                            typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
+                            typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
+                        }
+                        .padding(4)
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Metadata")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.black)
+                            
+                        FlowLayout(spacing: 8) {
+                            metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
+                                isShowingCategorySelector = true
+                            }
+                            metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
+                                isShowingBudgetSelector = true
+                            }
+                            metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
+                                isShowingTimePicker = true
                             }
                         }
-                        
-                        locationSelectionSection
-                            .padding(.horizontal, -20)
                     }
-                    .padding(.horizontal, 20)
                     
-                    Spacer(minLength: 40)
+                    locationSelectionSection
                 }
-                .padding(.top, 10)
+                .padding(.horizontal, 16)
+                
+                Spacer(minLength: 160) // Extra space for sticky bottom buttons
+            }
         }
     }
     
@@ -1016,6 +1016,27 @@ struct TransactionFormView: View {
         .buttonStyle(BouncyButtonStyle())
     }
     
+    private var amountGlassCard: some View {
+        VStack(spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                TextField("0", text: $cameraAmount)
+                    .font(.system(size: 28, weight: .bold))
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.decimalPad)
+                    .frame(minWidth: 100)
+                
+                Text("USD")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 5)
+    }
+
     private var chatInputBar: some View {
         VStack(spacing: 0) {
             Divider().background(Color.black.opacity(0.05))
@@ -1105,4 +1126,20 @@ struct BlurView: UIViewRepresentable {
         UIVisualEffectView(effect: UIBlurEffect(style: style))
     }
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+
+struct CameraView: View {
+    var body: some View {
+        ZStack {
+            Color.black
+            
+            VStack {
+                Spacer()
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 80))
+                    .foregroundStyle(.white.opacity(0.1))
+                Spacer()
+            }
+        }
+    }
 }

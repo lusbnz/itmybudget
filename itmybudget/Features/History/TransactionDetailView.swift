@@ -268,10 +268,10 @@ struct SectionContainer<Content: View>: View {
             Text(title)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.black.opacity(0.8))
+                .padding(.horizontal, 16)
             
             content
+                .padding(.horizontal, 16)
         }
-        .padding(.horizontal, 20)
     }
 }
-
