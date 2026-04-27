@@ -48,6 +48,7 @@ struct TransactionFormView: View {
     @State private var selectedLocationName: String = ""
     @State private var isRecurringOpen: Bool = false
     @State private var isShowingImagePicker: Bool = false
+    @State private var imagePickerSourceType: UIImagePickerController.SourceType = .camera
     @State private var inputImage: UIImage? = nil
     
     @State private var chatMessages: [ChatMessage] = [
@@ -58,13 +59,18 @@ struct TransactionFormView: View {
     @State private var chatInputText: String = ""
     
     let transactionToEdit: Transaction?
+    let isPresentedAsSheet: Bool
     
-    init(transactionToEdit: Transaction? = nil, startWithRecurring: Bool = false, initialMode: TransactionEntryMode = .manual) {
+    init(transactionToEdit: Transaction? = nil, startWithRecurring: Bool = false, initialMode: TransactionEntryMode = .manual, isPresentedAsSheet: Bool = false) {
         self.transactionToEdit = transactionToEdit
+        self.isPresentedAsSheet = isPresentedAsSheet
         _isRecurring = State(initialValue: startWithRecurring)
         _selectedLocationName = State(initialValue: transactionToEdit?.location ?? "Add Location")
         _selectedMode = State(initialValue: initialMode)
     }
+    
+    @State private var chatEditingTransaction: Transaction? = nil
+    @State private var isShowingEditTransactionSheet = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -74,17 +80,23 @@ struct TransactionFormView: View {
             VStack(spacing: 0) {
                 headerSection
                 
-                ScrollView(showsIndicators: false) {
-                    contentView
-                        .padding(.top, 10)
+                if selectedMode == .chat {
+                    chatEntryView
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        contentView
+                            .padding(.top, 10)
+                    }
                 }
                 
-                Spacer(minLength: 100)
+                if !isPresentedAsSheet {
+                    Spacer(minLength: selectedMode == .chat ? 0 : 80)
+                }
             }
             
-            if !isCaptured || selectedMode != .camera {
+            if (!isCaptured || selectedMode != .camera) && !isPresentedAsSheet {
                 modeSelectorTabs
-            } else {
+            } else if selectedMode == .camera && isCaptured {
                 cameraActionButtons
             }
         }
@@ -108,8 +120,13 @@ struct TransactionFormView: View {
         .sheet(isPresented: $isShowingTimePicker) {
             TimeSelectorSheet()
         }
+        .sheet(isPresented: $isShowingEditTransactionSheet) {
+            if let trans = chatEditingTransaction {
+                TransactionFormView(transactionToEdit: trans, initialMode: .manual, isPresentedAsSheet: true)
+            }
+        }
         .fullScreenCover(isPresented: $isShowingImagePicker) {
-            ImagePicker(image: $inputImage, sourceType: .camera)
+            ImagePicker(image: $inputImage, sourceType: imagePickerSourceType)
         }
         .onChange(of: inputImage) { oldValue, newValue in
             if let image = newValue {
@@ -140,30 +157,33 @@ struct TransactionFormView: View {
             if selectedMode == .manual {
                 saveButton
                 
-                Menu {
-                    if transactionToEdit == nil {
-                        Button(action: {}) {
-                            Label("Save draft", systemImage: "square.and.pencil")
+                if !isPresentedAsSheet {
+                    Menu {
+                        if transactionToEdit == nil {
+                            Button(action: {}) {
+                                Label("Save draft", systemImage: "square.and.pencil")
+                            }
+                        } else {
+                            Button(role: .destructive, action: { 
+                                dismiss() 
+                            }) {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
-                    } else {
-                        Button(role: .destructive, action: { 
-                            dismiss() 
-                        }) {
-                            Label("Delete", systemImage: "trash")
-                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 14))
+                            .foregroundColor(.black)
+                            .frame(width: 32, height: 32)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 14))
-                        .foregroundColor(.black)
-                        .frame(width: 32, height: 32)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                    .buttonStyle(BouncyButtonStyle())
                 }
-                .buttonStyle(BouncyButtonStyle())
             }
         }
+        .padding(.top, isPresentedAsSheet ? 10 : 0)
         .padding(.bottom, 8)
         .padding(.horizontal, 16)
         .offset(y: showContent ? 0 : 10)
@@ -484,7 +504,10 @@ struct TransactionFormView: View {
         SectionContainer(title: "Photos") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    Button(action: { isShowingImagePicker = true }) {
+                    Button(action: {
+                        imagePickerSourceType = .camera
+                        isShowingImagePicker = true
+                    }) {
                         VStack(spacing: 8) {
                             Image(systemName: "plus.viewfinder")
                                 .font(.system(size: 24))
@@ -693,7 +716,10 @@ struct TransactionFormView: View {
             // Capture Row
             HStack(spacing: 40) {
                 // Gallery Button
-                Button(action: {}) {
+                Button(action: {
+                    imagePickerSourceType = .photoLibrary
+                    isShowingImagePicker = true
+                }) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 24))
                         .foregroundColor(.black.opacity(0.8))
@@ -822,12 +848,12 @@ struct TransactionFormView: View {
     }
     
     private var chatEntryView: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Date Separator
                     Text("Today")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.gray.opacity(0.6))
                         .padding(.vertical, 8)
                         .padding(.horizontal, 16)
@@ -841,13 +867,15 @@ struct TransactionFormView: View {
                             chatBubble(message: message)
                         }
                     }
-                    
-                    Spacer(minLength: 120) // Space for input bar
                 }
                 .padding(.top, 20)
+                .padding(.bottom, 20)
             }
             
             chatInputBar
+            
+            // Spacer to keep it above mode selector
+            Spacer(minLength: 80)
         }
     }
     
@@ -860,7 +888,7 @@ struct TransactionFormView: View {
                     .font(.system(size: 15))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(message.isAI ? Color.white : Color.black)
+                    .background(message.isAI ? Color.white : Color.black.opacity(0.85))
                     .foregroundStyle(message.isAI ? .black : .white)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .overlay(
@@ -881,61 +909,105 @@ struct TransactionFormView: View {
     }
     
     private func aiTransactionCard(message: ChatMessage) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Hệ thống vừa ghi nhận giao dịch **\(message.transactionName)** hết **\(message.amount)đ**. Bạn có muốn ghi chú thêm gì không?")
-                    .font(.system(size: 15))
-                    .foregroundStyle(.black)
-                
-                Text(message.time)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(.gray.opacity(0.6))
-            }
-            .padding(.horizontal, 16)
+        VStack(alignment: .leading, spacing: 12) {
+            // System message as a chat bubble
+            chatBubble(message: ChatMessage(
+                text: "Hệ thống vừa ghi nhận giao dịch **\(message.transactionName)** hết **\(message.amount)đ**. Bạn có muốn ghi chú thêm gì không?",
+                isAI: true,
+                time: message.time
+            ))
             
-            TransactionCard {
-                VStack(spacing: 20) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(message.transactionName)
-                                .font(.system(size: 16, weight: .bold))
-                            Text("Outcome")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.gray)
-                        }
-                        
-                        Spacer()
-                        
-                        Text("\(message.amount)")
-                            .font(.system(size: 20, weight: .bold))
+            // Transaction card matching TransactionItemView style
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    // Icon
+                    ZStack {
+                        Circle()
+                            .fill(Color.blue.opacity(0.1))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "briefcase.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(Color.blue)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(message.transactionName)
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.black)
-                        Text("VND")
-                            .font(.system(size: 12, weight: .bold))
+                        
+                        Text("11 Mar • 202 Nguyen Huy Tuong")
+                            .font(.system(size: 10))
                             .foregroundStyle(.gray)
                     }
                     
-                    HStack {
-                        miniTag(text: "Food & Drinks", icon: "fork.knife")
-                        miniTag(text: "Main Budget", icon: "wallet.pass.fill")
-                        Spacer()
-                    }
+                    Spacer()
                     
-                    Divider()
-                        .background(Color.black.opacity(0.05))
-                    
-                    HStack(spacing: 8) {
-                        actionMiniButton(title: "Edit", icon: "pencil", color: .blue) {
-                            withAnimation { selectedMode = .manual }
-                        }
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("-$\(message.amount)")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.black)
                         
-                        actionMiniButton(title: "Draft", icon: "square.and.pencil", color: .orange)
-                        
-                        actionMiniButton(title: "Confirm", icon: "checkmark.circle.fill", color: .green) {
-                            dismiss()
-                        }
+                        Text("Ăn uống")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.black.opacity(0.6))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(Color.black.opacity(0.05)))
                     }
                 }
+                .padding(16)
+                
+                Divider().background(Color.black.opacity(0.05))
+                
+                HStack(spacing: 16) {
+                    Button(action: {
+                        chatEditingTransaction = Transaction(
+                            name: message.transactionName,
+                            description: "",
+                            date: Date(),
+                            images: [],
+                            location: "202 Nguyen Huy Tuong",
+                            amount: Double(message.amount.replacingOccurrences(of: ".", with: "")) ?? 0,
+                            budgetName: "Main Budget",
+                            type: .outcome,
+                            icon: "briefcase.fill",
+                            isImageIcon: false
+                        )
+                        isShowingEditTransactionSheet = true
+                    }) {
+                        Text("Edit")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.blue)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Button(action: {}) {
+                        Text("Draft")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.orange)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Spacer()
+                    
+                    Button(action: { dismiss() }) {
+                        Text("Confirm and create")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.black)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
             }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+            .shadow(color: .black.opacity(0.02), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
         }
     }
@@ -1033,51 +1105,42 @@ struct TransactionFormView: View {
     }
 
     private var chatInputBar: some View {
-        VStack(spacing: 0) {
-            Divider().background(Color.black.opacity(0.05))
-            
-            HStack(spacing: 12) {
-                Button(action: {}) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(.black)
-                        .frame(width: 44, height: 44)
-                        .background(Color.black.opacity(0.05))
-                        .clipShape(Circle())
-                }
-                
-                HStack {
-                    TextField("Tell me about your spending...", text: $chatInputText)
-                        .font(.system(size: 15))
-                    
-                    Button(action: {}) {
-                        Image(systemName: "mic.fill")
-                            .foregroundStyle(.gray)
-                            .font(.system(size: 18))
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.white)
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
-                
-                Button(action: {
-                    if !chatInputText.isEmpty {
-                        chatMessages.append(ChatMessage(text: chatInputText, isAI: false, time: "Now"))
-                        chatInputText = ""
-                    }
-                }) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.black)
-                }
+        HStack(spacing: 12) {
+            Button(action: {
+                imagePickerSourceType = .photoLibrary
+                isShowingImagePicker = true
+            }) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.black.opacity(0.7))
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 36)
-            .background(Color(red: 1.0, green: 0.98, blue: 0.96))
+            
+            Image(systemName: "mic.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(.black.opacity(0.8))
+            
+            TextField("Nhập nội dung giao dịch", text: $chatInputText)
+                .font(.system(size: 14))
+            
+            Button(action: {
+                if !chatInputText.isEmpty {
+                    chatMessages.append(ChatMessage(text: chatInputText, isAI: false, time: "Now"))
+                    chatInputText = ""
+                }
+            }) {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.black)
+            }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+        .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 12)
     }
 }
 
