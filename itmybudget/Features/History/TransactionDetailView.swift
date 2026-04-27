@@ -18,7 +18,7 @@ struct TransactionDetailView: View {
                 headerBar
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 24) {
                         mainTransactionInfo
                         
                         tagsFlowLayout
@@ -143,7 +143,7 @@ struct TransactionDetailView: View {
             tagItem(text: "Eating", icon: "fork.knife", color: .orange)
             tagItem(text: "Recurring", icon: "repeat", color: .green)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 20)
     }
 
     private func tagItem(text: String, icon: String, color: Color) -> some View {

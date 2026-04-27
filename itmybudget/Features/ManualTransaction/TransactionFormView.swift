@@ -82,7 +82,11 @@ struct TransactionFormView: View {
                 Spacer(minLength: 100)
             }
             
-            modeSelectorTabs
+            if !isCaptured || selectedMode != .camera {
+                modeSelectorTabs
+            } else {
+                cameraActionButtons
+            }
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -249,23 +253,8 @@ struct TransactionFormView: View {
     
     private var manualEntryView: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Transaction Name
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Transaction Name")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.8))
-                
-                TextField("e.g., Starbucks Coffee", text: $name)
-                    .font(.system(size: 16, weight: .medium))
-                    .padding(16)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
-                    )
-            }
-            .padding(.horizontal, 16)
+            transactionNameSection
+                .padding(.horizontal, 16)
             
             // Amount Section
             VStack(alignment: .leading, spacing: 10) {
@@ -315,41 +304,11 @@ struct TransactionFormView: View {
             }
             .padding(.horizontal, 16)
             
-            // Type Section
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Type")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black)
-                
-                HStack(spacing: 0) {
-                    typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
-                    typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
-                }
-                .padding(4)
-                .background(Color.white)
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
-            }
-            .padding(.horizontal, 16)
+            transactionTypeSection
+                .padding(.horizontal, 16)
             
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Metadata")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black)
-                
-                FlowLayout(spacing: 8) {
-                    metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
-                        isShowingCategorySelector = true
-                    }
-                    metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
-                        isShowingBudgetSelector = true
-                    }
-                    metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
-                        isShowingTimePicker = true
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
+            metadataSection
+                .padding(.horizontal, 16)
             
             recurringSection
             
@@ -661,49 +620,50 @@ struct TransactionFormView: View {
             } else {
                 cameraScannerView
             }
-            
-            if isCaptured {
-                cameraActionButtons
-            }
         }
     }
     
     private var cameraActionButtons: some View {
-        VStack(spacing: 12) {
-            Divider().background(Color.black.opacity(0.05))
-            
-            HStack(spacing: 12) {
-                Button(action: {
-                    withAnimation(.spring()) { isCaptured = false }
-                }) {
-                    Text("Retry")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(.gray)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.white)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.black.opacity(0.1), lineWidth: 1))
+        VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                HStack(spacing: 12) {
+                    Button(action: {
+                        withAnimation(.spring()) { isCaptured = false }
+                    }) {
+                        Text("Retry")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.gray)
+                            .frame(width: 110)
+                            .padding(.vertical, 16)
+                            .background(Color.white)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.black.opacity(0.1), lineWidth: 1.5))
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                    
+                    Button(action: { dismiss() }) {
+                        Text("Confirm and create")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.black)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(BouncyButtonStyle())
                 }
-                .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { dismiss() }) {
-                    Text("Confirm and Create")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.black)
-                        .clipShape(Capsule())
+                    Text("Just draft it, don't include it in the analytics")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.gray.opacity(0.8))
                 }
                 .buttonStyle(BouncyButtonStyle())
             }
             .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 36)
-            .background(Color.white)
+            .padding(.top, 24)
+            .background(Color(red: 1.0, green: 0.98, blue: 0.96))
         }
-        .transition(.move(edge: .bottom))
     }
     
     private var cameraScannerView: some View {
@@ -711,12 +671,11 @@ struct TransactionFormView: View {
             ZStack {
                 CameraView()
                     .clipShape(RoundedRectangle(cornerRadius: 32))
-                    .frame(height: 380)
                 
                 cornerDecorators
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 10)
+            .aspectRatio(1, contentMode: .fit)
+            .padding(.horizontal, 24)
             
             VStack(spacing: 16) {
                 Text("Scan Receipt or Invoice")
@@ -731,24 +690,44 @@ struct TransactionFormView: View {
             
             Spacer()
             
-            // Capture Button
-            Button(action: {
-                withAnimation(.spring()) { isCaptured = true }
-            }) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.black.opacity(0.1), lineWidth: 4)
-                        .frame(width: 80, height: 80)
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 66, height: 66)
-                    Image(systemName: "camera.fill")
-                        .foregroundStyle(.white)
+            // Capture Row
+            HStack(spacing: 40) {
+                // Gallery Button
+                Button(action: {}) {
+                    Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 24))
+                        .foregroundColor(.black.opacity(0.8))
+                        .frame(width: 50, height: 50)
                 }
+                .buttonStyle(BouncyButtonStyle())
+
+                // Capture Button
+                Button(action: {
+                    withAnimation(.spring()) { isCaptured = true }
+                }) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.black.opacity(0.1), lineWidth: 4)
+                            .frame(width: 80, height: 80)
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 66, height: 66)
+                        Image(systemName: "camera.fill")
+                            .foregroundStyle(.white)
+                            .font(.system(size: 24))
+                    }
+                }
+                .buttonStyle(BouncyButtonStyle())
+
+                // Flip Button
+                Button(action: {}) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 24))
+                        .foregroundColor(.black.opacity(0.8))
+                        .frame(width: 50, height: 50)
+                }
+                .buttonStyle(BouncyButtonStyle())
             }
-            .buttonStyle(BouncyButtonStyle())
-            .padding(.bottom, 120) // Extra padding to keep it above tab area
         }
     }
     
@@ -785,83 +764,45 @@ struct TransactionFormView: View {
     private var capturedFormView: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
-                // Photo and Amount Section
                 ZStack(alignment: .bottom) {
                     if let image = capturedImage {
                         Image(uiImage: image)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(height: 380)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
                     } else {
-                        Image("receipt_placeholder") // Using placeholder if image nil
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 380)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
+                        AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1541014741259-df529411fdc6?q=80&w=1000&auto=format&fit=crop")) { image in
+                            image.resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            ZStack {
+                                Color.black.opacity(0.05)
+                                ProgressView()
+                            }
+                        }
                     }
                     
                     // Amount Card inside ZStack, floating above bottom
                     amountGlassCard
-                        .padding(.bottom, 20)
-                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .aspectRatio(1, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 40))
+                .padding(.horizontal, 24)
                 
                 VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Transaction Name")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.black)
-                            
-                        TextField("Enter name...", text: $cameraName)
-                            .font(.system(size: 16, weight: .semibold))
-                            .padding(16)
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06), lineWidth: 1))
-                            .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
-                    }
+                    transactionNameSection
+                        .padding(.horizontal, 16)
                     
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Type")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.black)
-                        
-                        HStack(spacing: 0) {
-                            typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
-                            typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
-                        }
-                        .padding(4)
-                        .background(Color.white)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
-                    }
+                    transactionTypeSection
+                        .padding(.horizontal, 16)
                     
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Metadata")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.black)
-                            
-                        FlowLayout(spacing: 8) {
-                            metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
-                                isShowingCategorySelector = true
-                            }
-                            metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
-                                isShowingBudgetSelector = true
-                            }
-                            metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
-                                isShowingTimePicker = true
-                            }
-                        }
-                    }
+                    metadataSection
+                        .padding(.horizontal, 16)
                     
                     locationSelectionSection
                 }
-                .padding(.horizontal, 16)
                 
-                Spacer(minLength: 160) // Extra space for sticky bottom buttons
+                Spacer(minLength: 160) 
             }
         }
     }
@@ -1016,24 +957,78 @@ struct TransactionFormView: View {
         .buttonStyle(BouncyButtonStyle())
     }
     
-    private var amountGlassCard: some View {
-        VStack(spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                TextField("0", text: $cameraAmount)
-                    .font(.system(size: 28, weight: .bold))
-                    .multilineTextAlignment(.center)
-                    .keyboardType(.decimalPad)
-                    .frame(minWidth: 100)
-                
-                Text("USD")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.6))
+    private var transactionNameSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Transaction Name")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.black.opacity(0.8))
+            
+            TextField(selectedMode == .camera ? "Enter name..." : "e.g., Starbucks Coffee", text: selectedMode == .camera ? $cameraName : $name)
+                .font(.system(size: 16, weight: selectedMode == .camera ? .semibold : .medium))
+                .padding(16)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(selectedMode == .camera ? 0.02 : 0), radius: 5, x: 0, y: 2)
+        }
+    }
+
+    private var transactionTypeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Type")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.black)
+            
+            HStack(spacing: 0) {
+                typeTab(type: .outcome, title: "Outcome", icon: "arrow.up.right.circle.fill")
+                typeTab(type: .income, title: "Income", icon: "arrow.down.left.circle.fill")
+            }
+            .padding(4)
+            .background(Color.white)
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+        }
+    }
+
+    private var metadataSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Metadata")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.black)
+            
+            FlowLayout(spacing: 8) {
+                metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
+                    isShowingCategorySelector = true
+                }
+                metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
+                    isShowingBudgetSelector = true
+                }
+                metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
+                    isShowingTimePicker = true
+                }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+    }
+
+    private var amountGlassCard: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            TextField("0", text: $cameraAmount)
+                .font(.system(size: 16, weight: .bold))
+                .multilineTextAlignment(.center)
+                .keyboardType(.decimalPad)
+                .fixedSize()
+            
+            Text("USD")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.gray)
+        }
+        .padding(.horizontal, 40)
+        .padding(.vertical, 16)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(Capsule())
         .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 5)
     }
 
