@@ -13,10 +13,23 @@ struct OnboardingView: View {
     @Environment(AppStateManager.self) private var appStateManager
     @State private var selection: Int = 0
     
+    // Step 1 States
+    @State private var autoDetectLocation: Bool = true
+    @State private var isShowingNotifications = false
+    @State private var isShowingCurrency = false
+    @State private var selectedCurrency = "USD ($)"
+    
+    // Step 2 States
+    @State private var onboardingCategories = Category.sampleData
+    
+    // Step 3 States
+    @State private var budgetName: String = ""
+    @State private var budgetAmount: String = ""
+    
     let steps = [
         OnboardingStep(
             title: "Basic Setup",
-            description: "Personalize your experience by choosing your preferred language and currency.",
+            description: "Personalize your experience by choosing your preferred currency.",
             percentage: "33%",
             progress: 0.33,
             color: .teal,
@@ -53,7 +66,7 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Fixed Header
                 Text("itmybudget")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
                     .padding(.top, 20)
                     .padding(.horizontal, 24)
@@ -86,19 +99,37 @@ struct OnboardingView: View {
                                     .lineSpacing(6)
                                     .fixedSize(horizontal: false, vertical: true)
                                 
+                                if index == 0 {
+                                    ScrollView(showsIndicators: false) {
+                                        VStack(alignment: .leading, spacing: 24) {
+                                            permissionSection
+                                            dataSection
+                                        }
+                                        .padding(.top, 24)
+                                        .padding(.bottom, 24)
+                                    }
+                                }
+                                
+                                if index == 1 {
+                                    ScrollView(showsIndicators: false) {
+                                        categorySelectionSection
+                                            .padding(.top, 24)
+                                            .padding(.bottom, 24)
+                                    }
+                                }
+                                
+                                if index == 2 {
+                                    ScrollView(showsIndicators: false) {
+                                        budgetSetupSection
+                                            .padding(.top, 24)
+                                            .padding(.bottom, 24)
+                                    }
+                                }
+                                
                                 Spacer()
                                 
                                 // Footer Note Box (AI Insight Style)
                                 VStack(alignment: .leading, spacing: 12) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "sparkles")
-                                            .font(.system(size: 14, weight: .bold))
-                                        Text("AI Insight")
-                                            .font(.system(size: 12, weight: .bold))
-                                            .textCase(.uppercase)
-                                    }
-                                    .foregroundStyle(.white.opacity(0.8))
-                                    
                                     Text(LocalizedStringKey(steps[index].footerNote))
                                         .font(.system(size: 13, weight: .semibold))
                                         .lineSpacing(4)
@@ -127,7 +158,7 @@ struct OnboardingView: View {
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                                 .shadow(color: Color(red: 1.0, green: 0.7, blue: 0.6).opacity(0.3), radius: 15, x: 0, y: 8)
-                                .padding(.bottom, 40)
+                                .padding(.bottom, 20)
                             }
                             .transition(.asymmetric(
                                 insertion: .opacity.combined(with: .offset(y: 10)),
@@ -206,5 +237,264 @@ struct OnboardingView: View {
                 .padding(.bottom, 34)
             }
         }
+    }
+    
+    // MARK: - Step 1 Components
+    
+    @ViewBuilder
+    private var permissionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Permission")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.black)
+            
+            VStack(spacing: 0) {
+                rowItem(title: "Thông báo", value: "Cho phép") {
+                    isShowingNotifications = true
+                }
+                
+                Divider().opacity(0.3)
+                
+                HStack {
+                    Text("Auto Detect Location")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.black)
+                    Spacer()
+                    Toggle("", isOn: $autoDetectLocation)
+                        .labelsHidden()
+                        .toggleStyle(SwitchToggleStyle(tint: .black))
+                        .scaleEffect(0.8)
+                }
+                .padding(.vertical, 8)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        }
+    }
+    
+    @ViewBuilder
+    private var dataSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Data")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.black)
+            
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Text("Tiền tệ")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.black)
+                    
+                    Spacer()
+                    
+                    Menu {
+                        Button("USD ($)") { selectedCurrency = "USD ($)" }
+                        Button("VND (đ)") { selectedCurrency = "VND (đ)" }
+                        Button("EUR (€)") { selectedCurrency = "EUR (€)" }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(selectedCurrency)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.gray)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.gray.opacity(0.5))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.05))
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.vertical, 12)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        }
+    }
+    
+    private func rowItem(title: String, value: String? = nil, icon: String? = nil, isLocked: Bool = false, action: @escaping () -> Void = {}) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.black)
+                
+                Spacer()
+                
+                if let v = value {
+                    Text(v)
+                        .font(.system(size: 12, weight: isLocked ? .bold : .medium))
+                        .foregroundStyle(isLocked ? .orange : .gray)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(isLocked ? Color.orange.opacity(0.1) : Color.clear)
+                        .clipShape(Capsule())
+                }
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.gray.opacity(0.3))
+            }
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Step 2 Components
+    
+    @ViewBuilder
+    private var categorySelectionSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Select Categories")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.black)
+            
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                ForEach(onboardingCategories.indices, id: \.self) { index in
+                    Button(action: {
+                        onboardingCategories[index].isActive.toggle()
+                    }) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                ZStack {
+                                    Circle()
+                                        .fill(onboardingCategories[index].color.opacity(0.12))
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: onboardingCategories[index].icon)
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(onboardingCategories[index].color)
+                                }
+                                
+                                Spacer()
+                                
+                                if onboardingCategories[index].isActive {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(.black)
+                                } else {
+                                    Image(systemName: "circle")
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(.gray.opacity(0.3))
+                                }
+                            }
+                            
+                            Text(onboardingCategories[index].name)
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(.black)
+                                .lineLimit(1)
+                        }
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(BouncyButtonStyle())
+                }
+            }
+        }
+    }
+    
+    // MARK: - Step 3 Components
+    
+    private var dynamicQuickAmounts: [Double] {
+        let base = Double(budgetAmount) ?? 0
+        if base == 0 {
+            return [100, 500, 1000, 2000, 5000]
+        }
+        
+        // If user types '2', suggest 200, 2000, 20000
+        // We can also suggest based on the number of digits if it's large, 
+        // but the request is simple: base * 100, base * 1000, base * 10000
+        return [base * 100, base * 1000, base * 10000]
+    }
+    
+    @ViewBuilder
+    private var budgetSetupSection: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Tên ngân sách")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.8))
+                
+                TextField("Ví dụ: Hàng ngày, Du lịch...", text: $budgetName)
+                    .font(.system(size: 16, weight: .medium))
+                    .padding(16)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                    )
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Số tiền ngân sách")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.8))
+                
+                HStack {
+                    TextField("0", text: $budgetAmount)
+                        .keyboardType(.numberPad)
+                        .font(.system(size: 16, weight: .bold))
+                    
+                    Text(selectedCurrency.split(separator: " ").last.map(String.init) ?? "USD")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.gray)
+                }
+                .padding(16)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                )
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(dynamicQuickAmounts, id: \.self) { val in
+                            Button(action: {
+                                budgetAmount = String(format: "%.0f", val)
+                            }) {
+                                Text("\(selectedCurrency.contains("USD") ? "$" : "")\(formatValue(val))")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(Color.white)
+                                    .clipShape(Capsule())
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                    )
+                            }
+                            .buttonStyle(BouncyButtonStyle())
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+    }
+    
+    private func formatValue(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
     }
 }
