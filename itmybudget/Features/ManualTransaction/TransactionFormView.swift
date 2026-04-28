@@ -276,7 +276,6 @@ struct TransactionFormView: View {
             transactionNameSection
                 .padding(.horizontal, 16)
             
-            // Amount Section
             VStack(alignment: .leading, spacing: 10) {
                 Text("Amount")
                     .font(.system(size: 14, weight: .bold))
@@ -713,9 +712,7 @@ struct TransactionFormView: View {
             
             Spacer()
             
-            // Capture Row
             HStack(spacing: 40) {
-                // Gallery Button
                 Button(action: {
                     imagePickerSourceType = .photoLibrary
                     isShowingImagePicker = true
@@ -727,7 +724,6 @@ struct TransactionFormView: View {
                 }
                 .buttonStyle(BouncyButtonStyle())
 
-                // Capture Button
                 Button(action: {
                     withAnimation(.spring()) { isCaptured = true }
                 }) {
@@ -745,7 +741,6 @@ struct TransactionFormView: View {
                 }
                 .buttonStyle(BouncyButtonStyle())
 
-                // Flip Button
                 Button(action: {}) {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.system(size: 24))
@@ -807,7 +802,6 @@ struct TransactionFormView: View {
                         }
                     }
                     
-                    // Amount Card inside ZStack, floating above bottom
                     amountGlassCard
                         .padding(.bottom, 24)
                 }
@@ -851,7 +845,6 @@ struct TransactionFormView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Date Separator
                     Text("Today")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.gray.opacity(0.6))
@@ -874,7 +867,6 @@ struct TransactionFormView: View {
             
             chatInputBar
             
-            // Spacer to keep it above mode selector
             Spacer(minLength: 80)
         }
     }
@@ -910,17 +902,14 @@ struct TransactionFormView: View {
     
     private func aiTransactionCard(message: ChatMessage) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            // System message as a chat bubble
             chatBubble(message: ChatMessage(
                 text: "Hệ thống vừa ghi nhận giao dịch **\(message.transactionName)** hết **\(message.amount)đ**. Bạn có muốn ghi chú thêm gì không?",
                 isAI: true,
                 time: message.time
             ))
             
-            // Transaction card matching TransactionItemView style
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    // Icon
                     ZStack {
                         Circle()
                             .fill(Color.blue.opacity(0.1))
@@ -1144,7 +1133,6 @@ struct TransactionFormView: View {
     }
 }
 
-// Model for Chat
 struct ChatMessage: Identifiable {
     let id = UUID()
     var text: String = ""

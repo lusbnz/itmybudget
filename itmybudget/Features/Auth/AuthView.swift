@@ -8,13 +8,10 @@ struct AuthView: View {
     
     var body: some View {
         ZStack {
-            // 1. Background Layer
             Color(red: 1.0, green: 0.98, blue: 0.96)
                 .ignoresSafeArea()
             
-            // 2. Decorative Layer (Non-interactive)
             ZStack {
-                // Diagonal Text - Animated
                 VStack(spacing: 40) {
                     ForEach(0..<20) { i in
                         Text("ITMYBUDGET FINANCE PLANNING WEALTH SAVINGS BUDGETING ITMYBUDGET FINANCE PLANNING WEALTH SAVINGS BUDGETING ")
@@ -31,7 +28,6 @@ struct AuthView: View {
                     }
                 }
                 
-                // Subtle Blobs
                 GeometryReader { geo in
                     Circle()
                         .fill(Color.orange.opacity(0.06))
@@ -49,12 +45,11 @@ struct AuthView: View {
             .allowsHitTesting(false)
             .ignoresSafeArea()
             
-            // 3. Main Content Layer
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 40) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("itmybudget")
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.black)
                         
                         Text("Intelligent Wealth Management")
@@ -65,9 +60,7 @@ struct AuthView: View {
                     .padding(.top, 80)
                     .padding(.horizontal, 24)
                     
-                    // Hero Section: Dashboard Preview
                     ZStack {
-                        // Ghost Cards
                         RoundedRectangle(cornerRadius: 32)
                             .fill(Color.white.opacity(0.4))
                             .frame(maxWidth: .infinity)
@@ -84,7 +77,6 @@ struct AuthView: View {
                             .offset(y: 15)
                             .scaleEffect(0.95)
                         
-                        // Main Card
                         VStack(alignment: .leading, spacing: 20) {
                             HStack(alignment: .top) {
                                 VStack(alignment: .leading, spacing: 6) {
@@ -143,7 +135,41 @@ struct AuthView: View {
                     }
                     .scaleEffect(isAnimating ? 1 : 0.98)
                     
-                    // Auth Actions
+                    VStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            HStack {
+                                Text("Summer Vacation Goal")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundStyle(.black)
+                                Spacer()
+                                Text("75%")
+                                    .font(.system(size: 12, weight: .black))
+                                    .foregroundStyle(.teal)
+                            }
+                            
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(Color.black.opacity(0.05))
+                                        .frame(height: 8)
+                                    
+                                    Capsule()
+                                        .fill(LinearGradient(colors: [.teal, .teal.opacity(0.6)], startPoint: .leading, endPoint: .trailing))
+                                        .frame(width: geo.size.width * 0.75, height: 8)
+                                }
+                            }
+                            .frame(height: 8)
+                        }
+                        .padding(20)
+                        .background(Color.white.opacity(0.6))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.black.opacity(0.03), lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal, 24)
+                    
                     VStack(spacing: 24) {
                         Text("Start your journey to financial freedom")
                             .font(.system(size: 14, weight: .medium))
@@ -182,10 +208,10 @@ struct AuthView: View {
                             .buttonStyle(BouncyButtonStyle())
                         }
                     }
-                    .padding(.top, 200)
+                    .padding(.top, 120)
                     .padding(.horizontal, 32)
                 }
-                .padding(.top, 160)
+                .padding(.top, 170)
             }
         }
         .onAppear {

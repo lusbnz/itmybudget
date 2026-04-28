@@ -13,16 +13,13 @@ struct OnboardingView: View {
     @Environment(AppStateManager.self) private var appStateManager
     @State private var selection: Int = 0
     
-    // Step 1 States
     @State private var autoDetectLocation: Bool = true
     @State private var isShowingNotifications = false
     @State private var isShowingCurrency = false
     @State private var selectedCurrency = "USD ($)"
     
-    // Step 2 States
     @State private var onboardingCategories = Category.sampleData
     
-    // Step 3 States
     @State private var budgetName: String = ""
     @State private var budgetAmount: String = ""
     
@@ -55,7 +52,6 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // Home-like orange background
             LinearGradient(
                 colors: [Color(red: 1.0, green: 0.97, blue: 0.92), Color(red: 1.0, green: 0.94, blue: 0.88)],
                 startPoint: .top,
@@ -64,14 +60,12 @@ struct OnboardingView: View {
             .ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: 0) {
-                // Fixed Header
                 Text("itmybudget")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.black)
                     .padding(.top, 20)
                     .padding(.horizontal, 24)
                 
-                // Content with Fade Transition
                 ZStack(alignment: .leading) {
                     ForEach(0..<steps.count, id: \.self) { index in
                         if selection == index {
@@ -89,7 +83,6 @@ struct OnboardingView: View {
                                 }
                                 .padding(.top, 20)
                                 
-                                // Placeholder for progress bar to keep layout consistent
                                 Color.clear.frame(height: 18) 
                                 
                                 Text(steps[index].description)
@@ -128,7 +121,6 @@ struct OnboardingView: View {
                                 
                                 Spacer()
                                 
-                                // Footer Note Box (AI Insight Style)
                                 VStack(alignment: .leading, spacing: 12) {
                                     Text(LocalizedStringKey(steps[index].footerNote))
                                         .font(.system(size: 13, weight: .semibold))
@@ -140,7 +132,6 @@ struct OnboardingView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
                                     ZStack {
-                                        // Single color matching AIInsightCarousel
                                         Color(red: 1.0, green: 0.7, blue: 0.6)
                                         
                                         Circle()
@@ -169,9 +160,8 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 24)
                 .overlay(
-                    // Animated Progress Bar overlaying the placeholder
                     VStack {
-                        Spacer().frame(height: 20 + 28 + 20) // App name + Title + Title padding
+                        Spacer().frame(height: 20 + 28 + 20)
                         
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
@@ -194,7 +184,6 @@ struct OnboardingView: View {
                     alignment: .top
                 )
                 
-                // Bottom Buttons (Retry/Create and Confirm layout)
                 HStack(spacing: 12) {
                     if selection > 0 {
                         Button(action: {
@@ -238,8 +227,6 @@ struct OnboardingView: View {
             }
         }
     }
-    
-    // MARK: - Step 1 Components
     
     @ViewBuilder
     private var permissionSection: some View {
@@ -350,8 +337,6 @@ struct OnboardingView: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // MARK: - Step 2 Components
-    
     @ViewBuilder
     private var categorySelectionSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -409,17 +394,12 @@ struct OnboardingView: View {
         }
     }
     
-    // MARK: - Step 3 Components
-    
     private var dynamicQuickAmounts: [Double] {
         let base = Double(budgetAmount) ?? 0
         if base == 0 {
             return [100, 500, 1000, 2000, 5000]
         }
         
-        // If user types '2', suggest 200, 2000, 20000
-        // We can also suggest based on the number of digits if it's large, 
-        // but the request is simple: base * 100, base * 1000, base * 10000
         return [base * 100, base * 1000, base * 10000]
     }
     
