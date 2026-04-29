@@ -100,7 +100,7 @@ struct FilterSheetView: View {
                         selectedCategory = nil
                     }
                 }) {
-                    budgetCategoryCard(title: "All Categories", icon: "square.grid.2x2.fill", color: .gray, isSelected: selectedCategory == nil)
+                    BudgetCategoryCard(title: "All Categories", icon: "square.grid.2x2.fill", color: .gray, isSelected: selectedCategory == nil)
                 }
                 .buttonStyle(BouncyButtonStyle())
                 
@@ -110,7 +110,7 @@ struct FilterSheetView: View {
                             selectedCategory = category
                         }
                     }) {
-                        budgetCategoryCard(title: category.name, icon: category.icon, color: category.color, isSelected: selectedCategory?.name == category.name)
+                        BudgetCategoryCard(title: category.name, icon: category.icon, color: category.color, isSelected: selectedCategory?.name == category.name)
                     }
                     .buttonStyle(BouncyButtonStyle())
                 }
@@ -150,44 +150,5 @@ struct FilterSheetView: View {
         .padding(.bottom, 14)
     }
     
-    private func budgetCategoryCard(title: String, icon: String, color: Color, isSelected: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.12))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: icon)
-                        .font(.system(size: 16))
-                        .foregroundStyle(color)
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(.black)
-                } else {
-                    Image(systemName: "circle")
-                        .font(.system(size: 16))
-                        .foregroundStyle(.black.opacity(0.1))
-                }
-            }
-            
-            Text(title)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(.black)
-                .lineLimit(1)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: Color.black.opacity(isSelected ? 0.08 : 0.04), radius: isSelected ? 15 : 10, x: 0, y: 5)
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(isSelected ? Color.black : Color.black.opacity(0.05), lineWidth: isSelected ? 2 : 1)
-        )
-    }
+
 }

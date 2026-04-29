@@ -1,11 +1,19 @@
 import SwiftUI
 import AuthenticationServices
+import Combine
 
 struct AuthView: View {
     @Environment(AppStateManager.self) private var appStateManager
     @State private var isAnimating = false
     @State private var moveAnimating = false
+    @State private var chartValues: [CGFloat] = (0..<14).map { _ in CGFloat.random(in: 15...40) }
+    @State private var highlightedIndex: Int = 3
+    @State private var progressValue: CGFloat = 0.0
+    @State private var netWorth: Double = 84250.00
+    @State private var shimmerOffset: CGFloat = -0.5
     
+    let timer = Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()
+
     var body: some View {
         ZStack {
             Color(red: 1.0, green: 0.98, blue: 0.96)
@@ -46,15 +54,11 @@ struct AuthView: View {
             .ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 40) {
+                VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("itmybudget")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.black)
-                        
-                        Text("Intelligent Wealth Management")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.gray)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 80)
@@ -62,7 +66,7 @@ struct AuthView: View {
                     
                     ZStack {
                         RoundedRectangle(cornerRadius: 32)
-                            .fill(Color.white.opacity(0.4))
+                            .fill(Color.white.opacity(0.6))
                             .frame(maxWidth: .infinity)
                             .frame(height: 180)
                             .padding(.horizontal, 48)
@@ -70,7 +74,7 @@ struct AuthView: View {
                             .scaleEffect(0.9)
                         
                         RoundedRectangle(cornerRadius: 32)
-                            .fill(Color.white.opacity(0.6))
+                            .fill(Color.white.opacity(0.8))
                             .frame(maxWidth: .infinity)
                             .frame(height: 180)
                             .padding(.horizontal, 36)
@@ -85,9 +89,11 @@ struct AuthView: View {
                                         .foregroundStyle(.orange)
                                         .tracking(1.2)
                                     
-                                    Text("$84,250.00")
+                                    Text(String(format: "$%.2f", netWorth))
                                         .font(.system(size: 34, weight: .bold))
                                         .foregroundStyle(.black)
+                                        .contentTransition(.numericText())
+
                                 }
                                 Spacer()
                                 HStack(spacing: 4) {
@@ -103,23 +109,19 @@ struct AuthView: View {
                                 .clipShape(Capsule())
                             }
                             
-                            HStack(alignment: .bottom, spacing: 5) {
-                                ForEach(0..<18, id: \.self) { i in
+                            HStack(alignment: .bottom, spacing: 12) {
+                                ForEach(0..<14, id: \.self) { i in
                                     RoundedRectangle(cornerRadius: 3)
-                                        .fill(i == 12 ? Color.orange : Color.orange.opacity(0.15))
-                                        .frame(width: 7, height: i == 12 ? 50 : CGFloat.random(in: 15...40))
+                                        .fill(i == highlightedIndex ? Color.orange : Color.orange.opacity(0.12))
+                                        .frame(width: 8, height: i == highlightedIndex ? 50 : chartValues[i])
+                                        .animation(.spring(response: 0.8, dampingFraction: 0.8), value: chartValues[i])
+                                        .animation(.spring(response: 0.8, dampingFraction: 0.8), value: highlightedIndex)
                                 }
                             }
                             .frame(height: 50)
                             .frame(maxWidth: .infinity, alignment: .center)
-                            
-                            HStack(spacing: 0) {
-                                parameterView(title: "SPENT", value: "$1,240", color: .red)
-                                Spacer()
-                                parameterView(title: "LEFT", value: "$3,760", color: .teal)
-                                Spacer()
-                                parameterView(title: "SAVED", value: "24%", color: .orange)
-                            }
+
+
                         }
                         .padding(20)
                         .background(
@@ -153,15 +155,40 @@ struct AuthView: View {
                                         .fill(Color.black.opacity(0.05))
                                         .frame(height: 8)
                                     
-                                    Capsule()
-                                        .fill(LinearGradient(colors: [.teal, .teal.opacity(0.6)], startPoint: .leading, endPoint: .trailing))
-                                        .frame(width: geo.size.width * 0.75, height: 8)
+                                    ZStack(alignment: .leading) {
+                                        Capsule()
+                                            .fill(LinearGradient(colors: [.teal, .teal.opacity(0.6)], startPoint: .leading, endPoint: .trailing))
+                                        
+                                        // Running glow effect
+                                        Capsule()
+                                            .fill(
+                                                LinearGradient(
+                                                    stops: [
+                                                        .init(color: .clear, location: 0),
+                                                        .init(color: .white.opacity(0.4), location: 0.5),
+                                                        .init(color: .clear, location: 1)
+                                                    ],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                            .frame(width: 100)
+                                            .offset(x: geo.size.width * progressValue * shimmerOffset * 2.5)
+                                            .onAppear {
+                                                withAnimation(.linear(duration: 1.8).repeatForever(autoreverses: false)) {
+                                                    shimmerOffset = 1.5
+                                                }
+                                            }
+                                    }
+                                    .frame(width: geo.size.width * progressValue, height: 8)
+                                    .clipShape(Capsule())
+                                    .animation(.spring(response: 1.5, dampingFraction: 0.8), value: progressValue)
                                 }
                             }
                             .frame(height: 8)
                         }
                         .padding(20)
-                        .background(Color.white.opacity(0.6))
+                        .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
                         .overlay(
                             RoundedRectangle(cornerRadius: 24)
@@ -169,25 +196,39 @@ struct AuthView: View {
                         )
                     }
                     .padding(.horizontal, 24)
+                    .padding(.top, 8)
+
+
+
                     
                     VStack(spacing: 24) {
                         Text("Start your journey to financial freedom")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.gray)
                         
-                        VStack(spacing: 12) {
+                        VStack(spacing: 14) {
                             Button(action: {
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                     appStateManager.moveToOnboarding()
                                 }
                             }) {
-                                Text("Continue with Apple")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.black)
-                                    .foregroundStyle(.white)
-                                    .clipShape(Capsule())
+                                HStack(spacing: 10) {
+                                    Image(systemName: "applelogo")
+                                        .font(.system(size: 18))
+                                    Text("Continue with Apple")
+                                        .font(.system(size: 16, weight: .bold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 58)
+                                .background(
+                                    ZStack {
+                                        Color.black
+                                        LinearGradient(colors: [.white.opacity(0.12), .clear], startPoint: .top, endPoint: .bottom)
+                                    }
+                                )
+                                .foregroundStyle(.white)
+                                .clipShape(Capsule())
+                                .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 10)
                             }
                             .buttonStyle(BouncyButtonStyle())
                             
@@ -196,20 +237,36 @@ struct AuthView: View {
                                     appStateManager.moveToOnboarding()
                                 }
                             }) {
-                                Text("Continue with Google")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .foregroundStyle(.black)
-                                    .clipShape(Capsule())
-                                    .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                                HStack(spacing: 10) {
+                                    Image(systemName: "g.circle.fill")
+                                        .font(.system(size: 18))
+                                        .foregroundStyle(
+                                            LinearGradient(colors: [.red, .orange, .green, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        )
+                                    
+                                    Text("Continue with Google")
+                                        .font(.system(size: 16, weight: .bold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 58)
+                                .background(Color.white)
+                                .foregroundStyle(.black)
+                                .clipShape(Capsule())
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(BouncyButtonStyle())
                         }
+                        .offset(y: isAnimating ? 0 : 30)
+                        .opacity(isAnimating ? 1 : 0)
+                        .animation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.4), value: isAnimating)
                     }
-                    .padding(.top, 120)
+                    .padding(.top, 140)
                     .padding(.horizontal, 32)
+                    .padding(.bottom, 50)
                 }
                 .padding(.top, 170)
             }
@@ -217,23 +274,15 @@ struct AuthView: View {
         .onAppear {
             withAnimation(.spring(response: 1.0, dampingFraction: 0.8)) {
                 isAnimating = true
+                progressValue = 0.75
             }
         }
-    }
-    
-    private func parameterView(title: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 9, weight: .black))
-                .foregroundStyle(.gray)
-                .tracking(0.5)
-            Text(value)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(.black)
-            
-            RoundedRectangle(cornerRadius: 1)
-                .fill(color)
-                .frame(width: 20, height: 2)
+        .onReceive(timer) { _ in
+            withAnimation(.spring(response: 1.2, dampingFraction: 0.8)) {
+                chartValues = (0..<14).map { _ in CGFloat.random(in: 15...45) }
+                highlightedIndex = Int.random(in: 0..<14)
+                netWorth += Double.random(in: -20...50)
+            }
         }
     }
 }

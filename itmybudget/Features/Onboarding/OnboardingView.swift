@@ -16,12 +16,15 @@ struct OnboardingView: View {
     @State private var autoDetectLocation: Bool = true
     @State private var isShowingNotifications = false
     @State private var isShowingCurrency = false
+    @State private var isShowingLanguage = false
     @State private var selectedCurrency = "USD ($)"
+    @State private var selectedLanguage = "Tiếng Việt"
     
     @State private var onboardingCategories = Category.sampleData
     
     @State private var budgetName: String = ""
     @State private var budgetAmount: String = ""
+    @State private var shimmerOffset: CGFloat = -0.5
     
     let steps = [
         OnboardingStep(
@@ -120,36 +123,6 @@ struct OnboardingView: View {
                                 }
                                 
                                 Spacer()
-                                
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text(LocalizedStringKey(steps[index].footerNote))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .lineSpacing(4)
-                                        .foregroundStyle(.white)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                                .padding(16)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(
-                                    ZStack {
-                                        Color(red: 1.0, green: 0.7, blue: 0.6)
-                                        
-                                        Circle()
-                                            .fill(Color.white.opacity(0.2))
-                                            .frame(width: 120, height: 120)
-                                            .blur(radius: 30)
-                                            .offset(x: 80, y: -30)
-                                        
-                                        Circle()
-                                            .fill(Color.black.opacity(0.1))
-                                            .frame(width: 80, height: 80)
-                                            .blur(radius: 20)
-                                            .offset(x: -40, y: 40)
-                                    }
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                                .shadow(color: Color(red: 1.0, green: 0.7, blue: 0.6).opacity(0.3), radius: 15, x: 0, y: 8)
-                                .padding(.bottom, 20)
                             }
                             .transition(.asymmetric(
                                 insertion: .opacity.combined(with: .offset(y: 10)),
@@ -169,10 +142,32 @@ struct OnboardingView: View {
                                     .fill(Color.black.opacity(0.05))
                                     .frame(height: 6)
                                 
-                                Capsule()
-                                    .fill(steps[selection].color.gradient)
-                                    .frame(width: geo.size.width * steps[selection].progress, height: 6)
-                                    .shadow(color: steps[selection].color.opacity(0.3), radius: 4, x: 0, y: 2)
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(steps[selection].color.gradient)
+                                    Capsule()
+                                        .fill(
+                                            LinearGradient(
+                                                stops: [
+                                                    .init(color: .clear, location: 0),
+                                                    .init(color: .white.opacity(0.4), location: 0.5),
+                                                    .init(color: .clear, location: 1)
+                                                ],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .frame(width: 80)
+                                        .offset(x: geo.size.width * steps[selection].progress * shimmerOffset * 2)
+                                        .onAppear {
+                                            withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                                                shimmerOffset = 1.5
+                                            }
+                                        }
+                                }
+                                .frame(width: geo.size.width * steps[selection].progress, height: 6)
+                                .clipShape(Capsule())
+                                .shadow(color: steps[selection].color.opacity(0.3), radius: 4, x: 0, y: 2)
                             }
                         }
                         .frame(height: 6)
@@ -224,6 +219,10 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 34)
+            }
+            .sheet(isPresented: $isShowingNotifications) {
+                NotificationSettingsSheet()
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -349,49 +348,20 @@ struct OnboardingView: View {
                     Button(action: {
                         onboardingCategories[index].isActive.toggle()
                     }) {
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                ZStack {
-                                    Circle()
-                                        .fill(onboardingCategories[index].color.opacity(0.12))
-                                        .frame(width: 40, height: 40)
-                                    Image(systemName: onboardingCategories[index].icon)
-                                        .font(.system(size: 16))
-                                        .foregroundStyle(onboardingCategories[index].color)
-                                }
-                                
-                                Spacer()
-                                
-                                if onboardingCategories[index].isActive {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundStyle(.black)
-                                } else {
-                                    Image(systemName: "circle")
-                                        .font(.system(size: 16))
-                                        .foregroundStyle(.gray.opacity(0.3))
-                                }
-                            }
-                            
-                            Text(onboardingCategories[index].name)
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(.black)
-                                .lineLimit(1)
-                        }
-                        .padding(20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                        BudgetCategoryCard(
+                            title: onboardingCategories[index].name,
+                            icon: onboardingCategories[index].icon,
+                            color: onboardingCategories[index].color,
+                            isSelected: onboardingCategories[index].isActive
                         )
                     }
                     .buttonStyle(BouncyButtonStyle())
+                    .background(Color.clear)
                 }
             }
+            .background(Color.clear)
         }
+        .padding(.horizontal, 2)
     }
     
     private var dynamicQuickAmounts: [Double] {
@@ -432,7 +402,7 @@ struct OnboardingView: View {
                         .keyboardType(.numberPad)
                         .font(.system(size: 16, weight: .bold))
                     
-                    Text(selectedCurrency.split(separator: " ").last.map(String.init) ?? "USD")
+                    Text(selectedCurrency ?? "USD")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.gray)
                 }
