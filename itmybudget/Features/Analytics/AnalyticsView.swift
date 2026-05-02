@@ -3,10 +3,15 @@ import Charts
 
 enum AnalyticsTab: String, CaseIterable {
     case currentMonth = "April 2026"
-    case lastWeek = "Last Week"
-    case lastMonth = "Last Month"
-    case lastQuarter = "Last Quarter"
-    case lastYear = "Last Year"
+    case lastWeek = "analytics.last_week"
+    case lastMonth = "analytics.last_month"
+    case lastQuarter = "analytics.last_quarter"
+    case lastYear = "analytics.last_year"
+    
+    var localizedName: String {
+        if self == .currentMonth { return self.rawValue }
+        return self.rawValue.localized
+    }
 }
 
 struct SpendingCategory: Identifiable {
@@ -26,19 +31,22 @@ struct TrendData: Identifiable {
 }
 
 struct AnalyticsView: View {
+    @Environment(LocalizationManager.self) private var loc
     @State private var selectedTab: AnalyticsTab = .currentMonth
     @Namespace private var tabNamespace
     @State private var showDatePicker = false
     @State private var showContent = false
     @State private var showingAnalyticDetail = false
     
-    private let spendingCategories = [
-        SpendingCategory(name: "Food & Drink", icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "Warning"),
-        SpendingCategory(name: "Shopping", icon: "cart.fill", amount: 250, percentage: 25, color: .blue, status: "On Track"),
-        SpendingCategory(name: "Transport", icon: "car.fill", amount: 150, percentage: 15, color: .green, status: "Good"),
-        SpendingCategory(name: "Entertainment", icon: "popcorn.fill", amount: 100, percentage: 10, color: .purple, status: "On Track"),
-        SpendingCategory(name: "Others", icon: "ellipsis.circle.fill", amount: 50, percentage: 5, color: .gray, status: "Good")
-    ]
+    private var spendingCategories: [SpendingCategory] {
+        [
+            SpendingCategory(name: "categories.food_drink".localized, icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "analytics.warning".localized),
+            SpendingCategory(name: "categories.shopping".localized, icon: "cart.fill", amount: 250, percentage: 25, color: .blue, status: "analytics.on_track".localized),
+            SpendingCategory(name: "categories.transport".localized, icon: "car.fill", amount: 150, percentage: 15, color: .green, status: "analytics.good".localized),
+            SpendingCategory(name: "categories.entertainment".localized, icon: "popcorn.fill", amount: 100, percentage: 10, color: .purple, status: "analytics.on_track".localized),
+            SpendingCategory(name: "analytics.others".localized, icon: "ellipsis.circle.fill", amount: 50, percentage: 5, color: .gray, status: "analytics.good".localized)
+        ]
+    }
     
     private let trendData = [
         TrendData(period: "Week 1", amount: 1200),
@@ -100,7 +108,7 @@ struct AnalyticsView: View {
     
     private var header: some View {
         HStack {
-            Text("Financial Analytics")
+            LText("analytics.title")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
             Spacer()
@@ -124,7 +132,7 @@ struct AnalyticsView: View {
                         }
                     }) {
                         HStack(spacing: 4) {
-                            Text(tab.rawValue)
+                            Text(tab.localizedName)
                                 .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
                             
                             if tab == .currentMonth {
@@ -161,10 +169,10 @@ struct AnalyticsView: View {
     private var spendingOverview: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Spending Overview")
+                LText("analytics.spending_overview")
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
-                Text("+ 2.4% vs last period")
+                LText("analytics.vs_last_period")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.red)
             }
@@ -187,9 +195,9 @@ struct AnalyticsView: View {
                     .chartLegend(.hidden)
                     
                     VStack(spacing: 0) {
-                        Text("$2,450")
+                        Text("\(loc.currentLanguage == "vi" ? "" : "$")2,450\(loc.currentLanguage == "vi" ? "đ" : "")")
                             .font(.system(size: 24, weight: .black))
-                        Text("Total Spent")
+                        LText("analytics.total_spent")
                             .font(.system(size: 12))
                             .foregroundStyle(.gray)
                     }
@@ -226,8 +234,8 @@ struct AnalyticsView: View {
     
     private var statsRow: some View {
         HStack(spacing: 16) {
-            statBox(icon: "arrow.left.arrow.right", title: "Transactions", value: "12", diff: "+2.4%", isDiffPositive: true)
-            statBox(icon: "chart.line.uptrend.xyaxis", title: "Avg/day", value: "$45", diff: "-5%", isDiffPositive: false)
+            statBox(icon: "arrow.left.arrow.right", title: "analytics.transactions".localized, value: "12", diff: "+2.4%", isDiffPositive: true)
+            statBox(icon: "chart.line.uptrend.xyaxis", title: "analytics.avg_day".localized, value: "\(loc.currentLanguage == "vi" ? "" : "$")45\(loc.currentLanguage == "vi" ? "đ" : "")", diff: "-5%", isDiffPositive: false)
         }
         .padding(.horizontal, 16)
     }
@@ -271,7 +279,7 @@ struct AnalyticsView: View {
     private var aiInsightCarousel: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("AI Insights")
+                LText("analytics.ai_insights")
                     .font(.system(size: 14, weight: .bold))
             }
             .padding(.horizontal, 20)
@@ -283,12 +291,12 @@ struct AnalyticsView: View {
     
     private var transactionTrends: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Transaction Trends")
+            LText("analytics.transaction_trends")
                 .font(.system(size: 16, weight: .bold))
                 .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 12) {
-                Text("Period Overview")
+                LText("analytics.period_overview")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
                 
@@ -328,7 +336,7 @@ struct AnalyticsView: View {
     
     private var topSpendingCategories: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Top Spending Categories")
+            LText("analytics.top_spending_categories")
                 .font(.system(size: 16, weight: .bold))
                 .padding(.horizontal, 16)
             
@@ -342,7 +350,10 @@ struct AnalyticsView: View {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text(category.name).font(.system(size: 14, weight: .semibold))
-                            Text("\(category.percentage)% of total")
+                            HStack(spacing: 4) {
+                                Text("\(category.percentage)%")
+                                LText("analytics.of_total")
+                            }
                                 .font(.system(size: 11))
                                 .foregroundStyle(.gray)
                         }
@@ -350,7 +361,7 @@ struct AnalyticsView: View {
                         Spacer()
                         
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("$\(Int(category.amount))")
+                            Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(category.amount))\(loc.currentLanguage == "vi" ? "đ" : "")")
                                 .font(.system(size: 14, weight: .semibold))
                             
                             if let status = category.status {
@@ -386,9 +397,9 @@ struct AnalyticsView: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Select Date Range")
+                LText("analytics.select_date_range")
                         .font(.system(size: 20, weight: .bold))
-                    Text("Filter your analytics by a specific period")
+                LText("analytics.filter_period")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
@@ -414,7 +425,7 @@ struct AnalyticsView: View {
             
             VStack(spacing: 12) {
                 Button(action: { showDatePicker = false }) {
-                    Text("Apply Range")
+                    LText("analytics.apply_range")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -424,7 +435,7 @@ struct AnalyticsView: View {
                 }
                 
                 Button(action: { showDatePicker = false }) {
-                    Text("Cancel")
+                    LText("common.cancel")
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }

@@ -45,19 +45,19 @@ struct BudgetItemView: View {
                 .frame(height: 8)
                 
                 HStack {
-                    Text("Remain: " + formatCurrency(budget.total - budget.spent))
+                    Text("\("budget_detail.remain".localized): " + formatCurrency(budget.total - budget.spent))
                         .font(.system(size: 12))
                         .foregroundStyle(.black)
                     
                     Spacer()
                     
-                    Text("Recommended: " + formatCurrency(budget.dailyLimit) + " / day")
+                    Text("\("budget_detail.recommended".localized): " + formatCurrency(budget.dailyLimit) + " / \("budget_detail.day".localized)")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
                 
                 HStack(spacing: 4) {
-                    Text("Next refill: \(budget.nextTopUp)")
+                    Text("\("budget_detail.next_refill".localized): \(budget.nextTopUp)")
                         .font(.system(size: 12))
                 }
                 .foregroundStyle(.gray.opacity(0.8))

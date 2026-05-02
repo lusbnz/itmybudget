@@ -56,7 +56,7 @@ struct AuthView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("itmybudget")
+                        LText("app_name")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.black)
                     }
@@ -84,7 +84,7 @@ struct AuthView: View {
                         VStack(alignment: .leading, spacing: 20) {
                             HStack(alignment: .top) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("NET WORTH")
+                                    LText("auth.net_worth")
                                         .font(.system(size: 10, weight: .black))
                                         .foregroundStyle(.orange)
                                         .tracking(1.2)
@@ -140,7 +140,7 @@ struct AuthView: View {
                     VStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 14) {
                             HStack {
-                                Text("Summer Vacation Goal")
+                                LText("auth.summer_goal")
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundStyle(.black)
                                 Spacer()
@@ -159,7 +159,6 @@ struct AuthView: View {
                                         Capsule()
                                             .fill(LinearGradient(colors: [.teal, .teal.opacity(0.6)], startPoint: .leading, endPoint: .trailing))
                                         
-                                        // Running glow effect
                                         Capsule()
                                             .fill(
                                                 LinearGradient(
@@ -202,7 +201,7 @@ struct AuthView: View {
 
                     
                     VStack(spacing: 24) {
-                        Text("Start your journey to financial freedom")
+                        LText("auth.start_journey")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.gray)
                         
@@ -215,7 +214,7 @@ struct AuthView: View {
                                 HStack(spacing: 10) {
                                     Image(systemName: "applelogo")
                                         .font(.system(size: 18))
-                                    Text("Continue with Apple")
+                                    LText("auth.continue_apple")
                                         .font(.system(size: 16, weight: .bold))
                                 }
                                 .frame(maxWidth: .infinity)
@@ -244,7 +243,7 @@ struct AuthView: View {
                                             LinearGradient(colors: [.red, .orange, .green, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
                                         )
                                     
-                                    Text("Continue with Google")
+                                    LText("auth.continue_google")
                                         .font(.system(size: 16, weight: .bold))
                                 }
                                 .frame(maxWidth: .infinity)

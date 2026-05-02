@@ -5,14 +5,16 @@ struct SubscriptionSheet: View {
     @State private var isYearly = true
     @State private var showContent = false
     
-    private let benefits = [
-        ("Bank Sync", "Auto-track all transactions"),
-        ("Shared Budget", "Plan with family/friends"),
-        ("Custom Icons", "Personalize your app look"),
-        ("12-month Forecast", "Predict future savings"),
-        ("Export Data", "Download your history"),
-        ("No Ads", "Clean, seamless experience")
-    ]
+    private var benefits: [(String, String)] {
+        [
+            ("profile.bank_sync".localized, "profile.auto_sync".localized),
+            ("profile.shared_budgets".localized, "profile.plan_partner".localized),
+            ("profile.custom_app_icon".localized, "profile.personalize_look".localized),
+            ("profile.forecast".localized, "profile.predict_savings".localized),
+            ("profile.export_data".localized, "subscription.download_history".localized),
+            ("subscription.no_ads".localized, "subscription.clean_experience".localized)
+        ]
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -68,10 +70,10 @@ struct SubscriptionSheet: View {
             }
             
             VStack(spacing: 4) {
-                Text("Unlock Everything")
+                LText("subscription.unlock_everything")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
-                Text("Join 10,000+ users mastering their budgets")
+                LText("subscription.join_users")
                     .font(.system(size: 14))
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
@@ -84,7 +86,7 @@ struct SubscriptionSheet: View {
     private var billingToggle: some View {
         HStack(spacing: 0) {
             Button(action: { withAnimation { isYearly = false } }) {
-                Text("Monthly")
+                LText("subscription.monthly")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(isYearly ? .gray : .white)
                     .frame(maxWidth: .infinity)
@@ -95,7 +97,7 @@ struct SubscriptionSheet: View {
             
             Button(action: { withAnimation { isYearly = true } }) {
                 HStack(spacing: 6) {
-                    Text("Yearly")
+                    LText("subscription.yearly")
                         .font(.system(size: 14, weight: .bold))
                     Text("-50%")
                         .font(.system(size: 10, weight: .black))
@@ -121,16 +123,16 @@ struct SubscriptionSheet: View {
     private var pricingCardsGrid: some View {
         HStack(spacing: 16) {
             pricingCard(
-                title: isYearly ? "Annual" : "1 Month",
+                title: isYearly ? "subscription.annual".localized : "subscription.one_month".localized,
                 price: isYearly ? "$29.99" : "$4.99",
-                billing: isYearly ? "Billed annually" : "Billed monthly",
+                billing: isYearly ? "subscription.billed_annually".localized : "subscription.billed_monthly".localized,
                 isPopular: isYearly
             )
             
             pricingCard(
-                title: "Lifetime",
+                title: "subscription.lifetime".localized,
                 price: "$79.99",
-                billing: "Pay once, forever",
+                billing: "subscription.pay_once".localized,
                 isPopular: !isYearly
             )
         }
@@ -174,7 +176,7 @@ struct SubscriptionSheet: View {
     
     private var comparisonTable: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Premium Features")
+            LText("subscription.premium_features")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -209,7 +211,7 @@ struct SubscriptionSheet: View {
     private var actionButton: some View {
         VStack(spacing: 12) {
             Button(action: { dismiss() }) {
-                Text("Start Full Access")
+                LText("subscription.start_full_access")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -220,7 +222,7 @@ struct SubscriptionSheet: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Text("No commitment, cancel anytime")
+            LText("subscription.no_commitment")
                 .font(.system(size: 11))
                 .foregroundStyle(.gray)
         }

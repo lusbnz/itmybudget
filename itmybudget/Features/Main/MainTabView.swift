@@ -11,25 +11,25 @@ struct MainTabView: View {
             TabView(selection: $navState.selectedTab) {
                 HomeView()
                     .tabItem {
-                        Label("Home", systemImage: "house.fill")
+                        Label("tabs.home".localized, systemImage: "house.fill")
                     }
                     .tag(0)
                 
                 PlanningView()
                     .tabItem {
-                        Label("Planning", systemImage: "calendar.badge.plus")
+                        Label("tabs.planning".localized, systemImage: "calendar.badge.plus")
                     }
                     .tag(1)
                 
                 HistoryView()
                     .tabItem {
-                        Label("History", systemImage: "clock.arrow.circlepath")
+                        Label("tabs.history".localized, systemImage: "clock.arrow.circlepath")
                     }
                     .tag(2)
                 
                 AnalyticsView()
                     .tabItem {
-                        Label("Analytics", systemImage: "chart.bar.xaxis")
+                        Label("tabs.analytics".localized, systemImage: "chart.bar.xaxis")
                     }
                     .tag(3)
             }

@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct itmybudgetApp: App {
     @State private var appStateManager = AppStateManager()
+    @State private var localizationManager = LocalizationManager.shared
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -22,6 +23,7 @@ struct itmybudgetApp: App {
         WindowGroup {
             ContentView()
                 .environment(appStateManager)
+                .environment(localizationManager)
         }
         .modelContainer(sharedModelContainer)
     }

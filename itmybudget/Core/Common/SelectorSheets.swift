@@ -3,12 +3,13 @@ import MapKit
 
 struct CategorySelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     var onSelect: (Category) -> Void
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Select Category")
+                LText("selector.select_category")
                     .font(.system(size: 20, weight: .bold))
                 Spacer()
             }
@@ -65,7 +66,7 @@ struct BudgetSelectorSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Select Budget")
+                LText("selector.select_budget")
                     .font(.system(size: 20, weight: .bold))
                 Spacer()
             }
@@ -90,6 +91,7 @@ struct BudgetSelectorSheet: View {
 
 struct LocationSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     @State private var searchText = ""
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     
@@ -112,7 +114,7 @@ struct LocationSelectorSheet: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.gray)
                         
-                        TextField("Search for a place...", text: $searchText)
+                        TextField("common.search_placeholder".localized, text: $searchText)
                             .font(.system(size: 14))
                         
                         if !searchText.isEmpty {
@@ -132,7 +134,7 @@ struct LocationSelectorSheet: View {
             }
             
             Button(action: { dismiss() }) {
-                Text("Confirm Location")
+                LText("selector.confirm_location")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -149,9 +151,9 @@ struct LocationSelectorSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Select Location")
+                LText("selector.select_location")
                     .font(.system(size: 20, weight: .bold))
-                Text("Where did this transaction happen?")
+                LText("selector.where_happen")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }
@@ -163,6 +165,7 @@ struct LocationSelectorSheet: View {
 
 struct TimeSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     @State private var selectedDate = Date()
     
     var body: some View {
@@ -186,7 +189,7 @@ struct TimeSelectorSheet: View {
             }
             
             Button(action: { dismiss() }) {
-                Text("Confirm Date & Time")
+                LText("selector.confirm_date_time")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -203,9 +206,9 @@ struct TimeSelectorSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Date & Time")
+                LText("selector.date_time")
                     .font(.system(size: 20, weight: .bold))
-                Text("When was this purchase made?")
+                LText("selector.when_made")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }

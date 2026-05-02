@@ -1,12 +1,17 @@
 import SwiftUI
 
 enum HistoryMode: String, CaseIterable {
-    case timeline = "Timeline"
-    case calendar = "Calendar"
+    case timeline = "history.timeline"
+    case calendar = "history.calendar"
+    
+    var localizedName: String {
+        self.rawValue.localized
+    }
 }
 
 struct HistoryView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     @State private var selectedMode: HistoryMode = .timeline
     @Namespace private var budgetNamespace
     @State private var showingSearchSheet = false
@@ -98,7 +103,7 @@ struct HistoryView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(.gray.opacity(0.4))
             
-            Text("No transactions yet")
+            LText("history.no_transactions")
                 .font(.system(size: 14))
                 .foregroundStyle(.gray)
         }
@@ -170,12 +175,11 @@ struct HistoryView: View {
     private func dateHeader(for date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
-            return "Today"
+            return "history.today".localized
         } else if calendar.isDateInYesterday(date) {
-            return "Yesterday"
+            return "history.yesterday".localized
         } else {
             let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US")
             formatter.dateFormat = "dd MMMM"
             return formatter.string(from: date)
         }
@@ -189,13 +193,13 @@ struct HistoryView: View {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencySymbol = "$"
-        return formatter.string(from: NSNumber(value: total)) ?? "$0.00"
+        formatter.currencySymbol = loc.currentLanguage == "vi" ? "đ" : "$"
+        return formatter.string(from: NSNumber(value: total)) ?? (loc.currentLanguage == "vi" ? "0đ" : "$0.00")
     }
 
     private var spendingIntensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Spending Intensity")
+            LText("history.spending_intensity")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -203,8 +207,8 @@ struct HistoryView: View {
                 intensityGrid
                 
                 HStack(spacing: 30) {
-                    legendItem(label: "No Spend", level: 0)
-                    legendItem(label: "High Intensity", level: 4)
+                    legendItem(label: "history.no_spend".localized, level: 0)
+                    legendItem(label: "history.high_intensity".localized, level: 4)
                     Spacer()
                 }
             }
@@ -274,7 +278,7 @@ struct HistoryView: View {
 
     private var monthlyOverview: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Monthly Overview")
+            LText("history.monthly_overview")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
                 .padding(.horizontal, 16)
@@ -283,8 +287,8 @@ struct HistoryView: View {
                 overviewItem(
                     icon: "chart.bar.fill",
                     color: .orange,
-                    title: "Total Spending",
-                    value: "$1,234",
+                    title: "history.total_spending".localized,
+                    value: "\(loc.currentLanguage == "vi" ? "" : "$")1,234\(loc.currentLanguage == "vi" ? "đ" : "")",
                     trend: "-8%",
                     isPositive: true
                 )
@@ -292,18 +296,18 @@ struct HistoryView: View {
                 overviewItem(
                     icon: "calendar.badge.clock",
                     color: .blue,
-                    title: "No-spending Days",
-                    value: "14 days",
-                    trend: "Good Saving",
+                    title: "history.no_spending_days".localized,
+                    value: "history.days_count".localized,
+                    trend: "history.good_saving".localized,
                     isPositive: true
                 )
                 
                 overviewItem(
                     icon: "star.fill",
                     color: .purple,
-                    title: "Top Category",
-                    value: "Shopping",
-                    trend: "$860",
+                    title: "history.top_category".localized,
+                    value: "categories.shopping".localized,
+                    trend: "\(loc.currentLanguage == "vi" ? "" : "$")860\(loc.currentLanguage == "vi" ? "đ" : "")",
                     isPositive: false
                 )
             }
@@ -351,7 +355,7 @@ struct HistoryView: View {
     
     private var header: some View {
         HStack {
-            Text("History")
+            LText("history.title")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -395,7 +399,7 @@ struct HistoryView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 FilterTabView(
-                    title: "All",
+                    title: "history.all".localized,
                     isSelected: selectedBudgetId == nil,
                     namespace: budgetNamespace,
                     action: {

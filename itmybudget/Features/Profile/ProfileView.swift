@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     @EnvironmentObject private var navState: AppNavigationState
     
     @State private var showContent: Bool = false
@@ -94,19 +95,19 @@ struct ProfileView: View {
                 FeatureSuggestSheet()
                     .presentationDragIndicator(.visible)
             }
-            .alert("Logout", isPresented: $isShowingLogoutAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Logout", role: .destructive) {
+            .alert("auth.logout".localized, isPresented: $isShowingLogoutAlert) {
+                Button("common.cancel".localized, role: .cancel) { }
+                Button("auth.logout".localized, role: .destructive) {
                 }
             } message: {
-                Text("Are you sure you want to log out?")
+                LText("profile.logout_confirm")
             }
-            .alert("Delete Account", isPresented: $isShowingDeleteAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete", role: .destructive) {
+            .alert("profile.delete_account".localized, isPresented: $isShowingDeleteAlert) {
+                Button("common.cancel".localized, role: .cancel) { }
+                Button("budget_detail.delete".localized, role: .destructive) {
                 }
             } message: {
-                Text("Are you sure you want to delete your account? This action is permanent and all your data will be lost.")
+                LText("profile.delete_account_confirm")
             }
         }
     }
@@ -125,12 +126,11 @@ struct ProfileView: View {
             }
             .buttonStyle(BouncyButtonStyle())
 
-            Text("Profile")
+            LText("profile.title")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
         }
         .padding(.top, 60)
-        .padding(.bottom, 8)
         .offset(y: showContent ? 0 : 10)
         .opacity(showContent ? 1 : 0)
     }
@@ -205,17 +205,17 @@ struct ProfileView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Upgrade to Premium")
+                    LText("profile.upgrade_premium")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(.black)
-                    Text("Unlock all advanced features")
+                    LText("profile.unlock_features")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
                 
                 Spacer()
                 
-                Text("Upgrade")
+                LText("profile.upgrade")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
@@ -239,7 +239,7 @@ struct ProfileView: View {
     @ViewBuilder
     private var transactionImagesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "Transaction Images", actionTitle: "See All") {
+            sectionHeader(title: "profile.transaction_images".localized, actionTitle: "profile.see_all".localized) {
                 isShowingGallery = true
             }
             
@@ -275,16 +275,16 @@ struct ProfileView: View {
     @ViewBuilder
     private var badgesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "Earned Badges", actionTitle: "See All") {
+            sectionHeader(title: "profile.earned_badges".localized, actionTitle: "profile.see_all".localized) {
                 isShowingBadges = true
             }
             
             FlowLayout(spacing: 8) {
-                badgeTag(text: "Savings Master", color: .orange)
-                badgeTag(text: "Budget King", color: .purple)
-                badgeTag(text: "Smart Spender", color: .blue)
-                badgeTag(text: "Early Bird", color: .green)
-                badgeTag(text: "Streak Week", color: .red)
+                badgeTag(text: "profile.savings_master", color: .orange)
+                badgeTag(text: "profile.budget_king", color: .purple)
+                badgeTag(text: "profile.smart_spender", color: .blue)
+                badgeTag(text: "profile.early_bird", color: .green)
+                badgeTag(text: "profile.streak_week", color: .red)
             }
         }
         .offset(y: showContent ? 0 : 60)
@@ -294,15 +294,15 @@ struct ProfileView: View {
     @ViewBuilder
     private var premiumToolsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Premium Tools")
+            LText("profile.premium_tools")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
             VStack(spacing: 8) {
-                premiumToolItem(icon: "app.badge", title: "Custom App Icon", desc: "Personalize your app look", color: .orange)
-                premiumToolItem(icon: "arrow.triangle.2.circlepath", title: "Bank Sync", desc: "Auto-sync transactions", color: .blue)
-                premiumToolItem(icon: "person.2.fill", title: "Shared Budgets", desc: "Plan with your partner", color: .green)
-                premiumToolItem(icon: "chart.line.uptrend.xyaxis", title: "12-Month Forecast", desc: "Predict your future savings", color: .purple)
+                premiumToolItem(icon: "app.badge", title: "profile.custom_app_icon".localized, desc: "profile.personalize_look".localized, color: .orange)
+                premiumToolItem(icon: "arrow.triangle.2.circlepath", title: "profile.bank_sync".localized, desc: "profile.auto_sync".localized, color: .blue)
+                premiumToolItem(icon: "person.2.fill", title: "profile.shared_budgets".localized, desc: "profile.plan_partner".localized, color: .green)
+                premiumToolItem(icon: "chart.line.uptrend.xyaxis", title: "profile.forecast".localized, desc: "profile.predict_savings".localized, color: .purple)
             }
         }
         .offset(y: showContent ? 0 : 70)
@@ -312,15 +312,15 @@ struct ProfileView: View {
     @ViewBuilder
     private var permissionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Permissions")
+            LText("profile.permissions")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
-                rowItem(title: "Notifications", value: "Push, Email, Location") {
+                rowItem(title: "profile.notifications".localized, value: "profile.push_email_location".localized) {
                     isShowingNotifications = true
                 }
                 HStack {
-                    Text("Auto Detect Location")
+                    LText("profile.auto_detect_location")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     Spacer()
@@ -343,12 +343,12 @@ struct ProfileView: View {
     @ViewBuilder
     private var dataSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Data & Privacy")
+            LText("profile.data_privacy")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    Text("Currency")
+                    LText("onboarding.currency")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     
@@ -378,11 +378,44 @@ struct ProfileView: View {
                 
                 Divider().opacity(0.3).padding(.vertical, 4)
                 
-                rowItem(title: "Categories", icon: "list.bullet.indent") {
+                HStack(spacing: 12) {
+                    LText("profile.language")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.black)
+                    
+                    Spacer()
+                    
+                    Menu {
+                        Button("English") {
+                            loc.currentLanguage = "en"
+                        }
+                        Button("Tiếng Việt") {
+                            loc.currentLanguage = "vi"
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(loc.currentLanguage == "en" ? "English" : "Tiếng Việt")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.gray)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.gray.opacity(0.5))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.05))
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.vertical, 12)
+                
+                Divider().opacity(0.3).padding(.vertical, 4)
+                
+                rowItem(title: "categories.title".localized, icon: "list.bullet.indent") {
                     isShowingCategories = true
                 }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "Export Data", value: "Premium", icon: "lock.fill", isLocked: true) {
+                rowItem(title: "profile.export_data".localized, value: "auth.upgrade".localized, icon: "lock.fill", isLocked: true) {
                     isShowingUpgrade = true
                 }
             }
@@ -398,19 +431,19 @@ struct ProfileView: View {
     @ViewBuilder
     private var applicationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Application")
+            LText("profile.application")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
-                rowItem(title: "Suggest a Feature") {
+                rowItem(title: "profile.suggest_feature".localized) {
                     isShowingSuggest = true
                 }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "Rate the App")
+                rowItem(title: "profile.rate_app".localized)
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "Privacy Policy") { }
+                rowItem(title: "profile.privacy_policy".localized) { }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "Terms of Service") { }
+                rowItem(title: "profile.terms_service".localized) { }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 8)
@@ -424,13 +457,13 @@ struct ProfileView: View {
     @ViewBuilder
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Account")
+            LText("profile.account")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
                 Button(action: { isShowingLogoutAlert = true }) {
                     HStack {
-                        Text("Logout")
+                        LText("auth.logout")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black)
                         Spacer()
@@ -445,7 +478,7 @@ struct ProfileView: View {
                 
                 Button(action: { isShowingDeleteAlert = true }) {
                     HStack {
-                        Text("Delete Account")
+                        LText("profile.delete_account")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.red)
                         Spacer()
@@ -467,13 +500,13 @@ struct ProfileView: View {
     
     private func sectionHeader(title: String, actionTitle: String? = nil, onAction: (() -> Void)? = nil) -> some View {
         HStack {
-            Text(title)
+            LText(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             Spacer()
             if let action = actionTitle {
                 Button(action: { onAction?() }) {
-                    Text(action)
+                    LText(action)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(BouncyButtonStyle())
@@ -493,10 +526,10 @@ struct ProfileView: View {
                 .frame(width: 44, height: 44)
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    LText(title)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.black)
-                    Text(desc)
+                    LText(desc)
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
@@ -517,14 +550,14 @@ struct ProfileView: View {
     private func rowItem(title: String, value: String? = nil, icon: String? = nil, isLocked: Bool = false, action: @escaping () -> Void = {}) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Text(title)
+                LText(title)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.black)
                 
                 Spacer()
                 
                 if let v = value {
-                    Text(v)
+                    LText(v)
                         .font(.system(size: 12, weight: isLocked ? .bold : .medium))
                         .foregroundStyle(isLocked ? .orange : .gray)
                         .padding(.horizontal, 8)
@@ -544,7 +577,7 @@ struct ProfileView: View {
     }
     
     private func badgeTag(text: String, color: Color) -> some View {
-        Text(text)
+        LText(text)
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
@@ -563,14 +596,14 @@ struct ProfileView: View {
             VStack {
                 Text(title)
                     .font(.headline)
-                Text("This feature is coming soon...")
+                LText("profile.coming_soon")
                     .foregroundStyle(.gray)
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button("history.done".localized) {
                         isShowingEditProfile = false
                         isShowingUpgrade = false
                         isShowingCategories = false
@@ -584,16 +617,16 @@ struct ProfileView: View {
     private var currencySelectionSheet: some View {
         NavigationStack {
             List {
-                currencyRow(flag: "🇺🇸", code: "USD", name: "US Dollar")
-                currencyRow(flag: "🇻🇳", code: "VND", name: "Vietnamese Dong")
-                currencyRow(flag: "🇪🇺", code: "EUR", name: "Euro")
-                currencyRow(flag: "🇯🇵", code: "JPY", name: "Japanese Yen")
+                currencyRow(flag: "🇺🇸", code: "USD", name: "profile.usd_name".localized)
+                currencyRow(flag: "🇻🇳", code: "VND", name: "profile.vnd_name".localized)
+                currencyRow(flag: "🇪🇺", code: "EUR", name: "profile.eur_name".localized)
+                currencyRow(flag: "🇯🇵", code: "JPY", name: "profile.jpy_name".localized)
             }
-            .navigationTitle("Select Currency")
+            .navigationTitle("onboarding.currency".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { isShowingCurrency = false }
+                    Button("history.done".localized) { isShowingCurrency = false }
                 }
             }
         }

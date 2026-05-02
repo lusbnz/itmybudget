@@ -13,7 +13,7 @@ struct JourneyDetailSheet: View {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 20) {
                         HStack {
-                            Text("Spending Journey")
+                            LText("analytics_detail.spending_journey")
                                 .font(.system(size: 16, weight: .bold))
                             Spacer()
                             Image(systemName: "figure.walk")
@@ -21,7 +21,7 @@ struct JourneyDetailSheet: View {
                                 .foregroundStyle(.orange)
                         }
                         
-                        Text("You typically spend $45 on Friday, leading to a Saturday shopping spree. You are currently at Step 3.")
+                        LText("analytics_detail.journey_insight")
                             .font(.system(size: 13))
                             .lineSpacing(4)
                             .foregroundStyle(.black.opacity(0.7))
@@ -33,7 +33,7 @@ struct JourneyDetailSheet: View {
                     .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.black.opacity(0.05), lineWidth: 1))
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Detailed Journey Breakdown")
+                        LText("analytics_detail.journey_breakdown")
                             .font(.system(size: 14, weight: .bold))
                         
                         ForEach(1...3, id: \.self) { i in
@@ -44,9 +44,9 @@ struct JourneyDetailSheet: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(i == 1 ? "Friday Afternoon" : (i == 2 ? "Friday Evening" : "Saturday Morning"))
+                                    Text(i == 1 ? "analytics_detail.friday_afternoon".localized : (i == 2 ? "analytics_detail.friday_evening".localized : "analytics_detail.saturday_morning".localized))
                                         .font(.system(size: 14, weight: .semibold))
-                                    Text(i == 1 ? "Coffee & Snacks" : (i == 2 ? "Drinks with Friends" : "Shopping Spree"))
+                                    Text(i == 1 ? "analytics_detail.coffee_snacks".localized : (i == 2 ? "analytics_detail.drinks_friends".localized : "analytics_detail.shopping_spree".localized))
                                         .font(.system(size: 12))
                                         .foregroundStyle(.gray)
                                 }
@@ -62,10 +62,11 @@ struct JourneyDetailSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.05), lineWidth: 1))
                         }
                     }
-                    
+
                     Spacer(minLength: 100)
                 }
-                .padding(24)
+                .padding(.bottom, 24)
+                .padding(.horizontal, 24)
             }
         }
         .background(
@@ -81,9 +82,9 @@ struct JourneyDetailSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                LText(title)
                     .font(.system(size: 22, weight: .bold))
-                Text("Your spending habit journey")
+                LText("analytics_detail.habit_journey")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }
@@ -104,7 +105,7 @@ struct AnalyticDetailSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Spending Breakdown")
+                        LText("analytics_detail.spending_breakdown")
                             .font(.system(size: 16, weight: .bold))
                         
                         Chart {
@@ -125,7 +126,7 @@ struct AnalyticDetailSheet: View {
                             Image(systemName: "info.circle.fill")
                                 .font(.system(size: 14))
                                 .foregroundStyle(.gray)
-                            Text("Weekend spending is 2.5x higher than weekdays.")
+                            LText("analytics_detail.weekend_insight")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.gray)
                         }
@@ -137,10 +138,10 @@ struct AnalyticDetailSheet: View {
                     .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.black.opacity(0.05), lineWidth: 1))
                     
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        comparisonstatBox(title: "This Month", value: "$1,240", diff: "+12%", isUp: true)
-                        comparisonstatBox(title: "Avg Monthly", value: "$980", diff: "-5%", isUp: false)
-                        comparisonstatBox(title: "Highest Spending", value: "Saturdays", diff: nil, isUp: true)
-                        comparisonstatBox(title: "Budget Status", value: "Over Budget", diff: nil, isUp: true)
+                        comparisonstatBox(title: "analytics_detail.this_month".localized, value: "$1,240", diff: "+12%", isUp: true)
+                        comparisonstatBox(title: "analytics_detail.avg_monthly".localized, value: "$980", diff: "-5%", isUp: false)
+                        comparisonstatBox(title: "analytics_detail.highest_spending".localized, value: "analytics_detail.saturdays".localized, diff: nil, isUp: true)
+                        comparisonstatBox(title: "analytics_detail.budget_status".localized, value: "analytics_detail.over_budget".localized, diff: nil, isUp: true)
                     }
                     
                     Spacer(minLength: 100)
@@ -161,9 +162,9 @@ struct AnalyticDetailSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                LText(title)
                     .font(.system(size: 22, weight: .bold))
-                Text("Deep-dive into your financial habits")
+                LText("analytics_detail.financial_habits")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }
@@ -174,7 +175,7 @@ struct AnalyticDetailSheet: View {
     
     private func comparisonstatBox(title: String, value: String, diff: String?, isUp: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
+            LText(title)
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(.gray)
             

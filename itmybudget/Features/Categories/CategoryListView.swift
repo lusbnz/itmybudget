@@ -11,20 +11,22 @@ struct Category: Identifiable {
 extension Category {
     static var sampleData: [Category] {
         [
-            Category(name: "Food & Drink", icon: "cup.and.saucer.fill", color: .orange, isActive: true),
-            Category(name: "Shopping", icon: "cart.fill", color: .blue, isActive: true),
-            Category(name: "Transport", icon: "car.fill", color: .green, isActive: true),
-            Category(name: "Entertainment", icon: "popcorn.fill", color: .purple, isActive: true),
-            Category(name: "Health", icon: "heart.fill", color: .red, isActive: false),
-            Category(name: "Education", icon: "book.fill", color: .teal, isActive: true),
-            Category(name: "Home", icon: "house.fill", color: .brown, isActive: true),
-            Category(name: "Gifts", icon: "gift.fill", color: .pink, isActive: false)
+            Category(name: "categories.food_drink".localized, icon: "cup.and.saucer.fill", color: .orange, isActive: true),
+            Category(name: "categories.shopping".localized, icon: "cart.fill", color: .blue, isActive: true),
+            Category(name: "categories.transport".localized, icon: "car.fill", color: .green, isActive: true),
+            Category(name: "categories.entertainment".localized, icon: "popcorn.fill", color: .purple, isActive: true),
+            Category(name: "categories.health".localized, icon: "heart.fill", color: .red, isActive: false),
+            Category(name: "categories.education".localized, icon: "book.fill", color: .teal, isActive: true),
+            Category(name: "categories.home".localized, icon: "house.fill", color: .brown, isActive: true),
+            Category(name: "categories.gifts".localized, icon: "gift.fill", color: .pink, isActive: false)
         ]
     }
 }
 
 struct CategoryListView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
+    
     @State private var categories = Category.sampleData
     @State private var showContent = false
     @State private var showingFormSheet = false
@@ -56,6 +58,9 @@ struct CategoryListView: View {
             withAnimation(.easeOut(duration: 0.6)) {
                 showContent = true
             }
+        }
+        .onChange(of: loc.currentLanguage) {
+            categories = Category.sampleData
         }
             .sheet(isPresented: $showingFormSheet) {
                 CategoryFormSheet(
@@ -90,7 +95,7 @@ struct CategoryListView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Text("Categories")
+            LText("categories.title")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -101,7 +106,7 @@ struct CategoryListView: View {
                 showingFormSheet = true
             }) {
                 HStack(spacing: 4) {
-                    Text("Create New")
+                    LText("planning.create_new")
                         .font(.system(size: 12, weight: .bold))
                     Image(systemName: "plus")
                         .font(.system(size: 10, weight: .bold))
@@ -120,7 +125,7 @@ struct CategoryListView: View {
     }
     
     private var subtitle: some View {
-        Text("Explore your categories")
+        LText("categories.explore")
             .font(.system(size: 14))
             .foregroundStyle(.gray)
             .offset(y: showContent ? 0 : 15)

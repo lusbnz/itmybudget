@@ -40,7 +40,7 @@ struct NotificationsView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Text("Notifications")
+            LText("notifications.title")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -50,13 +50,13 @@ struct NotificationsView: View {
                 Button(action: {
                     viewModel.markAllAsRead()
                 }) {
-                    Label("Mark all as read", systemImage: "checkmark.circle")
+                    Label("notifications.mark_all_read".localized, systemImage: "checkmark.circle")
                 }
                 
                 Button(role: .destructive, action: {
                     viewModel.deleteAll()
                 }) {
-                    Label("Delete all", systemImage: "trash")
+                    Label("notifications.delete_all".localized, systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -80,7 +80,7 @@ struct NotificationsView: View {
                     }
                 }) {
                     HStack(spacing: 6) {
-                        Text(tab.rawValue)
+                        LText(tab.rawValue)
                             .font(.system(size: 13, weight: viewModel.selectedTab == tab ? .semibold : .medium))
                         
                         if tab == .unread && viewModel.unreadCount > 0 {
@@ -144,7 +144,7 @@ struct NotificationsView: View {
                         .padding(.horizontal, 40)
                         .padding(.vertical, 20)
                     
-                    Text("All caught up!")
+                    LText("notifications.all_caught_up")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.gray.opacity(0.6))
                     
@@ -183,10 +183,10 @@ struct NotificationsView: View {
             }
             
             VStack(spacing: 8) {
-                Text("Empty")
+                LText("notifications.empty")
                     .font(.system(size: 18, weight: .semibold))
                 
-                Text(viewModel.selectedTab == .all ? "You have no notifications yet" : "You've read all your notifications")
+                LText(viewModel.selectedTab == .all ? "notifications.no_notifications" : "notifications.all_read")
                     .font(.system(size: 14))
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)

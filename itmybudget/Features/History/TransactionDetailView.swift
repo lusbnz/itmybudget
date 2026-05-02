@@ -43,23 +43,23 @@ struct TransactionDetailView: View {
             }
         }
         .navigationBarHidden(true)
-        .alert("Delete Transaction", isPresented: $showingDeleteAlert) {
-            Button("Delete", role: .destructive) {
+        .alert("transaction_detail.delete_title".localized, isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized, role: .cancel) {}
+            Button("transaction_detail.delete_transaction".localized, role: .destructive) {
                 dismiss()
             }
-            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Are you sure you want to delete this transaction? This action cannot be undone.")
+            LText("transaction_detail.delete_message")
         }
         .fullScreenCover(isPresented: $showingEditSheet) {
             TransactionFormView(transactionToEdit: transaction)
         }
         .sheet(isPresented: $showingJourneySheet) {
-            JourneyDetailSheet(title: "Journey Details")
+            JourneyDetailSheet(title: "transaction_detail.view_journey".localized)
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticSheet) {
-            AnalyticDetailSheet(title: "Detailed Analysis")
+            AnalyticDetailSheet(title: "transaction_detail.view_analysis".localized)
                 .presentationDragIndicator(.visible)
         }
     }
@@ -86,7 +86,7 @@ struct TransactionDetailView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Text("Transaction Detail")
+            LText("transaction_detail.title")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -94,10 +94,10 @@ struct TransactionDetailView: View {
             
             Menu {
                 Button(action: { showingEditSheet = true }) {
-                    Label("Edit Details", systemImage: "pencil")
+                    Label("transaction_detail.edit_details".localized, systemImage: "pencil")
                 }
                 Button(role: .destructive, action: { showingDeleteAlert = true }) {
-                    Label("Delete Transaction", systemImage: "trash")
+                    Label("transaction_detail.delete_transaction".localized, systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -122,12 +122,12 @@ struct TransactionDetailView: View {
                 .foregroundStyle(.black)
             
             HStack(spacing: 4) {
-                Text("You spent")
+                LText("transaction_detail.you_spent")
                     .foregroundStyle(.gray)
                 Text(transaction.amountString)
                     .fontWeight(.bold)
                     .foregroundStyle(.black)
-                Text("on this transaction")
+                LText("transaction_detail.on_this_transaction")
                     .foregroundStyle(.gray)
             }
             .font(.system(size: 14))
@@ -140,8 +140,8 @@ struct TransactionDetailView: View {
         FlowLayout(spacing: 8) {
             tagItem(text: transaction.date.formatted(date: .abbreviated, time: .shortened), icon: "calendar", color: .purple)
             tagItem(text: transaction.budgetName, icon: "wallet.pass.fill", color: .blue)
-            tagItem(text: "Eating", icon: "fork.knife", color: .orange)
-            tagItem(text: "Recurring", icon: "repeat", color: .green)
+            tagItem(text: "transaction_detail.eating".localized, icon: "fork.knife", color: .orange)
+            tagItem(text: "transaction_detail.recurring".localized, icon: "repeat", color: .green)
         }
         .padding(.horizontal, 20)
     }
@@ -172,8 +172,8 @@ struct TransactionDetailView: View {
     private var aiInsightSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             AIInsightCarousel(
-                content: "This transaction is 15% higher than your other average spending. Consider adjusting your next week's budget to stay on track.",
-                cta: "View Journey Detail",
+                content: "transaction_detail.higher_spend".localized,
+                cta: "transaction_detail.view_journey".localized,
                 onCTATap: {
                     showingJourneySheet = true
                 }
@@ -183,7 +183,7 @@ struct TransactionDetailView: View {
     }
     
     private var locationMapSection: some View {
-        SectionContainer(title: "Location") {
+        SectionContainer(title: "transaction_detail.location".localized) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
                     Image(systemName: "mappin.and.ellipse")
@@ -197,7 +197,7 @@ struct TransactionDetailView: View {
                         Text(transaction.location)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(.black)
-                        Text("View on Apple Maps")
+                        LText("transaction_detail.view_on_maps")
                             .font(.system(size: 12))
                             .foregroundStyle(.gray)
                     }
@@ -218,7 +218,7 @@ struct TransactionDetailView: View {
     }
     
     private var photoGallerySection: some View {
-        SectionContainer(title: "Photos") {
+        SectionContainer(title: "transaction_detail.photos".localized) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     if transaction.images.isEmpty {
@@ -265,7 +265,7 @@ struct SectionContainer<Content: View>: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
+            LText(title)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.black.opacity(0.8))
                 .padding(.horizontal, 16)

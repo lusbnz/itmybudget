@@ -12,6 +12,7 @@ struct BudgetDetailView: View {
     @State private var showingHistorySheet = false
     @EnvironmentObject private var navState: AppNavigationState
     @Namespace private var tabNamespace
+    @Environment(LocalizationManager.self) private var loc
     @State private var selectedTransaction: Transaction? = nil
     
     init(budget: Budget) {
@@ -20,8 +21,12 @@ struct BudgetDetailView: View {
     }
     
     enum SpendingTab: String, CaseIterable {
-        case week = "This Week"
-        case month = "This Month"
+        case week = "budget_detail.this_week"
+        case month = "budget_detail.this_month"
+        
+        var localizedName: String {
+            self.rawValue.localized
+        }
     }
     
     private let incomeAmount: Double = 85.0
@@ -53,8 +58,8 @@ struct BudgetDetailView: View {
                         .padding(.horizontal, 20)
                     
                     AIInsightCarousel(
-                        content: "You are projected to exceed your budget on the 26th of this month.",
-                        cta: "View Detail Analysis",
+                        content: "budget_detail.projection_exceed".localized,
+                        cta: "budget_detail.view_detail_analysis".localized,
                         onCTATap: {
                             showingAnalyticsSheet = true
                         }
@@ -124,17 +129,17 @@ struct BudgetDetailView: View {
             }
             
             SimpleTransactionListSheet(
-                title: "Latest",
+                title: "history.all".localized,
                 transactions: budgetTransactions.isEmpty ? Array(Transaction.sampleData.prefix(10)) : budgetTransactions
             )
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAnalyticsSheet) {
-            AnalyticDetailSheet(title: "\(currentBudget.name) Analysis")
+            AnalyticDetailSheet(title: "\(currentBudget.name) " + "budget_detail.analysis".localized)
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingJourneySheet) {
-            JourneyDetailSheet(title: "\(currentBudget.name) Journey")
+            JourneyDetailSheet(title: "\(currentBudget.name) " + "budget_detail.journey".localized)
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingTransferSheet) {
@@ -156,10 +161,10 @@ struct BudgetDetailView: View {
                 .foregroundStyle(.black)
             
             HStack(spacing: 4) {
-                Text("You spent")
+                LText("budget_detail.you_spent")
                 Text(formatCurrency(currentBudget.spent))
                     .fontWeight(.bold)
-                Text("of")
+                LText("budget_detail.of")
                 Text(formatCurrency(currentBudget.total))
                     .fontWeight(.bold)
             }
@@ -168,7 +173,10 @@ struct BudgetDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.left.arrow.right")
                     .font(.system(size: 14))
-                Text("**\(transactionsCount) transactions** this month")
+                HStack(spacing: 4) {
+                    Text("**\(transactionsCount)")
+                    LText("budget_detail.transactions_this_month")
+                }
             }
             .font(.system(size: 14))
         }
@@ -188,7 +196,7 @@ struct BudgetDetailView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            Text("Budget Detail")
+            LText("budget_detail.title")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -196,15 +204,15 @@ struct BudgetDetailView: View {
             
             Menu {
                 Button(action: { showingBudgetSheet = true }) {
-                    Label("Edit Details", systemImage: "pencil")
+                    Label("transaction_detail.edit_details".localized, systemImage: "pencil")
                 }
                 
                 Button(action: {}) {
-                    Label("Set as Default", systemImage: "star")
+                    Label("budget_detail.set_default".localized, systemImage: "star")
                 }
                 
                 Button(role: .destructive, action: { dismiss() }) {
-                    Label("Delete Budget", systemImage: "trash")
+                    Label("budget_detail.delete_budget".localized, systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -220,11 +228,11 @@ struct BudgetDetailView: View {
     private var limitBox: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("This month's limit")
+                LText("budget_detail.month_limit")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.gray)
                 Spacer()
-                Text("Remaining")
+                LText("budget_detail.remaining")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.gray)
             }
@@ -262,11 +270,11 @@ struct BudgetDetailView: View {
                 Image(systemName: "repeat")
                     .font(.system(size: 10))
                 HStack(spacing: 4) {
-                    Text("Top-up")
+                    LText("budget_detail.top_up")
                     Text(formatCurrency(currentBudget.total))
                         .fontWeight(.bold)
                     Text("/")
-                    Text("1 month")
+                    LText("budget_detail.per_month")
                         .fontWeight(.bold)
                 }
             }
@@ -286,7 +294,7 @@ struct BudgetDetailView: View {
     private var incomeOutcomeSection: some View {
         HStack(spacing: 8) {
             statusCard(
-                title: "Income",
+                title: "budget_detail.income".localized,
                 amount: incomeAmount,
                 trend: incomeTrend,
                 icon: "arrow.down.circle.fill",
@@ -294,7 +302,7 @@ struct BudgetDetailView: View {
             )
             
             statusCard(
-                title: "Outcome",
+                title: "budget_detail.outcome".localized,
                 amount: outcomeAmount,
                 trend: "-1.2%",
                 icon: "arrow.up.circle.fill",
@@ -342,7 +350,7 @@ struct BudgetDetailView: View {
     private var dailySpendingSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack {
-                Text("Daily")
+                LText("budget_detail.daily")
                     .font(.system(size: 16, weight: .bold))
                 
                 Spacer()
@@ -354,7 +362,7 @@ struct BudgetDetailView: View {
                                 spendingTab = tab 
                             }
                         }) {
-                            Text(tab.rawValue)
+                            Text(tab.localizedName)
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(spendingTab == tab ? .white : .gray)
                                 .padding(.horizontal, 12)
@@ -411,13 +419,13 @@ struct BudgetDetailView: View {
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Lastest Transactions")
+                LText("budget_detail.latest_transactions")
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
                 Button(action: {
                     showingHistorySheet = true
                 }) {
-                    Text("See All")
+                    LText("home.see_all")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(.gray)
                 }
@@ -450,7 +458,7 @@ struct BudgetDetailView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
-                    Text("Top-up")
+                    LText("budget_detail.top_up")
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.white)
@@ -468,7 +476,7 @@ struct BudgetDetailView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.left.arrow.right")
-                    Text("Transfer")
+                    LText("budget_detail.transfer")
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.black.opacity(0.8))
@@ -499,9 +507,9 @@ struct BudgetDetailView: View {
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencySymbol = "$"
+        formatter.currencySymbol = loc.currentLanguage == "vi" ? "đ" : "$"
         formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: value)) ?? "$\(Int(value))"
+        return formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))"
     }
     
     private struct SpendingPoint: Identifiable {

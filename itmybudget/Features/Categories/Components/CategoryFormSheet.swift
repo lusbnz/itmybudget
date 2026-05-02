@@ -46,11 +46,11 @@ struct CategoryFormSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Category Name")
+                        LText("categories.category_name")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("e.g., Food & Drink", text: $name)
+                        TextField("categories.placeholder_name".localized, text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -62,7 +62,7 @@ struct CategoryFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Choose Icon")
+                        LText("categories.choose_icon")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -90,7 +90,7 @@ struct CategoryFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Choose Color")
+                        LText("categories.choose_color")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -122,9 +122,9 @@ struct CategoryFormSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Active Status")
+                                LText("categories.active_status")
                                     .font(.system(size: 14, weight: .bold))
-                                Text(isActive ? "Category is visible in lists" : "Category is hidden")
+                                LText(isActive ? "categories.visible_msg" : "categories.hidden_msg")
                                     .font(.system(size: 12))
                                     .foregroundStyle(.gray)
                             }
@@ -160,7 +160,7 @@ struct CategoryFormSheet: View {
                     dismiss()
                 }
             }) {
-                Text(isEditMode ? "Update Category" : "Create Category")
+                LText(isEditMode ? "categories.update_category" : "categories.create_category")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -184,7 +184,7 @@ struct CategoryFormSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            Text(isEditMode ? "Edit Category" : "New Category")
+            LText(isEditMode ? "categories.edit_category" : "categories.new_category")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -196,7 +196,7 @@ struct CategoryFormSheet: View {
                         onDelete?()
                         dismiss()
                     } label: {
-                        Label("Delete Category", systemImage: "trash")
+                        Label("categories.delete_category".localized, systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")

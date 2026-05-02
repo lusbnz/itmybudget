@@ -2,9 +2,13 @@ import Foundation
 import SwiftUI
 
 enum TransactionType: String, CaseIterable {
-    case all = "All"
-    case income = "Income"
-    case outcome = "Outcome"
+    case all = "history.all"
+    case income = "budget_detail.income"
+    case outcome = "budget_detail.outcome"
+    
+    var localizedName: String {
+        self.rawValue.localized
+    }
 }
 
 struct Transaction: Identifiable, Equatable {
@@ -21,11 +25,17 @@ struct Transaction: Identifiable, Equatable {
     let isImageIcon: Bool
     
     var amountString: String {
+        let isVietnamese = LocalizationManager.shared.currentLanguage == "vi"
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencySymbol = "$"
-        let value = type == .outcome ? -amount : amount
-        return formatter.string(from: NSNumber(value: value)) ?? "$0.00"
+        formatter.currencySymbol = isVietnamese ? "đ" : "$"
+        formatter.positivePrefix = isVietnamese ? "" : "+"
+        formatter.positiveSuffix = isVietnamese ? "đ" : ""
+        formatter.negativePrefix = isVietnamese ? "-" : "-$"
+        formatter.negativeSuffix = isVietnamese ? "đ" : ""
+        
+        let value = type == .income ? amount : -amount
+        return formatter.string(from: NSNumber(value: value)) ?? (isVietnamese ? "0đ" : "$0.00")
     }
     
     var dateString: String {

@@ -10,6 +10,7 @@ struct PulseData: Identifiable {
 
 struct HomeView: View {
     @EnvironmentObject private var navState: AppNavigationState
+    @Environment(LocalizationManager.self) private var loc
     @State private var showHeader: Bool = false
     @State private var showSections: Bool = false
     @State private var selectedFilter: TransactionType = .all
@@ -73,7 +74,7 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showAllTransactions) {
                 SimpleTransactionListSheet(
-                    title: "Latest",
+                    title: "home.latest_transactions".localized,
                     transactions: filteredTransactions
                 )
                 .presentationDragIndicator(.visible)
@@ -85,11 +86,11 @@ struct HomeView: View {
                 ProfileView()
             }
             .sheet(isPresented: $showingJourneySheet) {
-                JourneyDetailSheet(title: "Journey Details")
+                JourneyDetailSheet(title: "home.journey_details".localized)
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingAnalyticSheet) {
-                AnalyticDetailSheet(title: "Detailed Analysis")
+                AnalyticDetailSheet(title: "home.detailed_analysis".localized)
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingBadgeList) {
@@ -172,7 +173,7 @@ struct HomeView: View {
             }
                                         
             HStack(spacing: 8) {
-                Text("29 March 2026")
+                Text(Date().formatted(date: .long, time: .omitted))
             }
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(.gray)
@@ -182,12 +183,12 @@ struct HomeView: View {
         
             HStack(spacing: 8) {
                 Button(action: { showingBadgeList = true }) {
-                    badgeTag(text: "Savings Master", color: .orange)
+                    badgeTag(text: "profile.savings_master", color: .orange)
                 }
                 .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { showingBadgeList = true }) {
-                    badgeTag(text: "Saving Streak", color: .green)
+                    badgeTag(text: "home.saving_streak", color: .green)
                 }
                 .buttonStyle(BouncyButtonStyle())
             }
@@ -201,12 +202,12 @@ struct HomeView: View {
     private var overviewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(
-                title: "Weekly Overview",
+                title: "home.weekly_overview".localized,
             )
             
             AIInsightCarousel(
-                content: "Every time you go out for drinks on Friday night, you usually spend another **$20** on *online shopping* on Saturday.",
-                cta: "View Journey Detail",
+                content: "home.friday_combo".localized,
+                cta: "home.view_journey_detail".localized,
                 onCTATap: {
                     showingJourneySheet = true
                 }
@@ -221,22 +222,22 @@ struct HomeView: View {
     private var pulseSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(
-                title: "Financial Pulse",
+                title: "home.financial_pulse".localized,
             )
             
             HStack(spacing: 12) {
                 FinancialPulseCard(
-                    title: "Balance",
-                    value: "$12.450",
+                    title: "home.balance".localized,
+                    value: "\(loc.currentLanguage == "vi" ? "" : "$")12.450\(loc.currentLanguage == "vi" ? "đ" : "")",
                     trend: "+2.4%",
                     color: .teal,
                     data: balanceSampleData
                 )
                 
                 FinancialPulseCard(
-                    title: "Burn Rate",
-                    value: "$85",
-                    subtitle: "/day",
+                    title: "home.burn_rate".localized,
+                    value: "\(loc.currentLanguage == "vi" ? "" : "$")85\(loc.currentLanguage == "vi" ? "đ" : "")",
+                    subtitle: "home.per_day".localized,
                     trend: "-15%",
                     color: .orange,
                     data: burnRateSampleData
@@ -252,8 +253,8 @@ struct HomeView: View {
     private var transactionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "Latest Transactions",
-                extraActionTitle: "See All",
+                title: "home.latest_transactions".localized,
+                extraActionTitle: "home.see_all".localized,
                 onExtraAction: {
                     showAllTransactions = true
                 }
@@ -297,8 +298,8 @@ struct HomeView: View {
     private var budgetSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "Budget Tracking",
-                extraActionTitle: "See All",
+                title: "home.budget_tracking".localized,
+                extraActionTitle: "home.see_all".localized,
                 onExtraAction: {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                         navState.selectedTab = 1
@@ -322,7 +323,7 @@ struct HomeView: View {
     @ViewBuilder
     private func sectionHeader(title: String, extraActionTitle: String? = nil, onExtraAction: (() -> Void)? = nil) -> some View {
         HStack(alignment: .center, spacing: 0) {
-            Text(title)
+            LText(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -332,7 +333,7 @@ struct HomeView: View {
                 Button(action: {
                     onExtraAction?()
                 }) {
-                    Text(extra)
+                    LText(extra)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(BouncyButtonStyle())
@@ -342,7 +343,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func badgeTag(text: String, color: Color) -> some View {
-        Text(text)
+        LText(text)
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
@@ -357,6 +358,7 @@ struct HomeView: View {
 }
 
 struct FinancialPulseCard: View {
+    @Environment(LocalizationManager.self) private var loc
     let title: String
     let value: String
     var subtitle: String? = nil
@@ -367,7 +369,7 @@ struct FinancialPulseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(title)
+                LText(title)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.gray)
                 Spacer()
@@ -381,7 +383,7 @@ struct FinancialPulseCard: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
                 if let subtitle = subtitle {
-                    Text(subtitle)
+                    LText(subtitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.gray)
                         .padding(.bottom, 2)

@@ -11,14 +11,13 @@ struct OnboardingStep {
 
 struct OnboardingView: View {
     @Environment(AppStateManager.self) private var appStateManager
+    @Environment(LocalizationManager.self) private var loc
     @State private var selection: Int = 0
     
     @State private var autoDetectLocation: Bool = true
     @State private var isShowingNotifications = false
-    @State private var isShowingCurrency = false
-    @State private var isShowingLanguage = false
-    @State private var selectedCurrency = "USD ($)"
-    @State private var selectedLanguage = "Tiếng Việt"
+    @State private var selectedCurrency = "USD"
+    @State private var selectedCurrencyLabel = "USD ($)"
     
     @State private var onboardingCategories = Category.sampleData
     
@@ -26,32 +25,34 @@ struct OnboardingView: View {
     @State private var budgetAmount: String = ""
     @State private var shimmerOffset: CGFloat = -0.5
     
-    let steps = [
-        OnboardingStep(
-            title: "Basic Setup",
-            description: "Personalize your experience by choosing your preferred currency.",
-            percentage: "33%",
-            progress: 0.33,
-            color: .teal,
-            footerNote: "You can always update these preferences in the Personal Information section!"
-        ),
-        OnboardingStep(
-            title: "Expense Categories",
-            description: "Select the categories you spend on most frequently to help us optimize your financial charts.",
-            percentage: "66%",
-            progress: 0.66,
-            color: .orange,
-            footerNote: "You can modify or add/remove spending categories at any time after setup!"
-        ),
-        OnboardingStep(
-            title: "First Budget",
-            description: "Set up your budget to let itmybudget automatically optimize your personal finances.",
-            percentage: "99%",
-            progress: 0.99,
-            color: .green,
-            footerNote: "$500 based on the average spending of users with similar income in your area!"
-        )
-    ]
+    var steps: [OnboardingStep] {
+        [
+            OnboardingStep(
+                title: "onboarding.step1_title".localized,
+                description: "onboarding.step1_desc".localized,
+                percentage: "33%",
+                progress: 0.33,
+                color: .teal,
+                footerNote: "onboarding.footer1".localized
+            ),
+            OnboardingStep(
+                title: "onboarding.step2_title".localized,
+                description: "onboarding.step2_desc".localized,
+                percentage: "66%",
+                progress: 0.66,
+                color: .orange,
+                footerNote: "onboarding.footer2".localized
+            ),
+            OnboardingStep(
+                title: "onboarding.step3_title".localized,
+                description: "onboarding.step3_desc".localized,
+                percentage: "99%",
+                progress: 0.99,
+                color: .green,
+                footerNote: "onboarding.footer3".localized
+            )
+        ]
+    }
     
     var body: some View {
         ZStack {
@@ -63,7 +64,7 @@ struct OnboardingView: View {
             .ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: 0) {
-                Text("itmybudget")
+                LText("app_name")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.black)
                     .padding(.top, 20)
@@ -186,7 +187,7 @@ struct OnboardingView: View {
                                 selection -= 1
                             }
                         }) {
-                            Text("Back")
+                            LText("onboarding.back")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundStyle(.gray)
                                 .frame(width: 110)
@@ -207,7 +208,7 @@ struct OnboardingView: View {
                             appStateManager.moveToMain()
                         }
                     }) {
-                        Text(selection == 2 ? "Confirm and create" : "Continue")
+                        LText(selection == 2 ? "onboarding.confirm" : "onboarding.continue")
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
@@ -230,19 +231,19 @@ struct OnboardingView: View {
     @ViewBuilder
     private var permissionSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Permission")
+            LText("onboarding.permission")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
             VStack(spacing: 0) {
-                rowItem(title: "Thông báo", value: "Cho phép") {
+                rowItem(title: "onboarding.notifications", value: "onboarding.allow") {
                     isShowingNotifications = true
                 }
                 
                 Divider().opacity(0.3)
                 
                 HStack {
-                    Text("Auto Detect Location")
+                    LText("onboarding.auto_location")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     Spacer()
@@ -265,25 +266,58 @@ struct OnboardingView: View {
     @ViewBuilder
     private var dataSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Data")
+            LText("onboarding.data")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    Text("Tiền tệ")
+                    LText("onboarding.currency")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     
                     Spacer()
                     
                     Menu {
-                        Button("USD ($)") { selectedCurrency = "USD ($)" }
-                        Button("VND (đ)") { selectedCurrency = "VND (đ)" }
-                        Button("EUR (€)") { selectedCurrency = "EUR (€)" }
+                        Button("USD ($)") { selectedCurrency = "USD"; selectedCurrencyLabel = "USD ($)" }
+                        Button("VND (đ)") { selectedCurrency = "VND"; selectedCurrencyLabel = "VND (đ)" }
+                        Button("EUR (€)") { selectedCurrency = "EUR"; selectedCurrencyLabel = "EUR (€)" }
                     } label: {
                         HStack(spacing: 4) {
-                            Text(selectedCurrency)
+                            Text(selectedCurrencyLabel)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.gray)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.gray.opacity(0.5))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.05))
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.vertical, 12)
+                
+                Divider().opacity(0.3).padding(.vertical, 4)
+                
+                HStack(spacing: 12) {
+                    LText("profile.language")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.black)
+                    
+                    Spacer()
+                    
+                    Menu {
+                        Button("English") {
+                            loc.currentLanguage = "en"
+                        }
+                        Button("Tiếng Việt") {
+                            loc.currentLanguage = "vi"
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(loc.currentLanguage == "en" ? "English" : "Tiếng Việt")
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(.gray)
                             Image(systemName: "chevron.up.chevron.down")
@@ -310,14 +344,14 @@ struct OnboardingView: View {
     private func rowItem(title: String, value: String? = nil, icon: String? = nil, isLocked: Bool = false, action: @escaping () -> Void = {}) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Text(title)
+                LText(title)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.black)
                 
                 Spacer()
                 
                 if let v = value {
-                    Text(v)
+                    LText(v)
                         .font(.system(size: 12, weight: isLocked ? .bold : .medium))
                         .foregroundStyle(isLocked ? .orange : .gray)
                         .padding(.horizontal, 8)
@@ -339,7 +373,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var categorySelectionSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Select Categories")
+            LText("onboarding.select_categories")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -377,11 +411,11 @@ struct OnboardingView: View {
     private var budgetSetupSection: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Tên ngân sách")
+                LText("onboarding.budget_name")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black.opacity(0.8))
                 
-                TextField("Ví dụ: Hàng ngày, Du lịch...", text: $budgetName)
+                TextField("onboarding.budget_name_placeholder".localized, text: $budgetName)
                     .font(.system(size: 16, weight: .medium))
                     .padding(16)
                     .background(Color.white)
@@ -393,7 +427,7 @@ struct OnboardingView: View {
             }
             
             VStack(alignment: .leading, spacing: 10) {
-                Text("Số tiền ngân sách")
+                LText("onboarding.budget_amount")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black.opacity(0.8))
                 
@@ -402,7 +436,7 @@ struct OnboardingView: View {
                         .keyboardType(.numberPad)
                         .font(.system(size: 16, weight: .bold))
                     
-                    Text(selectedCurrency ?? "USD")
+                    Text(selectedCurrencyLabel)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.gray)
                 }
@@ -420,7 +454,7 @@ struct OnboardingView: View {
                             Button(action: {
                                 budgetAmount = String(format: "%.0f", val)
                             }) {
-                                Text("\(selectedCurrency.contains("USD") ? "$" : "")\(formatValue(val))")
+                                Text("\(selectedCurrency == "USD" ? "$" : "")\(formatValue(val))\(selectedCurrency == "VND" ? "đ" : "")")
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundStyle(.black)
                                     .padding(.horizontal, 16)

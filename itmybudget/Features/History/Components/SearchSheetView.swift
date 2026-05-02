@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SearchSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     @Binding var searchText: String
     @FocusState private var isSearchFocused: Bool
     @State private var selectedTransaction: Transaction? = nil
@@ -57,7 +58,7 @@ struct SearchSheetView: View {
                     .font(.system(size: 16))
                     .foregroundColor(.gray)
                 
-                TextField("Search your transactions...", text: $searchText)
+                TextField("history.search_transactions".localized, text: $searchText)
                     .font(.system(size: 16, weight: .medium))
                     .focused($isSearchFocused)
                     .submitLabel(.search)
@@ -80,7 +81,7 @@ struct SearchSheetView: View {
                 isSearchFocused = true
             }
             
-            Button("Done") {
+            Button("history.done".localized) {
                 dismiss()
             }
             .font(.system(size: 15, weight: .bold))
@@ -94,9 +95,9 @@ struct SearchSheetView: View {
     @ViewBuilder
     private var resultsContent: some View {
         if searchText.isEmpty {
-            emptyState(icon: "magnifyingglass", title: "Type something to search")
+            emptyState(icon: "magnifyingglass", title: "history.type_to_search".localized)
         } else if filteredResults.isEmpty {
-            emptyState(icon: "tray.fill", title: "No transactions found for \"\(searchText)\"")
+            emptyState(icon: "tray.fill", title: "\("history.no_results".localized) \"\(searchText)\"")
         } else {
             resultsList
         }
@@ -155,7 +156,7 @@ struct SearchSheetView: View {
     
     private func totalAmount(for transactions: [Transaction]) -> String {
         let total = transactions.reduce(0) { $0 + ($1.type == .income ? $1.amount : -$1.amount) }
-        return String(format: "$%.0f", total)
+        return "\(loc.currentLanguage == "vi" ? "" : "$")\(Int(total))\(loc.currentLanguage == "vi" ? "đ" : "")"
     }
     
     private func emptyState(icon: String, title: String) -> some View {

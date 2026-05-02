@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TransactionItemView: View {
+    @Environment(LocalizationManager.self) private var loc
     let transaction: Transaction
     var onTap: (() -> Void)? = nil
     
@@ -76,7 +77,7 @@ private struct TransactionInfoView: View {
                 if !transaction.images.isEmpty {
                     Text("•")
                     HStack(spacing: 2) {
-                        Text("\(transaction.images.count) Pics")
+                        Text("\(transaction.images.count) \("transaction_detail.pics".localized)")
                     }
                 }
                 
@@ -91,6 +92,7 @@ private struct TransactionInfoView: View {
 }
 
 private struct TransactionAmountView: View {
+    @Environment(LocalizationManager.self) private var loc
     let transaction: Transaction
     
     var body: some View {

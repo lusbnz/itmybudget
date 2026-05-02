@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SimpleTransactionListSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     let title: String
     let transactions: [Transaction]
     @State private var selectedTransaction: Transaction? = nil
@@ -21,7 +22,7 @@ struct SimpleTransactionListSheet: View {
                     showingAddSheet = true
                 }) {
                     HStack(spacing: 6) {
-                        Text("Add New")
+                        LText("planning.create_new")
                             .font(.system(size: 14, weight: .bold))
                         Image(systemName: "plus")
                             .font(.system(size: 14, weight: .bold))
@@ -44,11 +45,11 @@ struct SimpleTransactionListSheet: View {
                 }
                 
                 HStack(spacing: 4) {
-                    Text("You spent")
+                    LText("history.you_spent")
                         .foregroundStyle(.gray)
-                    Text("$\(Int(total))")
+                    Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(total))\(loc.currentLanguage == "vi" ? "đ" : "")")
                         .fontWeight(.bold)
-                    Text("in this list")
+                    LText("history.in_this_list")
                         .foregroundStyle(.gray)
                 }
                 .font(.system(size: 14))
@@ -70,7 +71,7 @@ struct SimpleTransactionListSheet: View {
                             Image(systemName: "tray.fill")
                                 .font(.system(size: 40))
                                 .foregroundStyle(.gray.opacity(0.3))
-                            Text("No transactions found")
+                            LText("history.no_results")
                                 .font(.system(size: 14))
                                 .foregroundStyle(.gray)
                         }

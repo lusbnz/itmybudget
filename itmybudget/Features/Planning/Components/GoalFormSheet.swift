@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GoalFormSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationManager.self) private var loc
     
     let goalToEdit: PersonalGoal?
     let budgets: [Budget]
@@ -53,18 +54,18 @@ struct GoalFormSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    Text("Give your goal a name and set your sights on the finish line.")
+                    LText("goal_form.description")
                         .font(.system(size: 14))
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, -8)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Goal Name")
+                        LText("goal_form.goal_name")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("e.g., Dream House", text: $name)
+                        TextField("goal_form.goal_name_placeholder".localized, text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -76,13 +77,13 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Source")
+                        LText("transfer.source_budget")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
                         Button(action: { isShowingBudgetSelector = true }) {
                             HStack {
-                                Text(budgets.first(where: { $0.id == selectedBudgetId })?.name ?? "Select Budget")
+                                Text(budgets.first(where: { $0.id == selectedBudgetId })?.name ?? "selector.select_budget".localized)
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(selectedBudgetId == nil ? .gray : .black)
                                 Spacer()
@@ -102,7 +103,7 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Target Amount")
+                        LText("goal_form.target_amount")
                             .font(.system(size: 14, weight: .bold))
                         
                         HStack {
@@ -128,7 +129,7 @@ struct GoalFormSheet: View {
                                     Button(action: {
                                         targetAmount = String(format: "%.0f", val)
                                     }) {
-                                        Text("$\(formatCurrency(val))")
+                                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(formatCurrency(val))\(loc.currentLanguage == "vi" ? "đ" : "")")
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundStyle(.black)
                                             .padding(.horizontal, 16)
@@ -148,7 +149,7 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Target Date")
+                        LText("goal_form.target_date")
                             .font(.system(size: 14, weight: .bold))
                         
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -159,7 +160,7 @@ struct GoalFormSheet: View {
                                             targetMonths = months
                                         }
                                     }) {
-                                        Text("\(months) months")
+                                        Text("\(months) \("goal_form.months".localized)")
                                             .font(.system(size: 12, weight: targetMonths == months ? .bold : .medium))
                                             .foregroundStyle(targetMonths == months ? .white : .black)
                                             .padding(.horizontal, 16)
@@ -198,7 +199,7 @@ struct GoalFormSheet: View {
                                     .foregroundStyle(.white)
                             }
                             
-                            Text("Active")
+                            LText("goal_form.active")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.black)
                         }
@@ -221,7 +222,7 @@ struct GoalFormSheet: View {
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Text("Estimated Monthly Saving")
+                            LText("goal_form.est_monthly_saving")
                                 .font(.system(size: 14, weight: .bold))
                             Spacer()
                             Image(systemName: "sparkles")
@@ -229,7 +230,7 @@ struct GoalFormSheet: View {
                                 .foregroundStyle(.black)
                         }
                         
-                        Text("$\(formatCurrency(estimatedMonthlySaving))")
+                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(formatCurrency(estimatedMonthlySaving))\(loc.currentLanguage == "vi" ? "đ" : "")")
                             .font(.system(size: 24, weight: .bold))
                         
                         ZStack(alignment: .leading) {
@@ -242,7 +243,7 @@ struct GoalFormSheet: View {
                                 .frame(width: 40, height: 8)
                         }
                         
-                        Text("Based on a lifetime starting today.")
+                        LText("goal_form.based_on_today")
                             .font(.system(size: 12).italic())
                             .foregroundStyle(.gray)
                     }
@@ -255,7 +256,7 @@ struct GoalFormSheet: View {
                             .stroke(Color.black.opacity(0.05), lineWidth: 1)
                     )
                     
-                    Text("“The secret to getting ahead is getting started.”")
+                    LText("goal_form.quote")
                         .font(.system(size: 12).italic())
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -283,7 +284,7 @@ struct GoalFormSheet: View {
                         dismiss()
                     }
                 }) {
-                    Text("Set Target")
+                    LText("goal_form.set_target")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -294,7 +295,7 @@ struct GoalFormSheet: View {
                 .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { dismiss() }) {
-                    Text("Maybe later")
+                    LText("common.maybe_later")
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
@@ -342,7 +343,7 @@ struct GoalFormSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            Text(isEditMode ? "Update Goal" : "Create Goal")
+            LText(isEditMode ? "goal_form.edit_title" : "goal_form.create_title")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -354,7 +355,7 @@ struct GoalFormSheet: View {
                         onDelete?()
                         dismiss()
                     } label: {
-                        Label("Delete Goal", systemImage: "trash")
+                        Label("goal_form.delete_goal".localized, systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")
