@@ -1,8 +1,10 @@
 import SwiftUI
 import AuthenticationServices
 import Combine
+import SwiftData
 
 struct AuthView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(AppStateManager.self) private var appStateManager
     @State private var isAnimating = false
     @State private var moveAnimating = false
@@ -11,6 +13,7 @@ struct AuthView: View {
     @State private var progressValue: CGFloat = 0.0
     @State private var netWorth: Double = 84250.00
     @State private var shimmerOffset: CGFloat = -0.5
+    @State private var isLoading = false
     
     let timer = Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()
 
@@ -206,68 +209,192 @@ struct AuthView: View {
                             .foregroundStyle(.gray)
                         
                         VStack(spacing: 14) {
-                            Button(action: {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    appStateManager.moveToOnboarding()
-                                }
-                            }) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "applelogo")
-                                        .font(.system(size: 18))
-                                    LText("auth.continue_apple")
-                                        .font(.system(size: 16, weight: .bold))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 58)
-                                .background(
-                                    ZStack {
-                                        Color.black
-                                        LinearGradient(colors: [.white.opacity(0.12), .clear], startPoint: .top, endPoint: .bottom)
-                                    }
-                                )
-                                .foregroundStyle(.white)
-                                .clipShape(Capsule())
-                                .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 10)
-                            }
-                            .buttonStyle(BouncyButtonStyle())
+                            // Button(action: {
+                            //     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            //         appStateManager.moveToOnboarding()
+                            //     }
+                            // }) {
+                            //     HStack(spacing: 10) {
+                            //         Image(systemName: "applelogo")
+                            //             .font(.system(size: 18))
+                            //         LText("auth.continue_apple")
+                            //             .font(.system(size: 16, weight: .bold))
+                            //     }
+                            //     .frame(maxWidth: .infinity)
+                            //     .frame(height: 58)
+                            //     .background(
+                            //         ZStack {
+                            //             Color.black
+                            //             LinearGradient(colors: [.white.opacity(0.12), .clear], startPoint: .top, endPoint: .bottom)
+                            //         }
+                            //     )
+                            //     .foregroundStyle(.white)
+                            //     .clipShape(Capsule())
+                            //     .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 10)
+                            // }
+                            // .buttonStyle(BouncyButtonStyle())
                             
                             Button(action: {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    appStateManager.moveToOnboarding()
+                                isLoading = true
+                                Task {
+                                    do {
+                                        try await AuthManager.shared.signInWithGoogle()
+                                        
+                                        // Fetch budgets to check count
+                                        print("📡 Fetching budgets list from backend to check count...")
+                                        let listResponse: [APIBudgetResponse] = (try? await NetworkManager.shared.request(BudgetEndpoint.list)) ?? []
+                                        
+                                        if listResponse.isEmpty {
+                                            print("ℹ️ No budgets found. Moving to Onboarding.")
+                                            await MainActor.run {
+                                                isLoading = false
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                                    appStateManager.moveToOnboarding()
+                                                }
+                                            }
+                                        } else {
+                                            print("ℹ️ Found \(listResponse.count) budgets. Saving to SwiftData and moving to Main.")
+                                            
+                                            // Sync budgets
+                                            for serverBudget in listResponse {
+                                                let budgetId = serverBudget.id
+                                                let fetchDescriptor = FetchDescriptor<DBBudget>(
+                                                    predicate: #Predicate { $0.id == budgetId }
+                                                )
+                                                
+                                                if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                                                    existing.name = serverBudget.name
+                                                    existing.limitStr = serverBudget.limit
+                                                    existing.amountStr = serverBudget.amount
+                                                    existing.periodType = serverBudget.period_type
+                                                    existing.startDate = serverBudget.start_date
+                                                    existing.endDate = serverBudget.end_date
+                                                    existing.icon = serverBudget.icon
+                                                    existing.color = serverBudget.color
+                                                    existing.budgetType = serverBudget.budget_type
+                                                    existing.isActive = serverBudget.is_active
+                                                    existing.spentAmountStr = serverBudget.spent_amount
+                                                    existing.createdAt = serverBudget.created_at
+                                                    existing.updatedAt = serverBudget.updated_at
+                                                } else {
+                                                    let dbBudget = DBBudget(
+                                                        id: serverBudget.id,
+                                                        userId: serverBudget.user_id,
+                                                        name: serverBudget.name,
+                                                        limitStr: serverBudget.limit,
+                                                        amountStr: serverBudget.amount,
+                                                        periodType: serverBudget.period_type,
+                                                        startDate: serverBudget.start_date,
+                                                        endDate: serverBudget.end_date,
+                                                        icon: serverBudget.icon,
+                                                        color: serverBudget.color,
+                                                        budgetType: serverBudget.budget_type,
+                                                        isActive: serverBudget.is_active,
+                                                        spentAmountStr: serverBudget.spent_amount,
+                                                        createdAt: serverBudget.created_at,
+                                                        updatedAt: serverBudget.updated_at
+                                                    )
+                                                    modelContext.insert(dbBudget)
+                                                }
+                                            }
+                                            
+                                            // Sync categories as well
+                                            let catList: [APICategoryResponse] = (try? await NetworkManager.shared.request(CategoryEndpoint.list)) ?? []
+                                            for serverCat in catList {
+                                                let categoryId = serverCat.id
+                                                let fetchDescriptor = FetchDescriptor<DBCategory>(
+                                                    predicate: #Predicate { $0.id == categoryId }
+                                                )
+                                                
+                                                if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                                                    existing.name = serverCat.name
+                                                    existing.icon = serverCat.icon
+                                                    existing.colorHex = serverCat.color
+                                                    existing.userId = serverCat.user_id
+                                                    existing.isDefault = serverCat.is_default
+                                                    existing.isHidden = serverCat.is_hidden
+                                                    existing.createdAt = serverCat.created_at
+                                                    existing.updatedAt = serverCat.updated_at
+                                                } else {
+                                                    let dbCat = DBCategory(
+                                                        id: serverCat.id,
+                                                        name: serverCat.name,
+                                                        icon: serverCat.icon,
+                                                        colorHex: serverCat.color,
+                                                        userId: serverCat.user_id,
+                                                        isDefault: serverCat.is_default,
+                                                        isHidden: serverCat.is_hidden,
+                                                        createdAt: serverCat.created_at,
+                                                        updatedAt: serverCat.updated_at
+                                                    )
+                                                    modelContext.insert(dbCat)
+                                                }
+                                            }
+                                            
+                                            try? modelContext.save()
+                                            
+                                            await MainActor.run {
+                                                isLoading = false
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                                    appStateManager.moveToMain()
+                                                }
+                                            }
+                                        }
+                                    } catch {
+                                        print("Google Sign In Error: \(error.localizedDescription)")
+                                        await MainActor.run {
+                                            isLoading = false
+                                        }
+                                    }
                                 }
                             }) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "g.circle.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(
-                                            LinearGradient(colors: [.red, .orange, .green, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                if isLoading {
+                                    ProgressView()
+                                        .tint(.black)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 58)
+                                        .background(Color.white)
+                                        .clipShape(Capsule())
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.black.opacity(0.08), lineWidth: 1)
                                         )
-                                    
-                                    LText("auth.continue_google")
-                                        .font(.system(size: 16, weight: .bold))
+                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                } else {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "g.circle.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundStyle(
+                                                LinearGradient(colors: [.red, .orange, .green, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                            )
+                                        
+                                        LText("auth.continue_google")
+                                            .font(.system(size: 16, weight: .bold))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 58)
+                                    .background(Color.white)
+                                    .foregroundStyle(.black)
+                                    .clipShape(Capsule())
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 58)
-                                .background(Color.white)
-                                .foregroundStyle(.black)
-                                .clipShape(Capsule())
-                                .overlay(
-                                    Capsule()
-                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                                )
-                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(BouncyButtonStyle())
+                            .disabled(isLoading)
                         }
                         .offset(y: isAnimating ? 0 : 30)
                         .opacity(isAnimating ? 1 : 0)
                         .animation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.4), value: isAnimating)
                     }
-                    .padding(.top, 140)
+                    .padding(.top, 180)
                     .padding(.horizontal, 32)
                     .padding(.bottom, 50)
                 }
-                .padding(.top, 170)
+                .padding(.top, 210)
             }
         }
         .onAppear {

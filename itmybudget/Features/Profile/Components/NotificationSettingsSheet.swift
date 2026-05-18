@@ -1,12 +1,13 @@
 import SwiftUI
+import SwiftData
 
 struct NotificationSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [UserSettings]
+    
     @State private var pushEnabled = true
-    @State private var emailEnabled = false
-    @State private var locationEnabled = true
     @State private var reminderTime = Date()
-    @State private var showContent = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -21,10 +22,6 @@ struct NotificationSettingsSheet: View {
                         
                         VStack(spacing: 0) {
                             toggleRow(title: "notification_settings.push_notifications", icon: "bell.fill", color: .orange, isOn: $pushEnabled)
-                            Divider().opacity(0.3).padding(.horizontal, 16)
-                            toggleRow(title: "notification_settings.email_reports", icon: "envelope.fill", color: .blue, isOn: $emailEnabled)
-                            Divider().opacity(0.3).padding(.horizontal, 16)
-                            toggleRow(title: "notification_settings.location_reminders", icon: "location.fill", color: .green, isOn: $locationEnabled)
                         }
                         .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
@@ -54,7 +51,17 @@ struct NotificationSettingsSheet: View {
             
             Spacer()
             
-            Button(action: { dismiss() }) {
+            Button(action: {
+                if let s = settings.first {
+                    s.pushNotificationsEnabled = pushEnabled
+                    s.reminderTime = reminderTime
+                } else {
+                    let s = UserSettings(pushNotificationsEnabled: pushEnabled, reminderTime: reminderTime)
+                    modelContext.insert(s)
+                }
+                try? modelContext.save()
+                dismiss()
+            }) {
                 LText("notification_settings.save_settings")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
@@ -74,6 +81,12 @@ struct NotificationSettingsSheet: View {
             )
             .ignoresSafeArea()
         )
+        .onAppear {
+            if let s = settings.first {
+                pushEnabled = s.pushNotificationsEnabled
+                reminderTime = s.reminderTime
+            }
+        }
     }
     
     private var header: some View {

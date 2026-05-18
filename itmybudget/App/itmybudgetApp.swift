@@ -1,14 +1,23 @@
 import SwiftUI
 import SwiftData
+import FirebaseCore
+import GoogleSignIn
 
 @main
 struct itmybudgetApp: App {
     @State private var appStateManager = AppStateManager()
     @State private var localizationManager = LocalizationManager.shared
     
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            UserSettings.self,
+            DBCategory.self,
+            DBBudget.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -24,6 +33,9 @@ struct itmybudgetApp: App {
             ContentView()
                 .environment(appStateManager)
                 .environment(localizationManager)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
         .modelContainer(sharedModelContainer)
     }

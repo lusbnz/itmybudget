@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct OnboardingStep {
     let title: String
@@ -10,9 +11,14 @@ struct OnboardingStep {
 }
 
 struct OnboardingView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [UserSettings]
+    @Query private var budgets: [DBBudget]
+    
     @Environment(AppStateManager.self) private var appStateManager
     @Environment(LocalizationManager.self) private var loc
     @State private var selection: Int = 0
+    @State private var isLoading = false
     
     @State private var autoDetectLocation: Bool = true
     @State private var isShowingNotifications = false
@@ -200,23 +206,47 @@ struct OnboardingView: View {
                     }
                     
                     Button(action: {
-                        if selection < 2 {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                selection += 1
+                        isLoading = true
+                        Task {
+                            if selection == 0 {
+                                saveStep1Settings()
+                            } else if selection == 1 {
+                                await saveStep2Categories()
+                            } else if selection == 2 {
+                                await saveStep3Budget()
                             }
-                        } else {
-                            appStateManager.moveToMain()
+                            
+                            await MainActor.run {
+                                isLoading = false
+                                if selection < 2 {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                        selection += 1
+                                    }
+                                } else {
+                                    appStateManager.moveToMain()
+                                }
+                            }
                         }
                     }) {
-                        LText(selection == 2 ? "onboarding.confirm" : "onboarding.continue")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.black)
-                            .clipShape(Capsule())
+                        if isLoading {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(Color.black)
+                                .clipShape(Capsule())
+                        } else {
+                            LText(selection == 2 ? "onboarding.confirm" : "onboarding.continue")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.black)
+                                .clipShape(Capsule())
+                        }
                     }
                     .buttonStyle(BouncyButtonStyle())
+                    .disabled(isLoading)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 34)
@@ -224,6 +254,30 @@ struct OnboardingView: View {
             .sheet(isPresented: $isShowingNotifications) {
                 NotificationSettingsSheet()
                     .presentationDragIndicator(.visible)
+            }
+            .onAppear {
+                if let s = settings.first {
+                    autoDetectLocation = s.autoDetectLocation
+                    selectedCurrency = s.currency
+                    if s.currency == "USD" {
+                        selectedCurrencyLabel = "USD ($)"
+                    } else if s.currency == "VND" {
+                        selectedCurrencyLabel = "VND (đ)"
+                    } else if s.currency == "EUR" {
+                        selectedCurrencyLabel = "EUR (€)"
+                    }
+                    loc.currentLanguage = s.language
+                } else {
+                    let defaultSettings = UserSettings(
+                        pushNotificationsEnabled: true,
+                        reminderTime: Calendar.current.date(bySettingHour: 20, minute: 0, second: 0, of: Date()) ?? Date(),
+                        autoDetectLocation: autoDetectLocation,
+                        currency: selectedCurrency,
+                        language: loc.currentLanguage
+                    )
+                    modelContext.insert(defaultSettings)
+                    try? modelContext.save()
+                }
             }
         }
     }
@@ -475,10 +529,183 @@ struct OnboardingView: View {
         }
     }
     
+    private func saveStep2Categories() async {
+        let selected = onboardingCategories.filter { $0.isActive }
+        guard !selected.isEmpty else { return }
+        
+        print("📁 Selected onboarding categories: \(selected.map { $0.name })")
+        
+        do {
+            // Post categories concurrently using task group (Promise.all)
+            try await withThrowingTaskGroup(of: APICategoryResponse.self) { group in
+                for cat in selected {
+                    let hex = cat.color.hexString
+                    group.addTask {
+                        let endpoint = CategoryEndpoint.create(name: cat.name, icon: cat.icon, color: hex)
+                        return try await NetworkManager.shared.request(endpoint)
+                    }
+                }
+                
+                for try await response in group {
+                    print("✅ Category created: \(response.name) with ID: \(response.id)")
+                }
+            }
+            
+            // Fetch the updated categories list from the server
+            print("📡 Fetching categories list from backend...")
+            let fetchEndpoint = CategoryEndpoint.list
+            let serverCategories: [APICategoryResponse] = try await NetworkManager.shared.request(fetchEndpoint)
+            
+            // Save to SwiftData
+            print("💾 Saving \(serverCategories.count) categories to SwiftData...")
+            for serverCat in serverCategories {
+                let categoryId = serverCat.id
+                let fetchDescriptor = FetchDescriptor<DBCategory>(
+                    predicate: #Predicate { $0.id == categoryId }
+                )
+                
+                if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                    existing.name = serverCat.name
+                    existing.icon = serverCat.icon
+                    existing.colorHex = serverCat.color
+                    existing.userId = serverCat.user_id
+                    existing.isDefault = serverCat.is_default
+                    existing.isHidden = serverCat.is_hidden
+                    existing.createdAt = serverCat.created_at
+                    existing.updatedAt = serverCat.updated_at
+                } else {
+                    let dbCat = DBCategory(
+                        id: serverCat.id,
+                        name: serverCat.name,
+                        icon: serverCat.icon,
+                        colorHex: serverCat.color,
+                        userId: serverCat.user_id,
+                        isDefault: serverCat.is_default,
+                        isHidden: serverCat.is_hidden,
+                        createdAt: serverCat.created_at,
+                        updatedAt: serverCat.updated_at
+                    )
+                    modelContext.insert(dbCat)
+                }
+            }
+            
+            try? modelContext.save()
+            print("✅ All categories saved to SwiftData successfully!")
+            
+        } catch {
+            print("❌ Error saving onboarding categories: \(error.localizedDescription)")
+        }
+    }
+    
+    private func saveStep3Budget() async {
+        let name = budgetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "onboarding.step3_title".localized : budgetName
+        let amount = Double(budgetAmount) ?? 100.0
+        
+        print("📁 Selected onboarding budget: \(name) with amount: \(amount)")
+        
+        do {
+            // 1. Post budget to server
+            let endpoint = BudgetEndpoint.create(
+                name: name,
+                amount: amount,
+                icon: "wallet.pass.fill",
+                color: "#34C759"
+            )
+            let createResponse: APIBudgetResponse = try await NetworkManager.shared.request(endpoint)
+            print("✅ Budget created successfully on backend! ID: \(createResponse.id)")
+            
+            // 2. Fetch updated budgets list from server
+            print("📡 Fetching budgets list from backend...")
+            let listResponse: [APIBudgetResponse] = try await NetworkManager.shared.request(BudgetEndpoint.list)
+            
+            // 3. Save/Upsert into SwiftData
+            print("💾 Saving \(listResponse.count) budgets to SwiftData...")
+            for serverBudget in listResponse {
+                let budgetId = serverBudget.id
+                let fetchDescriptor = FetchDescriptor<DBBudget>(
+                    predicate: #Predicate { $0.id == budgetId }
+                )
+                
+                if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                    existing.name = serverBudget.name
+                    existing.limitStr = serverBudget.limit
+                    existing.amountStr = serverBudget.amount
+                    existing.periodType = serverBudget.period_type
+                    existing.startDate = serverBudget.start_date
+                    existing.endDate = serverBudget.end_date
+                    existing.icon = serverBudget.icon
+                    existing.color = serverBudget.color
+                    existing.budgetType = serverBudget.budget_type
+                    existing.isActive = serverBudget.is_active
+                    existing.spentAmountStr = serverBudget.spent_amount
+                    existing.createdAt = serverBudget.created_at
+                    existing.updatedAt = serverBudget.updated_at
+                } else {
+                    let dbBudget = DBBudget(
+                        id: serverBudget.id,
+                        userId: serverBudget.user_id,
+                        name: serverBudget.name,
+                        limitStr: serverBudget.limit,
+                        amountStr: serverBudget.amount,
+                        periodType: serverBudget.period_type,
+                        startDate: serverBudget.start_date,
+                        endDate: serverBudget.end_date,
+                        icon: serverBudget.icon,
+                        color: serverBudget.color,
+                        budgetType: serverBudget.budget_type,
+                        isActive: serverBudget.is_active,
+                        spentAmountStr: serverBudget.spent_amount,
+                        createdAt: serverBudget.created_at,
+                        updatedAt: serverBudget.updated_at
+                    )
+                    modelContext.insert(dbBudget)
+                }
+            }
+            
+            try? modelContext.save()
+            print("✅ All budgets saved to SwiftData successfully!")
+            
+        } catch {
+            print("❌ Error saving onboarding budget: \(error.localizedDescription)")
+        }
+    }
+    
+    private func saveStep1Settings() {
+        if let s = settings.first {
+            s.autoDetectLocation = autoDetectLocation
+            s.currency = selectedCurrency
+            s.language = loc.currentLanguage
+        } else {
+            let s = UserSettings(
+                autoDetectLocation: autoDetectLocation,
+                currency: selectedCurrency,
+                language: loc.currentLanguage
+            )
+            modelContext.insert(s)
+        }
+        try? modelContext.save()
+    }
+    
     private func formatValue(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = ","
         return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
+    }
+}
+
+extension Color {
+    var hexString: String {
+        switch self {
+        case .orange: return "#FF9500"
+        case .blue: return "#007AFF"
+        case .green: return "#34C759"
+        case .purple: return "#AF52DE"
+        case .red: return "#FF3B30"
+        case .teal: return "#30B0C7"
+        case .brown: return "#A2845E"
+        case .pink: return "#FF2D55"
+        default: return "#8E8E93"
+        }
     }
 }
