@@ -239,13 +239,14 @@ struct AuthView: View {
                                 Task {
                                     do {
                                         try await AuthManager.shared.signInWithGoogle()
+                                        await AuthManager.shared.fetchMe(context: modelContext)
                                         
-                                        // Fetch budgets to check count
-                                        print("📡 Fetching budgets list from backend to check count...")
+                                        // Fetch budgets to sync
+                                        print("📡 Fetching budgets list from backend...")
                                         let listResponse: [APIBudgetResponse] = (try? await NetworkManager.shared.request(BudgetEndpoint.list)) ?? []
                                         
-                                        if listResponse.isEmpty {
-                                            print("ℹ️ No budgets found. Moving to Onboarding.")
+                                        if AuthManager.shared.currentUser?.is_new_user == true {
+                                            print("ℹ️ User is new. Moving to Onboarding.")
                                             await MainActor.run {
                                                 isLoading = false
                                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -253,7 +254,7 @@ struct AuthView: View {
                                                 }
                                             }
                                         } else {
-                                            print("ℹ️ Found \(listResponse.count) budgets. Saving to SwiftData and moving to Main.")
+                                            print("ℹ️ Found existing user. Saving to SwiftData and moving to Main.")
                                             
                                             // Sync budgets
                                             for serverBudget in listResponse {

@@ -4,6 +4,8 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocalizationManager.self) private var loc
     @EnvironmentObject private var navState: AppNavigationState
+    @Environment(\.modelContext) private var modelContext
+    var authManager = AuthManager.shared
     
     @State private var showContent: Bool = false
     @State private var autoDetectLocation: Bool = true
@@ -62,6 +64,11 @@ struct ProfileView: View {
             .onAppear {
                 withAnimation(.easeOut(duration: 0.6)) {
                     showContent = true
+                }
+            }
+            .task {
+                if authManager.currentUser == nil {
+                    await authManager.fetchMe(context: modelContext)
                 }
             }
             .sheet(isPresented: $isShowingEditProfile) {
@@ -139,7 +146,7 @@ struct ProfileView: View {
     private var personalInfoCard: some View {
         HStack(spacing: 16) {
             ZStack(alignment: .bottomTrailing) {
-                AsyncImage(url: URL(string: "https://i.pravatar.cc/300")) { image in
+                AsyncImage(url: URL(string: authManager.currentUser?.avatar_url ?? "https://i.pravatar.cc/300")) { image in
                     image.resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
@@ -162,11 +169,11 @@ struct ProfileView: View {
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Quoc Viet")
+                Text(authManager.currentUser?.full_name ?? "User")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.black)
                 
-                Text("quocviet@itmybudget.app")
+                Text(authManager.currentUser?.email ?? "")
                     .font(.system(size: 13))
                     .foregroundStyle(.gray)
             }

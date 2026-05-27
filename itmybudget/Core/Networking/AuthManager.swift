@@ -3,6 +3,7 @@ import Observation
 import GoogleSignIn
 import FirebaseCore
 import FirebaseAuth
+import SwiftData
 
 @Observable
 class AuthManager {
@@ -22,7 +23,92 @@ class AuthManager {
         accessToken != nil
     }
     
+    var currentUser: APIUserResponse? = nil
+    
     private init() {}
+    
+    @MainActor
+    func fetchMe(context: ModelContext? = nil) async {
+        do {
+            let user: APIUserResponse = try await NetworkManager.shared.request(UserEndpoint.me)
+            self.currentUser = user
+            saveToSwiftData(user, context: context)
+            print("👤 Fetched User: \(user.full_name ?? user.email)")
+        } catch {
+            print("Failed to fetch user: \(error)")
+        }
+    }
+    
+    @MainActor
+    func updateMe(fullName: String, context: ModelContext? = nil) async {
+        do {
+            let input = UpdateMeInput(full_name: fullName, password: nil, is_active: nil)
+            let user: APIUserResponse = try await NetworkManager.shared.request(UserEndpoint.updateMe(input))
+            self.currentUser = user
+            saveToSwiftData(user, context: context)
+            print("👤 Updated User: \(user.full_name ?? "")")
+        } catch {
+            print("Failed to update user: \(error)")
+        }
+    }
+    
+    @MainActor
+    func updateAvatar(data: Data, fileName: String, mimeType: String, context: ModelContext? = nil) async {
+        do {
+            let user: APIUserResponse = try await NetworkManager.shared.request(UserEndpoint.updateAvatar(data, fileName: fileName, mimeType: mimeType))
+            self.currentUser = user
+            saveToSwiftData(user, context: context)
+            print("👤 Updated Avatar")
+        } catch {
+            print("Failed to update avatar: \(error)")
+        }
+    }
+    
+    @MainActor
+    func completeOnboarding(context: ModelContext? = nil) async {
+        do {
+            let input = UpdateOnboardingInput(is_new_user: false, extra: nil)
+            let user: APIUserResponse = try await NetworkManager.shared.request(UserEndpoint.updateOnboarding(input))
+            self.currentUser = user
+            saveToSwiftData(user, context: context)
+            print("👤 Completed Onboarding")
+        } catch {
+            print("Failed to complete onboarding: \(error)")
+        }
+    }
+    
+    private func saveToSwiftData(_ user: APIUserResponse, context: ModelContext?) {
+        guard let context = context else { return }
+        let userId = user.id
+        let fetchDescriptor = FetchDescriptor<DBUser>(predicate: #Predicate { $0.id == userId })
+        
+        if let existing = try? context.fetch(fetchDescriptor).first {
+            existing.email = user.email
+            existing.fullName = user.full_name
+            existing.isActive = user.is_active
+            existing.isSuperuser = user.is_superuser
+            existing.isNewUser = user.is_new_user
+            existing.avatarUrl = user.avatar_url
+            existing.provider = user.provider
+            existing.createdAt = user.created_at
+            existing.updatedAt = user.updated_at
+        } else {
+            let dbUser = DBUser(
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                isActive: user.is_active,
+                isSuperuser: user.is_superuser,
+                isNewUser: user.is_new_user,
+                avatarUrl: user.avatar_url,
+                provider: user.provider,
+                createdAt: user.created_at,
+                updatedAt: user.updated_at
+            )
+            context.insert(dbUser)
+        }
+        try? context.save()
+    }
     
     @MainActor
     func signInWithGoogle() async throws {

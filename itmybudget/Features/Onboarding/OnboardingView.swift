@@ -214,6 +214,7 @@ struct OnboardingView: View {
                                 await saveStep2Categories()
                             } else if selection == 2 {
                                 await saveStep3Budget()
+                                await AuthManager.shared.completeOnboarding(context: modelContext)
                             }
                             
                             await MainActor.run {

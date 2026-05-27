@@ -11,6 +11,8 @@ struct PulseData: Identifiable {
 struct HomeView: View {
     @EnvironmentObject private var navState: AppNavigationState
     @Environment(LocalizationManager.self) private var loc
+    @Environment(\.modelContext) private var modelContext
+    var authManager = AuthManager.shared
     @State private var showHeader: Bool = false
     @State private var showSections: Bool = false
     @State private var selectedFilter: TransactionType = .all
@@ -108,6 +110,11 @@ struct HomeView: View {
                 showSections = true
             }
         }
+        .task {
+            if authManager.currentUser == nil {
+                await authManager.fetchMe(context: modelContext)
+            }
+        }
     }
     
     @ViewBuilder
@@ -122,7 +129,7 @@ struct HomeView: View {
                             .fill(Color.black)
                             .frame(width: 4, height: 24)
                         
-                        Text("Quoc Viet")
+                        Text(authManager.currentUser?.full_name ?? "User")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(.black)
                         

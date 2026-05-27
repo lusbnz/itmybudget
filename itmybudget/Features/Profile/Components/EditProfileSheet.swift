@@ -1,10 +1,15 @@
 import SwiftUI
+import PhotosUI
 
 struct EditProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var name: String = "Quoc Viet"
     @State private var email: String = "quocviet@itmybudget.app"
     @State private var showContent = false
+    
+    var authManager = AuthManager.shared
+    @State private var avatarItem: PhotosPickerItem?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -37,6 +42,10 @@ struct EditProfileSheet: View {
             .ignoresSafeArea()
         )
         .onAppear {
+            if let user = authManager.currentUser {
+                name = user.full_name ?? ""
+                email = user.email
+            }
             withAnimation(.easeOut(duration: 0.5)) {
                 showContent = true
             }
@@ -59,7 +68,7 @@ struct EditProfileSheet: View {
     private var avatarSection: some View {
         VStack(spacing: 12) {
             ZStack(alignment: .bottomTrailing) {
-                AsyncImage(url: URL(string: "https://i.pravatar.cc/300")) { image in
+                AsyncImage(url: URL(string: authManager.currentUser?.avatar_url ?? "https://i.pravatar.cc/300")) { image in
                     image.resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
@@ -69,7 +78,7 @@ struct EditProfileSheet: View {
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.white, lineWidth: 3).shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5))
                 
-                Button(action: {}) {
+                PhotosPicker(selection: $avatarItem, matching: .images) {
                     ZStack {
                         Circle()
                             .fill(Color.black)
@@ -85,6 +94,13 @@ struct EditProfileSheet: View {
             LText("profile.change_photo")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.black.opacity(0.6))
+        }
+        .onChange(of: avatarItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    await authManager.updateAvatar(data: data, fileName: "avatar.jpg", mimeType: "image/jpeg", context: modelContext)
+                }
+            }
         }
     }
     
@@ -115,7 +131,10 @@ struct EditProfileSheet: View {
     
     private var saveButton: some View {
         Button(action: {
-            dismiss()
+            Task {
+                await authManager.updateMe(fullName: name, context: modelContext)
+                await MainActor.run { dismiss() }
+            }
         }) {
             LText("profile.save_changes")
                 .font(.system(size: 16, weight: .bold))
