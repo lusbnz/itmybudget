@@ -82,8 +82,8 @@ struct CategoryListView: View {
                     }
                 }
             )
-            .presentationDragIndicator(.visible)
         }
+    }
     
     private var header: some View {
         HStack(spacing: 16) {
