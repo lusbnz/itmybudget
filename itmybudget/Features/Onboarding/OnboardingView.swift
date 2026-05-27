@@ -537,25 +537,11 @@ struct OnboardingView: View {
         print("📁 Selected onboarding categories: \(selected.map { $0.name })")
         
         do {
-            // Post categories concurrently using task group (Promise.all)
-            try await withThrowingTaskGroup(of: APICategoryResponse.self) { group in
-                for cat in selected {
-                    let hex = cat.color.hexString
-                    group.addTask {
-                        let endpoint = CategoryEndpoint.create(name: cat.name, icon: cat.icon, color: hex)
-                        return try await NetworkManager.shared.request(endpoint)
-                    }
-                }
-                
-                for try await response in group {
-                    print("✅ Category created: \(response.name) with ID: \(response.id)")
-                }
-            }
-            
-            // Fetch the updated categories list from the server
-            print("📡 Fetching categories list from backend...")
-            let fetchEndpoint = CategoryEndpoint.list
-            let serverCategories: [APICategoryResponse] = try await NetworkManager.shared.request(fetchEndpoint)
+            let categoryInputs = selected.map { CategoryCreateInput(name: $0.name, icon: $0.icon, color: $0.color.hexString) }
+            print("🚀 Creating \(categoryInputs.count) categories in bulk...")
+            let endpoint = CategoryEndpoint.bulkCreate(categories: categoryInputs)
+            let serverCategories: [APICategoryResponse] = try await NetworkManager.shared.request(endpoint)
+            print("✅ Bulk categories created successfully!")
             
             // Save to SwiftData
             print("💾 Saving \(serverCategories.count) categories to SwiftData...")
@@ -692,21 +678,5 @@ struct OnboardingView: View {
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = ","
         return (formatter.string(from: NSNumber(value: value)) ?? "\(Int(value))")
-    }
-}
-
-extension Color {
-    var hexString: String {
-        switch self {
-        case .orange: return "#FF9500"
-        case .blue: return "#007AFF"
-        case .green: return "#34C759"
-        case .purple: return "#AF52DE"
-        case .red: return "#FF3B30"
-        case .teal: return "#30B0C7"
-        case .brown: return "#A2845E"
-        case .pink: return "#FF2D55"
-        default: return "#8E8E93"
-        }
     }
 }

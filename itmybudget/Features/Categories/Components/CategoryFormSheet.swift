@@ -3,8 +3,8 @@ import SwiftUI
 struct CategoryFormSheet: View {
     @Environment(\.dismiss) private var dismiss
     
-    let categoryToEdit: Category?
-    var onSave: (Category) -> Void
+    let categoryToEdit: DBCategory?
+    var onSave: (String, String, String, Bool) -> Void
     var onDelete: (() -> Void)? = nil
     
     @State private var name: String = ""
@@ -24,15 +24,15 @@ struct CategoryFormSheet: View {
         .cyan, .indigo, .mint, .yellow, .gray, .black
     ]
     
-    init(categoryToEdit: Category?, onSave: @escaping (Category) -> Void, onDelete: (() -> Void)? = nil) {
+    init(categoryToEdit: DBCategory?, onSave: @escaping (String, String, String, Bool) -> Void, onDelete: (() -> Void)? = nil) {
         self.categoryToEdit = categoryToEdit
         self.onSave = onSave
         self.onDelete = onDelete
         
         _name = State(initialValue: categoryToEdit?.name ?? "")
         _selectedIcon = State(initialValue: categoryToEdit?.icon ?? "cup.and.saucer.fill")
-        _selectedColor = State(initialValue: categoryToEdit?.color ?? .orange)
-        _isActive = State(initialValue: categoryToEdit?.isActive ?? true)
+        _selectedColor = State(initialValue: Color.from(hex: categoryToEdit?.colorHex ?? "#FF9500"))
+        _isActive = State(initialValue: !(categoryToEdit?.isHidden ?? false))
     }
     
     private var isEditMode: Bool {
@@ -150,13 +150,7 @@ struct CategoryFormSheet: View {
             
             Button(action: {
                 if !name.isEmpty {
-                    let category = Category(
-                        name: name,
-                        icon: selectedIcon,
-                        color: selectedColor,
-                        isActive: isActive
-                    )
-                    onSave(category)
+                    onSave(name, selectedIcon, selectedColor.hexString, isActive)
                     dismiss()
                 }
             }) {
