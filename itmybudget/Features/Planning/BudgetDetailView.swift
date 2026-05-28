@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import SwiftData
 
 struct BudgetDetailView: View {
     @Environment(\.dismiss) private var dismiss

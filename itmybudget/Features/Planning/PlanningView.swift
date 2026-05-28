@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 enum BudgetSortOption: String, CaseIterable {
     case recent = "planning.sort_recent"
