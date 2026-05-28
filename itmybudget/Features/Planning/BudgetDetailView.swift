@@ -3,6 +3,7 @@ import Charts
 
 struct BudgetDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     let budget: Budget
     
     @State private var showingTopUpSheet = false
@@ -105,18 +106,33 @@ struct BudgetDetailView: View {
             BudgetFormSheet(
                 budgetToEdit: currentBudget,
                 onSave: { newName, newTotal in
-                    currentBudget = Budget(
-                        id: currentBudget.id,
-                        name: newName,
-                        spent: currentBudget.spent,
-                        total: newTotal,
-                        dailyLimit: newTotal / 30,
-                        nextTopUp: currentBudget.nextTopUp,
-                        lastTransactionDate: Date()
-                    )
+                    Task {
+                        do {
+                            let _: APIBudgetResponse = try await NetworkManager.shared.request(
+                                BudgetEndpoint.update(
+                                    id: currentBudget.id,
+                                    name: newName,
+                                    amount: newTotal,
+                                    icon: "wallet.pass.fill",
+                                    color: "#34C759",
+                                    isActive: true
+                                )
+                            )
+                            await fetchBudgetDetails()
+                        } catch {
+                            print("Failed to update budget in detail view: \(error)")
+                        }
+                    }
                 },
                 onDelete: {
-                    dismiss()
+                    Task {
+                        do {
+                            let _: EmptyResponse = try await NetworkManager.shared.request(BudgetEndpoint.delete(id: currentBudget.id))
+                            dismiss()
+                        } catch {
+                            print("Failed to delete budget in detail view: \(error)")
+                        }
+                    }
                 }
             )
             .presentationDragIndicator(.visible)
@@ -151,6 +167,68 @@ struct BudgetDetailView: View {
                 }
             )
             .presentationDragIndicator(.visible)
+        }
+        .task {
+            await fetchBudgetDetails()
+        }
+    }
+    
+    private func fetchBudgetDetails() async {
+        do {
+            let detail: APIBudgetResponse = try await NetworkManager.shared.request(BudgetEndpoint.get(id: currentBudget.id))
+            
+            await MainActor.run {
+                let fetchDescriptor = FetchDescriptor<DBBudget>(predicate: #Predicate { $0.id == detail.id })
+                if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                    existing.name = detail.name
+                    existing.limitStr = detail.limit
+                    existing.amountStr = detail.amount
+                    existing.periodType = detail.period_type
+                    existing.startDate = detail.start_date
+                    existing.endDate = detail.end_date
+                    existing.icon = detail.icon
+                    existing.color = detail.color
+                    existing.budgetType = detail.budget_type
+                    existing.isActive = detail.is_active
+                    existing.spentAmountStr = detail.spent_amount
+                    existing.updatedAt = detail.updated_at
+                } else {
+                    let dbBudget = DBBudget(
+                        id: detail.id,
+                        userId: detail.user_id,
+                        name: detail.name,
+                        limitStr: detail.limit,
+                        amountStr: detail.amount,
+                        periodType: detail.period_type,
+                        startDate: detail.start_date,
+                        endDate: detail.end_date,
+                        icon: detail.icon,
+                        color: detail.color,
+                        budgetType: detail.budget_type,
+                        isActive: detail.is_active,
+                        spentAmountStr: detail.spent_amount,
+                        createdAt: detail.created_at,
+                        updatedAt: detail.updated_at
+                    )
+                    modelContext.insert(dbBudget)
+                }
+                try? modelContext.save()
+                
+                let updatedBudget = Budget(
+                    id: detail.id,
+                    name: detail.name,
+                    spent: Double(detail.spent_amount) ?? 0,
+                    total: Double(detail.limit) ?? 0,
+                    dailyLimit: (Double(detail.limit) ?? 0) / 30,
+                    nextTopUp: detail.period_type,
+                    lastTransactionDate: Date()
+                )
+                withAnimation {
+                    self.currentBudget = updatedBudget
+                }
+            }
+        } catch {
+            print("Failed to fetch budget detail: \(error)")
         }
     }
     

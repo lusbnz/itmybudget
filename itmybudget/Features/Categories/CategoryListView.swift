@@ -80,6 +80,13 @@ struct CategoryListView: View {
                     Task {
                         await saveCategory(name: name, icon: icon, colorHex: colorHex, isActive: isActive)
                     }
+                },
+                onDelete: {
+                    if let category = selectedCategoryToEdit {
+                        Task {
+                            await deleteCategory(category)
+                        }
+                    }
                 }
             )
         }
@@ -202,6 +209,17 @@ struct CategoryListView: View {
         .offset(y: showContent ? 0 : 20)
         .opacity(showContent ? 1 : 0)
     }
+    
+    private func deleteCategory(_ category: DBCategory) async {
+        do {
+            let _: EmptyResponse = try await NetworkManager.shared.request(CategoryEndpoint.delete(id: category.id))
+            modelContext.delete(category)
+            try? modelContext.save()
+        } catch {
+            print("Failed to delete category: \(error)")
+        }
+    }
+    
     private func saveCategory(name: String, icon: String, colorHex: String, isActive: Bool) async {
         do {
             if let edited = selectedCategoryToEdit {

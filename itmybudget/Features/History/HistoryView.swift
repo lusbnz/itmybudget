@@ -17,7 +17,7 @@ struct HistoryView: View {
     @State private var showingSearchSheet = false
     @State private var searchText: String = ""
     @State private var selectedType: TransactionType = .all
-    @State private var selectedBudgetId: UUID? = nil
+    @State private var selectedBudgetId: Int? = nil
     @State private var selectedCategory: Category? = nil
     @State private var showMonthPicker = false
     @State private var selectedDate = Date()

@@ -4,7 +4,7 @@ struct FilterSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocalizationManager.self) private var loc
     @Binding var selectedType: TransactionType
-    @Binding var selectedBudgetId: UUID?
+    @Binding var selectedBudgetId: Int?
     @Binding var selectedCategory: Category?
     @Namespace private var filterAnimation
     @State private var categories = Category.sampleData

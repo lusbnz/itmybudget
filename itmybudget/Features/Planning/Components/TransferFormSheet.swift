@@ -5,15 +5,15 @@ struct TransferFormSheet: View {
     @Environment(LocalizationManager.self) private var loc
     let budgets: [Budget]
     let currentBudget: Budget
-    var onConfirm: (Double, UUID) -> Void
+    var onConfirm: (Double, Int) -> Void
     
     @State private var amountString: String = ""
-    @State private var selectedSourceBudgetId: UUID?
+    @State private var selectedSourceBudgetId: Int?
     @State private var isShowingBudgetSelector = false
     
     private let quickAmounts: [Double] = [100000, 200000, 500000, 1000000]
     
-    init(budgets: [Budget], currentBudget: Budget, onConfirm: @escaping (Double, UUID) -> Void) {
+    init(budgets: [Budget], currentBudget: Budget, onConfirm: @escaping (Double, Int) -> Void) {
         self.budgets = budgets
         self.currentBudget = currentBudget
         self.onConfirm = onConfirm

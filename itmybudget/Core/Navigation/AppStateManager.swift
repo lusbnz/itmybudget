@@ -9,7 +9,7 @@ enum AppFlowState {
 
 @Observable
 class AppStateManager {
-    var currentState: AppFlowState = .auth
+    var currentState: AppFlowState = .splash
     
     func moveToAuth() {
         withAnimation {

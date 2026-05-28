@@ -8,9 +8,9 @@ struct PersonalGoal: Identifiable, Equatable {
     let targetMonths: Int
     let monthlyAmount: Double
     let isActive: Bool
-    let sourceBudgetId: UUID?
+    let sourceBudgetId: Int?
     
-    init(id: UUID = UUID(), name: String, targetDate: String, targetAmount: Double, targetMonths: Int, monthlyAmount: Double, isActive: Bool = true, sourceBudgetId: UUID? = nil) {
+    init(id: UUID = UUID(), name: String, targetDate: String, targetAmount: Double, targetMonths: Int, monthlyAmount: Double, isActive: Bool = true, sourceBudgetId: Int? = nil) {
         self.id = id
         self.name = name
         self.targetDate = targetDate

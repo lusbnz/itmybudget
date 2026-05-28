@@ -1,5 +1,7 @@
 import Foundation
 
+struct EmptyResponse: Codable {}
+
 enum NetworkError: Error {
     case invalidResponse
     case unauthorized
@@ -40,11 +42,17 @@ class NetworkManager {
         switch httpResponse.statusCode {
         case 200...299:
             do {
+                if data.isEmpty, let empty = EmptyResponse() as? T {
+                    return empty
+                }
                 let decoder = JSONDecoder()
                 // Backend uses snake_case based on openapi.json
                 decoder.keyDecodingStrategy = .useDefaultKeys 
                 return try decoder.decode(T.self, from: data)
             } catch {
+                if let empty = EmptyResponse() as? T {
+                    return empty
+                }
                 print("❌ Decoding Error: \(error)")
                 throw NetworkError.decodingError(error)
             }

@@ -11,7 +11,7 @@ struct GoalFormSheet: View {
     
     @State private var name: String = ""
     @State private var targetAmount: String = ""
-    @State private var selectedBudgetId: UUID?
+    @State private var selectedBudgetId: Int?
     @State private var targetMonths: Int = 1
     @State private var isActive: Bool = true
     @State private var isShowingBudgetSelector = false

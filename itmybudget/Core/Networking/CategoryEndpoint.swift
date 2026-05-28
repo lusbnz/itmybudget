@@ -34,6 +34,7 @@ enum CategoryEndpoint: APIEndpoint {
     case bulkCreate(categories: [CategoryCreateInput])
     case update(id: Int, name: String, isHidden: Bool, icon: String, color: String)
     case list
+    case delete(id: Int)
     
     var path: String {
         switch self {
@@ -43,6 +44,8 @@ enum CategoryEndpoint: APIEndpoint {
             return "/categories/bulk"
         case .update(let id, _, _, _, _):
             return "/categories/\(id)"
+        case .delete(let id):
+            return "/categories/\(id)"
         }
     }
     
@@ -51,6 +54,7 @@ enum CategoryEndpoint: APIEndpoint {
         case .create, .bulkCreate: return .post
         case .update: return .put
         case .list: return .get
+        case .delete: return .delete
         }
     }
     
@@ -70,7 +74,7 @@ enum CategoryEndpoint: APIEndpoint {
             return try? JSONEncoder().encode(CategoryBulkInput(categories: categories))
         case .update(_, let name, let isHidden, let icon, let color):
             return try? JSONEncoder().encode(CategoryUpdateInput(name: name, is_hidden: isHidden, icon: icon, color: color))
-        case .list:
+        case .list, .delete:
             return nil
         }
     }

@@ -11,9 +11,11 @@ enum BudgetSortOption: String, CaseIterable {
 
 struct PlanningView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var navState: AppNavigationState
     @Environment(LocalizationManager.self) private var loc
-    @State private var budgets: [Budget] = Budget.sampleData
+    @Query(sort: \DBBudget.updatedAt, order: .reverse) private var dbBudgets: [DBBudget]
+    @State private var budgets: [Budget] = []
     @State private var goals: [PersonalGoal] = PersonalGoal.sampleData
     @State private var sortOption: BudgetSortOption = .recent
     @State private var isExpanded: Bool = false
@@ -85,39 +87,42 @@ struct PlanningView: View {
                 BudgetFormSheet(
                     budgetToEdit: selectedBudgetToEdit,
                     onSave: { name, amount in
-                        if let edited = selectedBudgetToEdit {
-                            if let index = budgets.firstIndex(where: { $0.id == edited.id }) {
-                                let updated = Budget(
-                                    id: edited.id,
-                                    name: name,
-                                    spent: edited.spent,
-                                    total: amount,
-                                    dailyLimit: amount / 30,
-                                    nextTopUp: edited.nextTopUp,
-                                    lastTransactionDate: Date()
-                                )
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    budgets[index] = updated
+                        Task {
+                            if let edited = selectedBudgetToEdit {
+                                do {
+                                    let _: APIBudgetResponse = try await NetworkManager.shared.request(
+                                        BudgetEndpoint.update(
+                                            id: edited.id,
+                                            name: name,
+                                            amount: amount,
+                                            icon: "wallet.pass.fill",
+                                            color: "#34C759",
+                                            isActive: true
+                                        )
+                                    )
+                                    await fetchBudgets()
+                                } catch {
+                                    print("Failed to update budget: \(error)")
                                 }
-                            }
-                        } else {
-                            let newBudget = Budget(
-                                name: name,
-                                spent: 0,
-                                total: amount,
-                                dailyLimit: amount / 30,
-                                nextTopUp: "Next month",
-                                lastTransactionDate: Date()
-                            )
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                budgets.insert(newBudget, at: 0)
+                            } else {
+                                do {
+                                    let _: APIBudgetResponse = try await NetworkManager.shared.request(BudgetEndpoint.create(name: name, amount: amount, icon: "wallet.pass.fill", color: "#34C759"))
+                                    await fetchBudgets()
+                                } catch {
+                                    print("Failed to create budget: \(error)")
+                                }
                             }
                         }
                     },
                     onDelete: {
                         if let edited = selectedBudgetToEdit {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                budgets.removeAll(where: { $0.id == edited.id })
+                            Task {
+                                do {
+                                    let _: EmptyResponse = try await NetworkManager.shared.request(BudgetEndpoint.delete(id: edited.id))
+                                    await fetchBudgets()
+                                } catch {
+                                    print("Failed to delete budget: \(error)")
+                                }
                             }
                         }
                     }
@@ -159,6 +164,90 @@ struct PlanningView: View {
             withAnimation(.easeOut(duration: 0.6).delay(0.1)) {
                 showContent = true
             }
+        }
+        .task {
+            updateBudgetsFromDB()
+            await fetchBudgets()
+        }
+        .onChange(of: dbBudgets) {
+            updateBudgetsFromDB()
+        }
+    }
+    
+    private func updateBudgetsFromDB() {
+        let newBudgets = dbBudgets.map { db in
+            Budget(
+                id: db.id,
+                name: db.name,
+                spent: Double(db.spentAmountStr) ?? 0,
+                total: Double(db.limitStr) ?? 0,
+                dailyLimit: (Double(db.limitStr) ?? 0) / 30,
+                nextTopUp: db.periodType,
+                lastTransactionDate: Date()
+            )
+        }
+        withAnimation {
+            self.budgets = newBudgets
+        }
+    }
+    
+    private func fetchBudgets() async {
+        do {
+            let budgetList: [APIBudgetResponse] = try await NetworkManager.shared.request(BudgetEndpoint.list)
+            
+            await MainActor.run {
+                for serverBudget in budgetList {
+                    let serverId = serverBudget.id
+                    let fetchDescriptor = FetchDescriptor<DBBudget>(predicate: #Predicate { $0.id == serverId })
+                    if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                        existing.name = serverBudget.name
+                        existing.limitStr = serverBudget.limit
+                        existing.amountStr = serverBudget.amount
+                        existing.periodType = serverBudget.period_type
+                        existing.startDate = serverBudget.start_date
+                        existing.endDate = serverBudget.end_date
+                        existing.icon = serverBudget.icon
+                        existing.color = serverBudget.color
+                        existing.budgetType = serverBudget.budget_type
+                        existing.isActive = serverBudget.is_active
+                        existing.spentAmountStr = serverBudget.spent_amount
+                        existing.updatedAt = serverBudget.updated_at
+                    } else {
+                        let dbBudget = DBBudget(
+                            id: serverBudget.id,
+                            userId: serverBudget.user_id,
+                            name: serverBudget.name,
+                            limitStr: serverBudget.limit,
+                            amountStr: serverBudget.amount,
+                            periodType: serverBudget.period_type,
+                            startDate: serverBudget.start_date,
+                            endDate: serverBudget.end_date,
+                            icon: serverBudget.icon,
+                            color: serverBudget.color,
+                            budgetType: serverBudget.budget_type,
+                            isActive: serverBudget.is_active,
+                            spentAmountStr: serverBudget.spent_amount,
+                            createdAt: serverBudget.created_at,
+                            updatedAt: serverBudget.updated_at
+                        )
+                        modelContext.insert(dbBudget)
+                    }
+                }
+                
+                let serverIds = budgetList.map { $0.id }
+                let fetchDescriptor = FetchDescriptor<DBBudget>()
+                if let allDbBudgets = try? modelContext.fetch(fetchDescriptor) {
+                    for dbb in allDbBudgets {
+                        if !serverIds.contains(dbb.id) {
+                            modelContext.delete(dbb)
+                        }
+                    }
+                }
+                
+                try? modelContext.save()
+            }
+        } catch {
+            print("Failed to fetch budgets list: \(error)")
         }
     }
     

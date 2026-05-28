@@ -15,8 +15,18 @@ struct SplashView: View {
             }
         }
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                appStateManager.moveToAuth()
+            Task {
+                if AuthManager.shared.isAuthenticated {
+                    await AuthManager.shared.fetchMe()
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    if AuthManager.shared.isAuthenticated {
+                        appStateManager.moveToMain()
+                    } else {
+                        appStateManager.moveToAuth()
+                    }
+                }
             }
         }
     }
