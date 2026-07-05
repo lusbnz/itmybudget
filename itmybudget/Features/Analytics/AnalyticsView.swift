@@ -3,14 +3,13 @@ import Charts
 
 enum AnalyticsTab: String, CaseIterable {
     case currentMonth = "April 2026"
-    case lastWeek = "analytics.last_week"
-    case lastMonth = "analytics.last_month"
-    case lastQuarter = "analytics.last_quarter"
-    case lastYear = "analytics.last_year"
+    case lastWeek = "Tuần trước"
+    case lastMonth = "Tháng trước"
+    case lastQuarter = "Quý trước"
+    case lastYear = "Năm trước"
     
     var localizedName: String {
-        if self == .currentMonth { return self.rawValue }
-        return self.rawValue.localized
+        self.rawValue
     }
 }
 
@@ -31,7 +30,7 @@ struct TrendData: Identifiable {
 }
 
 struct AnalyticsView: View {
-    @Environment(LocalizationManager.self) private var loc
+
     @State private var selectedTab: AnalyticsTab = .currentMonth
     @Namespace private var tabNamespace
     @State private var showDatePicker = false
@@ -40,11 +39,11 @@ struct AnalyticsView: View {
     
     private var spendingCategories: [SpendingCategory] {
         [
-            SpendingCategory(name: "categories.food_drink".localized, icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "analytics.warning".localized),
-            SpendingCategory(name: "categories.shopping".localized, icon: "cart.fill", amount: 250, percentage: 25, color: .blue, status: "analytics.on_track".localized),
-            SpendingCategory(name: "categories.transport".localized, icon: "car.fill", amount: 150, percentage: 15, color: .green, status: "analytics.good".localized),
-            SpendingCategory(name: "categories.entertainment".localized, icon: "popcorn.fill", amount: 100, percentage: 10, color: .purple, status: "analytics.on_track".localized),
-            SpendingCategory(name: "analytics.others".localized, icon: "ellipsis.circle.fill", amount: 50, percentage: 5, color: .gray, status: "analytics.good".localized)
+            SpendingCategory(name: "Ăn uống", icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "Cảnh báo"),
+            SpendingCategory(name: "Mua sắm", icon: "cart.fill", amount: 250, percentage: 25, color: .blue, status: "Đúng kế hoạch"),
+            SpendingCategory(name: "Di chuyển", icon: "car.fill", amount: 150, percentage: 15, color: .green, status: "Tốt"),
+            SpendingCategory(name: "Giải trí", icon: "popcorn.fill", amount: 100, percentage: 10, color: .purple, status: "Đúng kế hoạch"),
+            SpendingCategory(name: "Khác", icon: "ellipsis.circle.fill", amount: 50, percentage: 5, color: .gray, status: "Tốt")
         ]
     }
     
@@ -108,7 +107,7 @@ struct AnalyticsView: View {
     
     private var header: some View {
         HStack {
-            LText("analytics.title")
+            Text("Phân tích tài chính")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
             Spacer()
@@ -132,7 +131,7 @@ struct AnalyticsView: View {
                         }
                     }) {
                         HStack(spacing: 4) {
-                            Text(tab.localizedName)
+                            Text(tab.rawValue)
                                 .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
                             
                             if tab == .currentMonth {
@@ -169,10 +168,10 @@ struct AnalyticsView: View {
     private var spendingOverview: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                LText("analytics.spending_overview")
+                Text("Tổng quan chi tiêu")
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
-                LText("analytics.vs_last_period")
+                Text("+ 2.4% so với kỳ trước")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.red)
             }
@@ -195,9 +194,9 @@ struct AnalyticsView: View {
                     .chartLegend(.hidden)
                     
                     VStack(spacing: 0) {
-                        Text("\(loc.currentLanguage == "vi" ? "" : "$")2,450\(loc.currentLanguage == "vi" ? "đ" : "")")
+                        Text("\("")2,450\("đ")")
                             .font(.system(size: 24, weight: .black))
-                        LText("analytics.total_spent")
+                        Text("Tổng chi tiêu")
                             .font(.system(size: 12))
                             .foregroundStyle(.gray)
                     }
@@ -234,8 +233,8 @@ struct AnalyticsView: View {
     
     private var statsRow: some View {
         HStack(spacing: 16) {
-            statBox(icon: "arrow.left.arrow.right", title: "analytics.transactions".localized, value: "12", diff: "+2.4%", isDiffPositive: true)
-            statBox(icon: "chart.line.uptrend.xyaxis", title: "analytics.avg_day".localized, value: "\(loc.currentLanguage == "vi" ? "" : "$")45\(loc.currentLanguage == "vi" ? "đ" : "")", diff: "-5%", isDiffPositive: false)
+            statBox(icon: "arrow.left.arrow.right", title: "Giao dịch", value: "12", diff: "+2.4%", isDiffPositive: true)
+            statBox(icon: "chart.line.uptrend.xyaxis", title: "Trung bình/ngày", value: "\("")45\("đ")", diff: "-5%", isDiffPositive: false)
         }
         .padding(.horizontal, 16)
     }
@@ -279,7 +278,7 @@ struct AnalyticsView: View {
     private var aiInsightCarousel: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                LText("analytics.ai_insights")
+                Text("Phân tích AI")
                     .font(.system(size: 14, weight: .bold))
             }
             .padding(.horizontal, 20)
@@ -291,12 +290,12 @@ struct AnalyticsView: View {
     
     private var transactionTrends: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("analytics.transaction_trends")
+            Text("Xu hướng giao dịch")
                 .font(.system(size: 16, weight: .bold))
                 .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 12) {
-                LText("analytics.period_overview")
+                Text("Tổng quan giai đoạn")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
                 
@@ -336,7 +335,7 @@ struct AnalyticsView: View {
     
     private var topSpendingCategories: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("analytics.top_spending_categories")
+            Text("Danh mục chi tiêu hàng đầu")
                 .font(.system(size: 16, weight: .bold))
                 .padding(.horizontal, 16)
             
@@ -352,7 +351,7 @@ struct AnalyticsView: View {
                             Text(category.name).font(.system(size: 14, weight: .semibold))
                             HStack(spacing: 4) {
                                 Text("\(category.percentage)%")
-                                LText("analytics.of_total")
+                                Text("tổng số")
                             }
                                 .font(.system(size: 11))
                                 .foregroundStyle(.gray)
@@ -361,7 +360,7 @@ struct AnalyticsView: View {
                         Spacer()
                         
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(category.amount))\(loc.currentLanguage == "vi" ? "đ" : "")")
+                            Text("\("")\(Int(category.amount))\("đ")")
                                 .font(.system(size: 14, weight: .semibold))
                             
                             if let status = category.status {
@@ -397,9 +396,9 @@ struct AnalyticsView: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                LText("analytics.select_date_range")
+                Text("Chọn khoảng thời gian")
                         .font(.system(size: 20, weight: .bold))
-                LText("analytics.filter_period")
+                Text("Lọc phân tích của bạn theo một khoảng thời gian cụ thể")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
@@ -425,7 +424,7 @@ struct AnalyticsView: View {
             
             VStack(spacing: 12) {
                 Button(action: { showDatePicker = false }) {
-                    LText("analytics.apply_range")
+                    Text("Áp dụng")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -435,7 +434,7 @@ struct AnalyticsView: View {
                 }
                 
                 Button(action: { showDatePicker = false }) {
-                    LText("common.cancel")
+                    Text("Hủy")
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }

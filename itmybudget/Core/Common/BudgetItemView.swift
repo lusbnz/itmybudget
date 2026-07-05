@@ -45,19 +45,19 @@ struct BudgetItemView: View {
                 .frame(height: 8)
                 
                 HStack {
-                    Text("\("budget_detail.remain".localized): " + formatCurrency(budget.total - budget.spent))
+                    Text("\("Còn lại"): " + formatCurrency(budget.total - budget.spent))
                         .font(.system(size: 12))
                         .foregroundStyle(.black)
                     
                     Spacer()
                     
-                    Text("\("budget_detail.recommended".localized): " + formatCurrency(budget.dailyLimit) + " / \("budget_detail.day".localized)")
+                    Text("\("Khuyên dùng"): " + formatCurrency(budget.dailyLimit) + " / \("ngày")")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
                 
                 HStack(spacing: 4) {
-                    Text("\("budget_detail.next_refill".localized): \(budget.nextTopUp)")
+                    Text("\("Kỳ nạp tới"): \(budget.nextTopUp)")
                         .font(.system(size: 12))
                 }
                 .foregroundStyle(.gray.opacity(0.8))

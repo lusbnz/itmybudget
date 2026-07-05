@@ -7,7 +7,7 @@ struct MonthPickerSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                LText("history.select_month")
+                Text("Chọn tháng")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(.black)
                 Spacer()
@@ -19,7 +19,7 @@ struct MonthPickerSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     HStack(spacing: 0) {
-                        Picker("history.month".localized, selection: Binding(
+                        Picker("Tháng", selection: Binding(
                             get: { Calendar.current.component(.month, from: selectedDate) },
                             set: { newValue in
                                 if let newDate = Calendar.current.date(bySetting: .month, value: newValue, of: selectedDate) {
@@ -33,7 +33,7 @@ struct MonthPickerSheet: View {
                         }
                         .pickerStyle(.wheel)
                         
-                        Picker("history.year".localized, selection: Binding(
+                        Picker("Năm", selection: Binding(
                             get: { Calendar.current.component(.year, from: selectedDate) },
                             set: { newValue in
                                 if let newDate = Calendar.current.date(bySetting: .year, value: newValue, of: selectedDate) {
@@ -56,7 +56,7 @@ struct MonthPickerSheet: View {
             }
             
             Button(action: { isPresented = false }) {
-                LText("history.apply_selection")
+                Text("Áp dụng lựa chọn")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

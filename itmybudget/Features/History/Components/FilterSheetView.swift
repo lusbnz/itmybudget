@@ -2,7 +2,6 @@ import SwiftUI
 
 struct FilterSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @Binding var selectedType: TransactionType
     @Binding var selectedBudgetId: Int?
     @Binding var selectedCategory: Category?
@@ -34,14 +33,11 @@ struct FilterSheetView: View {
             )
             .ignoresSafeArea()
         )
-        .onChange(of: loc.currentLanguage) {
-            categories = Category.sampleData
-        }
     }
     
     private var filterHeader: some View {
         HStack {
-            LText("history.filter_transactions")
+            Text("Lọc giao dịch")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             Spacer()
@@ -53,7 +49,7 @@ struct FilterSheetView: View {
     
     private var typeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("history.transaction_type")
+            Text("Loại giao dịch")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black.opacity(0.8))
             
@@ -64,7 +60,7 @@ struct FilterSheetView: View {
                             selectedType = type
                         }
                     }) {
-                        Text(type.localizedName)
+                        Text(type.rawValue)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(selectedType == type ? .white : .black)
                             .frame(maxWidth: .infinity)
@@ -94,7 +90,7 @@ struct FilterSheetView: View {
     
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("history.category")
+            Text("Danh mục")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black.opacity(0.8))
             
@@ -104,7 +100,7 @@ struct FilterSheetView: View {
                         selectedCategory = nil
                     }
                 }) {
-                    BudgetCategoryCard(title: "history.all_categories".localized, icon: "square.grid.2x2.fill", color: .gray, isSelected: selectedCategory == nil)
+                    BudgetCategoryCard(title: "Tất cả danh mục", icon: "square.grid.2x2.fill", color: .gray, isSelected: selectedCategory == nil)
                 }
                 .buttonStyle(BouncyButtonStyle())
                 
@@ -125,7 +121,7 @@ struct FilterSheetView: View {
     private var actionButtons: some View {
         VStack(spacing: 12) {
             Button(action: { dismiss() }) {
-                LText("history.apply_filters")
+                Text("Áp dụng bộ lọc")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -143,7 +139,7 @@ struct FilterSheetView: View {
                 }
                 dismiss()
             }) {
-                LText("history.reset_filters")
+                Text("Đặt lại bộ lọc")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.gray)
             }

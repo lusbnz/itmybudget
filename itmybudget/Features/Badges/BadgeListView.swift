@@ -14,70 +14,69 @@ extension Badge {
     static var sampleData: [Badge] {
         [
             // Foundation
-            Badge(name: "badges.first_step".localized, category: "badge_categories.foundation".localized, icon: "sparkles", description: "badges.first_step_desc".localized, dateEarned: "Mar 12, 2026", color: .blue),
-            Badge(name: "badges.seven_day_streak".localized, category: "badge_categories.foundation".localized, icon: "calendar.badge.check", description: "badges.seven_day_streak_desc".localized, dateEarned: "Feb 28, 2026", color: .orange),
-            Badge(name: "badges.expense_detective".localized, category: "badge_categories.foundation".localized, icon: "magnifyingglass", description: "badges.expense_detective_desc".localized, dateEarned: "Jan 15, 2026", color: .purple),
+            Badge(name: "Khai mở tài chính", category: "Xây dựng nền móng", icon: "sparkles", description: "Tạo giao dịch đầu tiên.", dateEarned: "Mar 12, 2026", color: .blue),
+            Badge(name: "Tuần lễ kỷ luật", category: "Xây dựng nền móng", icon: "calendar.badge.check", description: "Ghi chép liên tục trong 7 ngày.", dateEarned: "Feb 28, 2026", color: .orange),
+            Badge(name: "Thám tử chi tiêu", category: "Xây dựng nền móng", icon: "magnifyingglass", description: "Phân loại cho tối thiểu 10 chi tiêu trong tháng.", dateEarned: "Jan 15, 2026", color: .purple),
             
             // Control Master
-            Badge(name: "badges.temptation_resistor".localized, category: "badge_categories.control".localized, icon: "hand.raised.fill", description: "badges.temptation_resistor_desc".localized, dateEarned: "Jan 10, 2026", color: .green),
-            Badge(name: "badges.budget_engineer".localized, category: "badge_categories.control".localized, icon: "ruler.fill", description: "badges.budget_engineer_desc".localized, dateEarned: "Mar 25, 2026", color: .gray),
-            Badge(name: "badges.safe_landing".localized, category: "badge_categories.control".localized, icon: "checkmark.seal.fill", description: "badges.safe_landing_desc".localized, dateEarned: "Dec 30, 2025", color: .cyan),
-            Badge(name: "badges.revival".localized, category: "badge_categories.control".localized, icon: "heart.text.square.fill", description: "badges.revival_desc".localized, dateEarned: nil, color: .red),
-            Badge(name: "badges.zero_spend_day".localized, category: "badge_categories.control".localized, icon: "nosign", description: "badges.zero_spend_day_desc".localized, dateEarned: nil, color: .green),
-            Badge(name: "badges.shopaholic_no_more".localized, category: "badge_categories.control".localized, icon: "cart.badge.minus", description: "badges.shopaholic_no_more_desc".localized, dateEarned: nil, color: .cyan),
-            Badge(name: "badges.minimalist".localized, category: "badge_categories.control".localized, icon: "leaf.fill", description: "badges.minimalist_desc".localized, dateEarned: nil, color: .green),
-            Badge(name: "badges.self_disciplined".localized, category: "badge_categories.control".localized, icon: "lock.fill", description: "badges.self_disciplined_desc".localized, dateEarned: nil, color: .gray),
-            Badge(name: "badges.steady_stream".localized, category: "badge_categories.control".localized, icon: "drop.fill", description: "badges.steady_stream_desc".localized, dateEarned: nil, color: .blue),
-            Badge(name: "badges.great_wall".localized, category: "badge_categories.control".localized, icon: "shield.fill", description: "badges.great_wall_desc".localized, dateEarned: nil, color: .indigo),
+            Badge(name: "Vượt qua cám dỗ", category: "Bậc thầy kiểm soát", icon: "hand.raised.fill", description: "Không phát sinh chi tiêu ăn chơi trong 3 ngày.", dateEarned: "Jan 10, 2026", color: .green),
+            Badge(name: "Kỹ sư ngân sách", category: "Bậc thầy kiểm soát", icon: "ruler.fill", description: "Thiết lập ít nhất 5 ngân sách.", dateEarned: "Mar 25, 2026", color: .gray),
+            Badge(name: "Cán đích an toàn", category: "Bậc thầy kiểm soát", icon: "checkmark.seal.fill", description: "Kết thúc tháng mà không vượt ngân sách tổng.", dateEarned: "Dec 30, 2025", color: .cyan),
+            Badge(name: "Hồi sinh", category: "Bậc thầy kiểm soát", icon: "heart.text.square.fill", description: "Quay lại ghi chép sau một tháng tạm ngưng.", dateEarned: nil, color: .red),
+            Badge(name: "Ngày Không Chi Tiêu", category: "Bậc thầy kiểm soát", icon: "nosign", description: "Hoàn thành một ngày không tiêu một đồng nào.", dateEarned: nil, color: .green),
+            Badge(name: "Cai Nghiện Mua Sắm", category: "Bậc thầy kiểm soát", icon: "cart.badge.minus", description: "Không phát sinh giao dịch mua sắm online trong 30 ngày.", dateEarned: nil, color: .cyan),
+            Badge(name: "Lối Sống Tối Giản", category: "Bậc thầy kiểm soát", icon: "leaf.fill", description: "Tổng số lượng giao dịch chi tiêu trong tháng dưới 20.", dateEarned: nil, color: .green),
+            Badge(name: "Tự Kỷ Luật", category: "Bậc thầy kiểm soát", icon: "lock.fill", description: "Không chỉnh sửa hay xóa bất kỳ giao dịch nào trong tuần.", dateEarned: nil, color: .gray),
+            Badge(name: "Nước Chảy Đá Mòn", category: "Bậc thầy kiểm soát", icon: "drop.fill", description: "Tiết kiệm được 5% ngân sách mỗi tháng liên tục 3 tháng.", dateEarned: nil, color: .blue),
+            Badge(name: "Bức Tường Thành", category: "Bậc thầy kiểm soát", icon: "shield.fill", description: "Không vượt ngân sách bất kỳ danh mục nào trong tháng.", dateEarned: nil, color: .indigo),
             
             // Prosperity & Growth
-            Badge(name: "badges.self_made".localized, category: "badge_categories.prosperity".localized, icon: "bitcoinsign.circle.fill", description: "badges.self_made_desc".localized, dateEarned: nil, color: .yellow),
-            Badge(name: "badges.savings_engine".localized, category: "badge_categories.prosperity".localized, icon: "engine.combustion.fill", description: "badges.savings_engine_desc".localized, dateEarned: nil, color: .gray),
-            Badge(name: "badges.young_investor".localized, category: "badge_categories.prosperity".localized, icon: "chart.pie.fill", description: "badges.young_investor_desc".localized, dateEarned: nil, color: .indigo),
-            Badge(name: "badges.great_tree".localized, category: "badge_categories.prosperity".localized, icon: "tree.fill", description: "badges.great_tree_desc".localized, dateEarned: nil, color: .green),
-            Badge(name: "badges.sleep_earn".localized, category: "badge_categories.prosperity".localized, icon: "bed.double.fill", description: "badges.sleep_earn_desc".localized, dateEarned: nil, color: .purple),
-            Badge(name: "badges.financial_freedom".localized, category: "badge_categories.prosperity".localized, icon: "figure.stand.line.dotted.figure.rodeo", description: "badges.financial_freedom_desc".localized, dateEarned: nil, color: .yellow),
-            Badge(name: "badges.emergency_fund".localized, category: "badge_categories.prosperity".localized, icon: "lifepreserver.fill", description: "badges.emergency_fund_desc".localized, dateEarned: nil, color: .orange),
-            Badge(name: "badges.upward_trend".localized, category: "badge_categories.prosperity".localized, icon: "chart.line.uptrend.xyaxis", description: "badges.upward_trend_desc".localized, dateEarned: nil, color: .green),
-            Badge(name: "badges.philanthropist".localized, category: "badge_categories.prosperity".localized, icon: "hands.sparkles.fill", description: "badges.philanthropist_desc".localized, dateEarned: nil, color: .pink),
+            Badge(name: "Triệu phú tự thân", category: "Thịnh vượng & Tăng trưởng", icon: "bitcoinsign.circle.fill", description: "Đạt cột mốc tiết kiệm 5 triệu đầu tiên.", dateEarned: nil, color: .yellow),
+            Badge(name: "Cỗ máy tích lũy", category: "Thịnh vượng & Tăng trưởng", icon: "engine.combustion.fill", description: "Tăng tỷ lệ tiết kiệm hàng tháng trong 3 tháng.", dateEarned: nil, color: .gray),
+            Badge(name: "Nhà đầu tư trẻ", category: "Thịnh vượng & Tăng trưởng", icon: "chart.pie.fill", description: "Bắt đầu phân bổ tiền vào các quỹ đầu tư.", dateEarned: nil, color: .indigo),
+            Badge(name: "Cây đại thụ", category: "Thịnh vượng & Tăng trưởng", icon: "tree.fill", description: "Đồng hành cùng app tròn 1 năm.", dateEarned: nil, color: .green),
+            Badge(name: "Ngủ Cũng Ra Tiền", category: "Thịnh vượng & Tăng trưởng", icon: "bed.double.fill", description: "Ghi nhận khoản thu nhập thụ động đầu tiên.", dateEarned: nil, color: .purple),
+            Badge(name: "Tự Do Tài Chính", category: "Thịnh vượng & Tăng trưởng", icon: "figure.stand.line.dotted.figure.rodeo", description: "Đạt Net Worth gấp 12 lần chi tiêu hàng tháng.", dateEarned: nil, color: .yellow),
+            Badge(name: "Phao Cứu Sinh", category: "Thịnh vượng & Tăng trưởng", icon: "lifepreserver.fill", description: "Xây dựng xong Quỹ khẩn cấp (bằng 3 tháng chi tiêu).", dateEarned: nil, color: .orange),
+            Badge(name: "Đồ Thị Xanh", category: "Thịnh vượng & Tăng trưởng", icon: "chart.line.uptrend.xyaxis", description: "Net worth tăng trưởng dương liên tục trong 6 tháng.", dateEarned: nil, color: .green),
+            Badge(name: "Sứ Giả Cho Đi", category: "Thịnh vượng & Tăng trưởng", icon: "hands.sparkles.fill", description: "Phát sinh giao dịch Từ thiện/Quyên góp.", dateEarned: nil, color: .pink),
             
             // Retention
-            Badge(name: "badges.golden_week".localized, category: "badge_categories.retention".localized, icon: "calendar.badge.check", description: "badges.golden_week_desc".localized, dateEarned: nil, color: .orange),
-            Badge(name: "badges.financial_detective".localized, category: "badge_categories.retention".localized, icon: "magnifyingglass", description: "badges.financial_detective_desc".localized, dateEarned: nil, color: .purple),
-            Badge(name: "badges.shopping_immunity".localized, category: "badge_categories.retention".localized, icon: "cart.badge.minus", description: "badges.shopping_immunity_desc".localized, dateEarned: nil, color: .green),
-            Badge(name: "badges.phoenix".localized, category: "badge_categories.retention".localized, icon: "flame.fill", description: "badges.phoenix_desc".localized, dateEarned: nil, color: .red),
-            Badge(name: "badges.first_milestone".localized, category: "badge_categories.retention".localized, icon: "flag.checkered", description: "badges.first_milestone_desc".localized, dateEarned: nil, color: .blue),
-            Badge(name: "badges.veteran".localized, category: "badge_categories.retention".localized, icon: "crown.fill", description: "badges.veteran_desc".localized, dateEarned: nil, color: .indigo),
+            Badge(name: "Tuần Lễ Vàng", category: "Tăng cường Retention", icon: "calendar.badge.check", description: "Ghi chép liên tục trong 7 ngày.", dateEarned: nil, color: .orange),
+            Badge(name: "Thám Tử Tài Chính", category: "Tăng cường Retention", icon: "magnifyingglass", description: "Phân loại 100% chi tiêu trong tháng.", dateEarned: nil, color: .purple),
+            Badge(name: "Kháng Thể Shopping", category: "Tăng cường Retention", icon: "cart.badge.minus", description: "Không chi tiêu vượt định mức Mua sắm.", dateEarned: nil, color: .green),
+            Badge(name: "Phượng Hoàng", category: "Tăng cường Retention", icon: "flame.fill", description: "Quay lại ghi chép sau 1 tuần vắng bóng.", dateEarned: nil, color: .red),
+            Badge(name: "Cột Mốc Đầu Tiên", category: "Tăng cường Retention", icon: "flag.checkered", description: "Đạt 10% mục tiêu tiết kiệm lớn nhất.", dateEarned: nil, color: .blue),
+            Badge(name: "Lão Làng", category: "Tăng cường Retention", icon: "crown.fill", description: "Sử dụng app liên tục trong 365 ngày.", dateEarned: nil, color: .indigo),
             
             // Advanced Habits
-            Badge(name: "badges.hundred_day_mastery".localized, category: "badge_categories.habits".localized, icon: "flame.fill", description: "badges.hundred_day_mastery_desc".localized, dateEarned: nil, color: .red),
-            Badge(name: "badges.appraiser".localized, category: "badge_categories.habits".localized, icon: "camera.fill", description: "badges.appraiser_desc".localized, dateEarned: nil, color: .teal),
-            Badge(name: "badges.novelist".localized, category: "badge_categories.habits".localized, icon: "text.quote", description: "badges.novelist_desc".localized, dateEarned: nil, color: .brown),
-            Badge(name: "badges.time_traveler".localized, category: "badge_categories.habits".localized, icon: "clock.arrow.circlepath", description: "badges.time_traveler_desc".localized, dateEarned: nil, color: .gray),
-            Badge(name: "badges.entry_machine".localized, category: "badge_categories.habits".localized, icon: "train.side.front.car", description: "badges.entry_machine_desc".localized, dateEarned: nil, color: .orange),
+            Badge(name: "Bách Nhật Tu Luyện", category: "Thói quen Nâng cao", icon: "flame.fill", description: "Ghi chép liên tục trong 100 ngày.", dateEarned: nil, color: .red),
+            Badge(name: "Nhà Thẩm Định", category: "Thói quen Nâng cao", icon: "camera.fill", description: "Đính kèm hình ảnh vào 10 giao dịch.", dateEarned: nil, color: .teal),
+            Badge(name: "Tiểu Thuyết Gia", category: "Thói quen Nâng cao", icon: "text.quote", description: "Ghi chú dài hơn 50 ký tự cho một giao dịch.", dateEarned: nil, color: .brown),
+            Badge(name: "Nhà Cổ Sinh Vật", category: "Thói quen Nâng cao", icon: "clock.arrow.circlepath", description: "Sửa lại một giao dịch đã tạo từ hơn 30 ngày trước.", dateEarned: nil, color: .gray),
+            Badge(name: "Đầu Tàu Ghi Chép", category: "Thói quen Nâng cao", icon: "train.side.front.car", description: "Thêm 10 giao dịch trong cùng một ngày.", dateEarned: nil, color: .orange),
             
             // Secret
-            Badge(name: "badges.lord_of_night".localized, category: "badge_categories.secret".localized, icon: "moon.zzz.fill", description: "badges.lord_of_night_desc".localized, dateEarned: nil, color: .purple),
-            Badge(name: "badges.financial_eve".localized, category: "badge_categories.secret".localized, icon: "fireworks", description: "badges.financial_eve_desc".localized, dateEarned: nil, color: .red),
-            Badge(name: "badges.lucky_numbers".localized, category: "badge_categories.secret".localized, icon: "number.square.fill", description: "badges.lucky_numbers_desc".localized, dateEarned: nil, color: .yellow),
-            Badge(name: "badges.penny_pincher".localized, category: "badge_categories.secret".localized, icon: "1.circle.fill", description: "badges.penny_pincher_desc".localized, dateEarned: nil, color: .teal),
-            Badge(name: "badges.confused_mind".localized, category: "badge_categories.secret".localized, icon: "trash.fill", description: "badges.confused_mind_desc".localized, dateEarned: nil, color: .gray),
-            Badge(name: "badges.boba_infinity".localized, category: "badge_categories.secret".localized, icon: "cup.and.saucer.fill", description: "badges.boba_infinity_desc".localized, dateEarned: nil, color: .brown),
-            Badge(name: "badges.love_fund".localized, category: "badge_categories.secret".localized, icon: "heart.fill", description: "badges.love_fund_desc".localized, dateEarned: nil, color: .pink),
-            Badge(name: "badges.paw_parent".localized, category: "badge_categories.secret".localized, icon: "pawprint.fill", description: "badges.paw_parent_desc".localized, dateEarned: nil, color: .orange),
-            Badge(name: "badges.happy_birthday".localized, category: "badge_categories.secret".localized, icon: "gift.fill", description: "badges.happy_birthday_desc".localized, dateEarned: nil, color: .pink),
-            Badge(name: "badges.rock_bottom".localized, category: "badge_categories.secret".localized, icon: "battery.25", description: "badges.rock_bottom_desc".localized, dateEarned: nil, color: .red),
-            Badge(name: "badges.make_it_rain".localized, category: "badge_categories.secret".localized, icon: "cloud.heavyrain.fill", description: "badges.make_it_rain_desc".localized, dateEarned: nil, color: .cyan),
-            Badge(name: "badges.long_time_no_see".localized, category: "badge_categories.secret".localized, icon: "questionmark.folder.fill", description: "badges.long_time_no_see_desc".localized, dateEarned: nil, color: .gray),
-            Badge(name: "badges.fresh_start".localized, category: "badge_categories.secret".localized, icon: "sun.max.fill", description: "badges.fresh_start_desc".localized, dateEarned: nil, color: .yellow),
-            Badge(name: "badges.deal_hunter".localized, category: "badge_categories.secret".localized, icon: "tag.fill", description: "badges.deal_hunter_desc".localized, dateEarned: nil, color: .orange)
+            Badge(name: "Chúa Tể Cú Đêm", category: "Huy hiệu Bí ẩn", icon: "moon.zzz.fill", description: "Ghi chép giao dịch vào lúc 2:00 - 4:00 sáng.", dateEarned: nil, color: .purple),
+            Badge(name: "Giao Thừa Tài Chính", category: "Huy hiệu Bí ẩn", icon: "fireworks", description: "Mở app và ghi chép lúc 00:00 - 00:01 phút.", dateEarned: nil, color: .red),
+            Badge(name: "Số Đẹp Lộc Phát", category: "Huy hiệu Bí ẩn", icon: "number.square.fill", description: "Tạo giao dịch có đuôi 68, 86, 6868...", dateEarned: nil, color: .yellow),
+            Badge(name: "Chi Li Từng Đồng", category: "Huy hiệu Bí ẩn", icon: "1.circle.fill", description: "Nhập giao dịch với số tiền cực nhỏ.", dateEarned: nil, color: .teal),
+            Badge(name: "Tâm Trí Bất Ổn", category: "Huy hiệu Bí ẩn", icon: "trash.fill", description: "Xóa 3 giao dịch liên tiếp trong vòng 5 phút.", dateEarned: nil, color: .gray),
+            Badge(name: "Trà Sữa Vô Cực", category: "Huy hiệu Bí ẩn", icon: "cup.and.saucer.fill", description: "Phát sinh hơn 10 giao dịch cafe/trà sữa trong 1 tháng.", dateEarned: nil, color: .brown),
+            Badge(name: "Quỹ Tình Yêu", category: "Huy hiệu Bí ẩn", icon: "heart.fill", description: "Ghi chú có chứa từ khóa 'Người yêu', 'Hẹn hò', 'Crush'.", dateEarned: nil, color: .pink),
+            Badge(name: "Sen Chính Hiệu", category: "Huy hiệu Bí ẩn", icon: "pawprint.fill", description: "Chi tiêu cho Thú cưng vượt 10% tổng chi tiêu tháng.", dateEarned: nil, color: .orange),
+            Badge(name: "Sinh Nhật Vui Vẻ", category: "Huy hiệu Bí ẩn", icon: "gift.fill", description: "Mở app và ghi chép vào đúng ngày sinh nhật.", dateEarned: nil, color: .pink),
+            Badge(name: "Chạm Đáy Nỗi Đau", category: "Huy hiệu Bí ẩn", icon: "battery.25", description: "Số dư tổng tài khoản chỉ còn dưới 5% trước ngày nhận lương.", dateEarned: nil, color: .red),
+            Badge(name: "Cơn Mưa Tiền Thưởng", category: "Huy hiệu Bí ẩn", icon: "cloud.heavyrain.fill", description: "Có 3 giao dịch Thu nhập trong cùng 1 tuần.", dateEarned: nil, color: .cyan),
+            Badge(name: "Quên Lãng", category: "Huy hiệu Bí ẩn", icon: "questionmark.folder.fill", description: "Không mở app trong 14 ngày rồi quay lại.", dateEarned: nil, color: .gray),
+            Badge(name: "Sự Khởi Đầu Mới", category: "Huy hiệu Bí ẩn", icon: "sun.max.fill", description: "Xóa toàn bộ dữ liệu và bắt đầu lại từ đầu.", dateEarned: nil, color: .yellow),
+            Badge(name: "Chuyên Gia Săn Sale", category: "Huy hiệu Bí ẩn", icon: "tag.fill", description: "5 giao dịch ghi chú từ khóa 'Sale', 'Khuyến mãi', 'Giảm giá'.", dateEarned: nil, color: .orange)
         ]
     }
 }
 
 struct BadgeListView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @State private var showContent = false
     
     private var badges: [Badge] {
@@ -90,12 +89,12 @@ struct BadgeListView: View {
     
     private var badgeCategories: [String] {
         [
-            "badge_categories.foundation".localized,
-            "badge_categories.control".localized,
-            "badge_categories.prosperity".localized,
-            "badge_categories.retention".localized,
-            "badge_categories.habits".localized,
-            "badge_categories.secret".localized
+            "Xây dựng nền móng",
+            "Bậc thầy kiểm soát",
+            "Thịnh vượng & Tăng trưởng",
+            "Tăng cường Retention",
+            "Thói quen Nâng cao",
+            "Huy hiệu Bí ẩn"
         ]
     }
     
@@ -140,7 +139,7 @@ struct BadgeListView: View {
     
     private var header: some View {
         HStack {
-            LText("badge_list.title")
+            Text("Huy hiệu Thành tích")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -175,9 +174,9 @@ struct BadgeListView: View {
             .frame(width: 70, height: 70)
             
             VStack(alignment: .leading, spacing: 4) {
-                LText("badge_list.achiever_level")
+                Text("Cấp độ Đạt được")
                     .font(.system(size: 16, weight: .bold))
-                LText("badge_list.unlock_more")
+                Text("Tiết kiệm nhiều hơn để mở khóa thêm nhiều huy hiệu hiếm!")
                     .font(.system(size: 13))
                     .foregroundStyle(.gray)
                     .fixedSize(horizontal: false, vertical: true)
@@ -249,7 +248,6 @@ struct SeededRandomNumberGenerator: RandomNumberGenerator {
 }
 
 struct BadgeCard: View {
-    @Environment(LocalizationManager.self) private var loc
     let badge: Badge
     
     private var isUnlocked: Bool { badge.dateEarned != nil }
@@ -286,7 +284,7 @@ struct BadgeCard: View {
             .padding(.top, 4)
             
             VStack(spacing: 4) {
-                Text(isUnlocked ? badge.name : "badge_list.hidden".localized)
+                Text(isUnlocked ? badge.name : "Phần thưởng Bí mật")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(isUnlocked ? .black : .gray)
                     .multilineTextAlignment(.center)

@@ -2,14 +2,14 @@ import SwiftUI
 import MapKit
 
 enum TransactionEntryMode: String, CaseIterable, Identifiable {
-    case manual = "transaction_form.manual"
-    case camera = "transaction_form.camera"
-    case chat = "transaction_form.chat"
+    case manual = "Thủ công"
+    case camera = "Máy ảnh"
+    case chat = "Trò chuyện"
     
     var id: String { self.rawValue }
     
     var localizedName: String {
-        self.rawValue.localized
+        self.rawValue
     }
     
     var icon: String {
@@ -23,7 +23,7 @@ enum TransactionEntryMode: String, CaseIterable, Identifiable {
 
 struct TransactionFormView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
+
     @State private var selectedMode: TransactionEntryMode = .manual
     @Namespace private var modeNamespace
     
@@ -41,7 +41,7 @@ struct TransactionFormView: View {
     @State private var frequency: String = "Monthly"
     @State private var isNonFixed: Bool = false
     @State private var startDate: Date = Date()
-    @State private var frequencyOptions = ["transaction_form.weekly", "transaction_form.monthly", "transaction_form.yearly"]
+    @State private var frequencyOptions = ["Hàng tuần", "Hàng tháng", "Hàng năm"]
     @Namespace private var tagNamespace
     
     @State private var isCaptured: Bool = false
@@ -153,7 +153,7 @@ struct TransactionFormView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            LText(transactionToEdit == nil ? "transaction_form.new_transaction" : "transaction_form.edit_transaction")
+            Text(transactionToEdit == nil ? "Giao dịch mới" : "Sửa giao dịch")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -166,13 +166,13 @@ struct TransactionFormView: View {
                     Menu {
                         if transactionToEdit == nil {
                             Button(action: {}) {
-                                Label("transaction_form.save_draft".localized, systemImage: "square.and.pencil")
+                                Label("Lưu bản nháp", systemImage: "square.and.pencil")
                             }
                         } else {
                             Button(role: .destructive, action: { 
                                 dismiss() 
                             }) {
-                                Label("common.delete".localized, systemImage: "trash")
+                                Label("Xóa", systemImage: "trash")
                             }
                         }
                     } label: {
@@ -199,7 +199,7 @@ struct TransactionFormView: View {
         Button(action: {
             dismiss()
         }) {
-            LText("common.save")
+            Text("Lưu")
                 .font(.system(size: 13, weight: .bold))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -222,7 +222,7 @@ struct TransactionFormView: View {
                         Image(systemName: mode.icon)
                             .font(.system(size: 12))
                         
-                        Text(mode.localizedName)
+                        Text(mode.rawValue)
                             .font(.system(size: 13, weight: .bold))
                     }
                     .foregroundColor(selectedMode == mode ? .white : .black.opacity(0.6))
@@ -282,7 +282,7 @@ struct TransactionFormView: View {
                 .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 10) {
-                LText("transaction_form.amount")
+                Text("Số tiền")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black.opacity(0.8))
                 
@@ -354,7 +354,7 @@ struct TransactionFormView: View {
                         .foregroundStyle(.white)
                 }
                 
-                LText("transaction_form.recurring_transaction")
+                Text("Giao dịch định kỳ")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black)
                 
@@ -376,7 +376,7 @@ struct TransactionFormView: View {
                         .padding(.horizontal, 20)
                     
                     VStack(alignment: .leading, spacing: 16) {
-                        LText("transaction_form.frequency")
+                        Text("Tần suất")
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
@@ -389,7 +389,7 @@ struct TransactionFormView: View {
                                             frequency = option
                                         }
                                     }) {
-                                        LText(option)
+                                        Text(option)
                                             .font(.system(size: 13, weight: frequency == option ? .bold : .medium))
                                             .foregroundStyle(frequency == option ? .white : .black)
                                             .padding(.horizontal, 16)
@@ -417,10 +417,10 @@ struct TransactionFormView: View {
                     VStack(spacing: 16) {
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 2) {
-                                LText("transaction_form.variable_amount")
+                                Text("Số tiền thay đổi")
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundStyle(.black)
-                                LText("transaction_form.hide_amount")
+                                Text("Ẩn số tiền nếu giá trị thay đổi")
                                     .font(.system(size: 11))
                                     .foregroundStyle(.gray)
                             }
@@ -436,10 +436,10 @@ struct TransactionFormView: View {
                         
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 2) {
-                                LText("transaction_form.start_date")
+                                Text("Ngày bắt đầu")
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundStyle(.black)
-                                LText("transaction_form.begin_cycle")
+                                Text("Bắt đầu chu kỳ định kỳ của bạn")
                                     .font(.system(size: 11))
                                     .foregroundStyle(.gray)
                             }
@@ -469,7 +469,7 @@ struct TransactionFormView: View {
     }
     
     private var locationSelectionSection: some View {
-        SectionContainer(title: "transaction_detail.location".localized) {
+        SectionContainer(title: "Vị trí") {
             Button(action: { isShowingLocationMap = true }) {
                 HStack(spacing: 12) {
                     Image(systemName: "mappin.and.ellipse")
@@ -480,10 +480,10 @@ struct TransactionFormView: View {
                         .clipShape(Circle())
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(selectedLocationName == "Add Location" ? "transaction_form.where_did_it_happen".localized : selectedLocationName)
+                        Text(selectedLocationName == "Add Location" ? "Việc này xảy ra ở đâu?" : selectedLocationName)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(.black)
-                        LText(selectedLocationName == "Add Location" ? "transaction_form.where_did_it_happen" : "transaction_form.tap_to_change_location")
+                        Text(selectedLocationName == "Add Location" ? "Việc này xảy ra ở đâu?" : "Nhấn để thay đổi vị trí")
                             .font(.system(size: 12))
                             .foregroundStyle(.gray)
                     }
@@ -505,7 +505,7 @@ struct TransactionFormView: View {
     }
     
     private var photoSelectionSection: some View {
-        SectionContainer(title: "transaction_detail.photos".localized) {
+        SectionContainer(title: "Ảnh") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     Button(action: {
@@ -515,7 +515,7 @@ struct TransactionFormView: View {
                         VStack(spacing: 8) {
                             Image(systemName: "plus.viewfinder")
                                 .font(.system(size: 24))
-                            LText("transaction_form.add_photo")
+                            Text("Thêm ảnh")
                                 .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundStyle(.gray)
@@ -608,7 +608,7 @@ struct TransactionFormView: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14))
-                LText(title)
+                Text(title)
                     .font(.system(size: 13, weight: .bold))
             }
             .foregroundColor(transactionType == type ? .white : .black.opacity(0.6))
@@ -657,7 +657,7 @@ struct TransactionFormView: View {
                     Button(action: {
                         withAnimation(.spring()) { isCaptured = false }
                     }) {
-                        LText("transaction_form.retry")
+                        Text("Thử lại")
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(.gray)
                             .frame(width: 110)
@@ -669,7 +669,7 @@ struct TransactionFormView: View {
                     .buttonStyle(BouncyButtonStyle())
                     
                     Button(action: { dismiss() }) {
-                        LText("transaction_form.confirm_and_create")
+                        Text("Xác nhận và tạo")
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
@@ -681,7 +681,7 @@ struct TransactionFormView: View {
                 }
                 
                 Button(action: { dismiss() }) {
-                    LText("transaction_form.just_draft")
+                    Text("Chỉ lưu dưới dạng bản nháp")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.gray.opacity(0.8))
                 }
@@ -705,10 +705,10 @@ struct TransactionFormView: View {
             .padding(.horizontal, 24)
             
             VStack(spacing: 16) {
-                LText("transaction_form.scan_receipt")
+                Text("Quét biên lai của bạn")
                     .font(.system(size: 18, weight: .bold))
                 
-                LText("transaction_form.align_receipt")
+                Text("Căn chỉnh biên lai trong khung để có kết quả tốt nhất")
                     .font(.system(size: 14))
                     .foregroundStyle(.gray.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -850,7 +850,7 @@ struct TransactionFormView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    LText("history.timeline")
+                    Text("Dòng thời gian")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.gray.opacity(0.6))
                         .padding(.vertical, 8)
@@ -908,7 +908,7 @@ struct TransactionFormView: View {
     private func aiTransactionCard(message: ChatMessage) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             chatBubble(message: ChatMessage(
-                text: "\("transaction_form.chat_detected".localized) **\(message.transactionName)** \("budget_detail.spent".localized) **\(message.amount)**. \("transaction_form.chat_ask_note".localized)",
+                text: "Hệ thống vừa ghi nhận giao dịch **\(message.transactionName)** với số tiền **\(message.amount)**. Bạn có muốn thêm ghi chú nào không?",
                 isAI: true,
                 time: message.time
             ))
@@ -956,14 +956,14 @@ struct TransactionFormView: View {
                 HStack(spacing: 16) {
                     Button(action: {
                     }) {
-                        LText("common.edit")
+                        Text("Sửa")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(.blue)
                     }
                     .buttonStyle(PlainButtonStyle())
                     
                     Button(action: {}) {
-                        LText("transaction_form.save_draft")
+                        Text("Lưu bản nháp")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(.orange)
                     }
@@ -972,7 +972,7 @@ struct TransactionFormView: View {
                     Spacer()
                     
                     Button(action: { dismiss() }) {
-                        LText("transaction_form.confirm_and_create")
+                        Text("Xác nhận và tạo")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
@@ -1012,11 +1012,11 @@ struct TransactionFormView: View {
     
     private var transactionNameSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            LText("budget_detail.transaction_name")
+            Text("Tên giao dịch")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.black.opacity(0.8))
             
-            TextField(selectedMode == .camera ? "transaction_form.enter_name".localized : "transaction_form.placeholder_name".localized, text: selectedMode == .camera ? $cameraName : $name)
+            TextField(selectedMode == .camera ? "Nhập tên..." : "ví dụ: Cà phê Starbucks", text: selectedMode == .camera ? $cameraName : $name)
                 .font(.system(size: 16, weight: selectedMode == .camera ? .semibold : .medium))
                 .padding(16)
                 .background(Color.white)
@@ -1031,13 +1031,13 @@ struct TransactionFormView: View {
 
     private var transactionTypeSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            LText("history.transaction_type")
+            Text("Loại giao dịch")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.black)
             
             HStack(spacing: 0) {
-                typeTab(type: .outcome, title: "budget_detail.outcome", icon: "arrow.up.right.circle.fill")
-                typeTab(type: .income, title: "budget_detail.income", icon: "arrow.down.left.circle.fill")
+                typeTab(type: .outcome, title: "Chi tiêu", icon: "arrow.up.right.circle.fill")
+                typeTab(type: .income, title: "Thu nhập", icon: "arrow.down.left.circle.fill")
             }
             .padding(4)
             .background(Color.white)
@@ -1048,7 +1048,7 @@ struct TransactionFormView: View {
 
     private var metadataSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            LText("transaction_form.metadata")
+            Text("Siêu dữ liệu")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -1100,7 +1100,7 @@ struct TransactionFormView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(.black.opacity(0.8))
             
-            TextField("transaction_form.chat_placeholder".localized, text: $chatInputText)
+            TextField("Mô tả giao dịch của bạn...", text: $chatInputText)
                 .font(.system(size: 14))
             
             Button(action: {

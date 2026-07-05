@@ -2,7 +2,6 @@ import SwiftUI
 
 struct BudgetFormSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     
     let budgetToEdit: Budget?
     var onSave: (String, Double) -> Void
@@ -37,11 +36,11 @@ struct BudgetFormSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("onboarding.budget_name")
+                        Text("Tên ngân sách")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("onboarding.budget_name_placeholder".localized, text: $name)
+                        TextField("Ví dụ: Hàng ngày, Du lịch...", text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -53,7 +52,7 @@ struct BudgetFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("onboarding.budget_amount")
+                        Text("Số tiền ngân sách")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -80,7 +79,7 @@ struct BudgetFormSheet: View {
                                     Button(action: {
                                         amount = String(format: "%.0f", val)
                                     }) {
-                                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(formatCurrency(val))\(loc.currentLanguage == "vi" ? "đ" : "")")
+                                        Text("\("")\(formatCurrency(val))\("đ")")
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundStyle(.black)
                                             .padding(.horizontal, 16)
@@ -110,7 +109,7 @@ struct BudgetFormSheet: View {
                     dismiss()
                 }
             }) {
-                LText(isEditMode ? "budget_form.save_changes" : "budget_form.create_now")
+                Text(isEditMode ? "Lưu thay đổi" : "Tạo ngay")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -150,7 +149,7 @@ struct BudgetFormSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            LText(isEditMode ? "budget_form.edit_title" : "budget_form.create_title")
+            Text(isEditMode ? "Sửa ngân sách" : "Tạo ngân sách")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -162,7 +161,7 @@ struct BudgetFormSheet: View {
                         onDelete?()
                         dismiss()
                     } label: {
-                        Label("budget_detail.delete_budget".localized, systemImage: "trash")
+                        Label("Xóa ngân sách", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")

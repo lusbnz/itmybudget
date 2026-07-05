@@ -46,11 +46,11 @@ struct CategoryFormSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("categories.category_name")
+                        Text("Tên danh mục")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("categories.placeholder_name".localized, text: $name)
+                        TextField("ví dụ: Ăn uống", text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -62,7 +62,7 @@ struct CategoryFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        LText("categories.choose_icon")
+                        Text("Chọn biểu tượng")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -90,7 +90,7 @@ struct CategoryFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        LText("categories.choose_color")
+                        Text("Chọn màu sắc")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -122,9 +122,9 @@ struct CategoryFormSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                LText("categories.active_status")
+                                Text("Trạng thái hoạt động")
                                     .font(.system(size: 14, weight: .bold))
-                                LText(isActive ? "categories.visible_msg" : "categories.hidden_msg")
+                                Text(isActive ? "Danh mục hiển thị trong danh sách" : "Danh mục bị ẩn")
                                     .font(.system(size: 12))
                                     .foregroundStyle(.gray)
                             }
@@ -154,7 +154,7 @@ struct CategoryFormSheet: View {
                     dismiss()
                 }
             }) {
-                LText(isEditMode ? "categories.update_category" : "categories.create_category")
+                Text(isEditMode ? "Cập nhật danh mục" : "Tạo danh mục")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -178,7 +178,7 @@ struct CategoryFormSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            LText(isEditMode ? "categories.edit_category" : "categories.new_category")
+            Text(isEditMode ? "Sửa danh mục" : "Danh mục mới")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -190,7 +190,7 @@ struct CategoryFormSheet: View {
                         onDelete?()
                         dismiss()
                     } label: {
-                        Label("categories.delete_category".localized, systemImage: "trash")
+                        Label("Xóa danh mục", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")

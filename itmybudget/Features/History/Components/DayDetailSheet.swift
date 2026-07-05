@@ -4,7 +4,6 @@ struct DayDetailSheet: View {
     let date: Date?
     let transactions: [Transaction]?
     @Binding var isPresented: Bool
-    @Environment(LocalizationManager.self) private var loc
     @State private var showingAddSheet = false
     @State private var selectedTransaction: Transaction? = nil
     
@@ -23,7 +22,7 @@ struct DayDetailSheet: View {
                     showingAddSheet = true
                 }) {
                     HStack(spacing: 6) {
-                        LText("planning.create_new")
+                        Text("Tạo mới")
                             .font(.system(size: 14, weight: .bold))
                         Image(systemName: "plus")
                             .font(.system(size: 14, weight: .bold))
@@ -46,11 +45,11 @@ struct DayDetailSheet: View {
                 }
                 
                 HStack(spacing: 4) {
-                    LText("history.you_spent")
+                    Text("Bạn đã chi")
                         .foregroundStyle(.gray)
-                    Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(total))\(loc.currentLanguage == "vi" ? "đ" : "")")
+                    Text("\("")\(Int(total))\("đ")")
                         .fontWeight(.bold)
-                    LText("history.on_this_day")
+                    Text("vào ngày này")
                         .foregroundStyle(.gray)
                 }
                 .font(.system(size: 14))

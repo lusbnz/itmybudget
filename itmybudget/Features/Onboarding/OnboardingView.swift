@@ -16,7 +16,6 @@ struct OnboardingView: View {
     @Query private var budgets: [DBBudget]
     
     @Environment(AppStateManager.self) private var appStateManager
-    @Environment(LocalizationManager.self) private var loc
     @State private var selection: Int = 0
     @State private var isLoading = false
     
@@ -34,28 +33,28 @@ struct OnboardingView: View {
     var steps: [OnboardingStep] {
         [
             OnboardingStep(
-                title: "onboarding.step1_title".localized,
-                description: "onboarding.step1_desc".localized,
+                title: "Thiết lập Cơ bản",
+                description: "Cá nhân hóa trải nghiệm của bạn bằng cách chọn loại tiền tệ ưa thích.",
                 percentage: "33%",
                 progress: 0.33,
                 color: .teal,
-                footerNote: "onboarding.footer1".localized
+                footerNote: "Bạn luôn có thể cập nhật các tùy chọn này trong phần Thông tin cá nhân!"
             ),
             OnboardingStep(
-                title: "onboarding.step2_title".localized,
-                description: "onboarding.step2_desc".localized,
+                title: "Danh mục Chi tiêu",
+                description: "Chọn các danh mục bạn chi tiêu thường xuyên nhất để giúp chúng tôi tối ưu hóa biểu đồ tài chính của bạn.",
                 percentage: "66%",
                 progress: 0.66,
                 color: .orange,
-                footerNote: "onboarding.footer2".localized
+                footerNote: "Bạn có thể sửa đổi hoặc thêm/xóa các danh mục chi tiêu bất cứ lúc nào sau khi thiết lập!"
             ),
             OnboardingStep(
-                title: "onboarding.step3_title".localized,
-                description: "onboarding.step3_desc".localized,
+                title: "Ngân sách Đầu tiên",
+                description: "Thiết lập ngân sách của bạn để itmybudget tự động tối ưu hóa tài chính cá nhân.",
                 percentage: "99%",
                 progress: 0.99,
                 color: .green,
-                footerNote: "onboarding.footer3".localized
+                footerNote: "Dựa trên mức chi tiêu trung bình của những người dùng có thu nhập tương tự trong khu vực của bạn!"
             )
         ]
     }
@@ -70,7 +69,7 @@ struct OnboardingView: View {
             .ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: 0) {
-                LText("app_name")
+                Text("itmybudget")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.black)
                     .padding(.top, 20)
@@ -193,7 +192,7 @@ struct OnboardingView: View {
                                 selection -= 1
                             }
                         }) {
-                            LText("onboarding.back")
+                            Text("Quay lại")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundStyle(.gray)
                                 .frame(width: 110)
@@ -237,7 +236,7 @@ struct OnboardingView: View {
                                 .background(Color.black)
                                 .clipShape(Capsule())
                         } else {
-                            LText(selection == 2 ? "onboarding.confirm" : "onboarding.continue")
+                            Text(selection == 2 ? "Xác nhận và tạo" : "Tiếp tục")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
@@ -267,14 +266,14 @@ struct OnboardingView: View {
                     } else if s.currency == "EUR" {
                         selectedCurrencyLabel = "EUR (€)"
                     }
-                    loc.currentLanguage = s.language
+
                 } else {
                     let defaultSettings = UserSettings(
                         pushNotificationsEnabled: true,
                         reminderTime: Calendar.current.date(bySettingHour: 20, minute: 0, second: 0, of: Date()) ?? Date(),
                         autoDetectLocation: autoDetectLocation,
                         currency: selectedCurrency,
-                        language: loc.currentLanguage
+                        language: "vi"
                     )
                     modelContext.insert(defaultSettings)
                     try? modelContext.save()
@@ -286,7 +285,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var permissionSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            LText("onboarding.permission")
+            Text("Quyền truy cập")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -298,7 +297,7 @@ struct OnboardingView: View {
                 Divider().opacity(0.3)
                 
                 HStack {
-                    LText("onboarding.auto_location")
+                    Text("Tự động nhận diện vị trí")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     Spacer()
@@ -321,13 +320,13 @@ struct OnboardingView: View {
     @ViewBuilder
     private var dataSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            LText("onboarding.data")
+            Text("Dữ liệu")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    LText("onboarding.currency")
+                    Text("Tiền tệ")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     
@@ -353,39 +352,7 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.vertical, 12)
-                
-                Divider().opacity(0.3).padding(.vertical, 4)
-                
-                HStack(spacing: 12) {
-                    LText("profile.language")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.black)
-                    
-                    Spacer()
-                    
-                    Menu {
-                        Button("English") {
-                            loc.currentLanguage = "en"
-                        }
-                        Button("Tiếng Việt") {
-                            loc.currentLanguage = "vi"
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(loc.currentLanguage == "en" ? "English" : "Tiếng Việt")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.gray)
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.gray.opacity(0.5))
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.gray.opacity(0.05))
-                        .clipShape(Capsule())
-                    }
-                }
-                .padding(.vertical, 12)
+
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 8)
@@ -399,14 +366,14 @@ struct OnboardingView: View {
     private func rowItem(title: String, value: String? = nil, icon: String? = nil, isLocked: Bool = false, action: @escaping () -> Void = {}) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                LText(title)
+                Text(title)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.black)
                 
                 Spacer()
                 
                 if let v = value {
-                    LText(v)
+                    Text(v)
                         .font(.system(size: 12, weight: isLocked ? .bold : .medium))
                         .foregroundStyle(isLocked ? .orange : .gray)
                         .padding(.horizontal, 8)
@@ -428,7 +395,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var categorySelectionSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("onboarding.select_categories")
+            Text("Chọn danh mục")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -466,11 +433,11 @@ struct OnboardingView: View {
     private var budgetSetupSection: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                LText("onboarding.budget_name")
+                Text("Tên ngân sách")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black.opacity(0.8))
                 
-                TextField("onboarding.budget_name_placeholder".localized, text: $budgetName)
+                TextField("Ví dụ: Hàng ngày, Du lịch...", text: $budgetName)
                     .font(.system(size: 16, weight: .medium))
                     .padding(16)
                     .background(Color.white)
@@ -482,7 +449,7 @@ struct OnboardingView: View {
             }
             
             VStack(alignment: .leading, spacing: 10) {
-                LText("onboarding.budget_amount")
+                Text("Số tiền ngân sách")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.black.opacity(0.8))
                 
@@ -585,7 +552,7 @@ struct OnboardingView: View {
     }
     
     private func saveStep3Budget() async {
-        let name = budgetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "onboarding.step3_title".localized : budgetName
+        let name = budgetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Ngân sách Đầu tiên" : budgetName
         let amount = Double(budgetAmount) ?? 100.0
         
         print("📁 Selected onboarding budget: \(name) with amount: \(amount)")
@@ -661,12 +628,12 @@ struct OnboardingView: View {
         if let s = settings.first {
             s.autoDetectLocation = autoDetectLocation
             s.currency = selectedCurrency
-            s.language = loc.currentLanguage
+
         } else {
             let s = UserSettings(
                 autoDetectLocation: autoDetectLocation,
                 currency: selectedCurrency,
-                language: loc.currentLanguage
+                language: "vi"
             )
             modelContext.insert(s)
         }

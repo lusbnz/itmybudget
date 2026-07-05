@@ -59,7 +59,7 @@ struct AuthView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 6) {
-                        LText("app_name")
+                        Text("itmybudget")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.black)
                     }
@@ -87,7 +87,7 @@ struct AuthView: View {
                         VStack(alignment: .leading, spacing: 20) {
                             HStack(alignment: .top) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    LText("auth.net_worth")
+                                    Text("TỔNG TÀI SẢN")
                                         .font(.system(size: 10, weight: .black))
                                         .foregroundStyle(.orange)
                                         .tracking(1.2)
@@ -143,7 +143,7 @@ struct AuthView: View {
                     VStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 14) {
                             HStack {
-                                LText("auth.summer_goal")
+                                Text("Mục tiêu Nghỉ hè")
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundStyle(.black)
                                 Spacer()
@@ -204,7 +204,7 @@ struct AuthView: View {
 
                     
                     VStack(spacing: 24) {
-                        LText("auth.start_journey")
+                        Text("Bắt đầu hành trình tự do tài chính của bạn")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.gray)
                         
@@ -217,7 +217,7 @@ struct AuthView: View {
                             //     HStack(spacing: 10) {
                             //         Image(systemName: "applelogo")
                             //             .font(.system(size: 18))
-                            //         LText("auth.continue_apple")
+                            //         Text("Tiếp tục với Apple")
                             //             .font(.system(size: 16, weight: .bold))
                             //     }
                             //     .frame(maxWidth: .infinity)
@@ -369,7 +369,7 @@ struct AuthView: View {
                                                 LinearGradient(colors: [.red, .orange, .green, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
                                             )
                                         
-                                        LText("auth.continue_google")
+                                        Text("Tiếp tục với Google")
                                             .font(.system(size: 16, weight: .bold))
                                     }
                                     .frame(maxWidth: .infinity)

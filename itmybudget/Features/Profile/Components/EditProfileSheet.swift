@@ -20,8 +20,8 @@ struct EditProfileSheet: View {
                     avatarSection
                     
                     VStack(spacing: 20) {
-                        inputField(title: "profile.full_name".localized, text: $name, placeholder: "profile.full_name".localized, icon: "person")
-                        inputField(title: "profile.email_address".localized, text: $email, placeholder: "profile.email_address".localized, icon: "envelope")
+                        inputField(title: "Họ và tên", text: $name, placeholder: "Họ và tên", icon: "person")
+                        inputField(title: "Địa chỉ Email", text: $email, placeholder: "Địa chỉ Email", icon: "envelope")
                     }
                     
                     Spacer(minLength: 100)
@@ -54,7 +54,7 @@ struct EditProfileSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            LText("profile.edit_profile")
+            Text("Sửa hồ sơ")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -91,7 +91,7 @@ struct EditProfileSheet: View {
                 .offset(x: 2, y: 2)
             }
             
-            LText("profile.change_photo")
+            Text("Thay đổi ảnh")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.black.opacity(0.6))
         }
@@ -136,7 +136,7 @@ struct EditProfileSheet: View {
                 await MainActor.run { dismiss() }
             }
         }) {
-            LText("profile.save_changes")
+            Text("Lưu thay đổi")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)

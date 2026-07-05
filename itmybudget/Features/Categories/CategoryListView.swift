@@ -3,7 +3,6 @@ import SwiftData
 
 struct CategoryListView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @Environment(\.modelContext) private var modelContext
     
     @Query(sort: \DBCategory.createdAt) private var categories: [DBCategory]
@@ -70,9 +69,7 @@ struct CategoryListView: View {
                 print("Failed to sync categories: \(error)")
             }
         }
-        .onChange(of: loc.currentLanguage) {
-            // Language changed, no manual refresh needed for SwiftData models unless localized properties exist
-        }
+
         .sheet(isPresented: $showingFormSheet) {
             CategoryFormSheet(
                 categoryToEdit: selectedCategoryToEdit,
@@ -105,7 +102,7 @@ struct CategoryListView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            LText("categories.title")
+            Text("Danh mục")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -116,7 +113,7 @@ struct CategoryListView: View {
                 showingFormSheet = true
             }) {
                 HStack(spacing: 4) {
-                    LText("planning.create_new")
+                    Text("Tạo mới")
                         .font(.system(size: 12, weight: .bold))
                     Image(systemName: "plus")
                         .font(.system(size: 10, weight: .bold))
@@ -135,7 +132,7 @@ struct CategoryListView: View {
     }
     
     private var subtitle: some View {
-        LText("categories.explore")
+        Text("Khám phá các danh mục của bạn")
             .font(.system(size: 14))
             .foregroundStyle(.gray)
             .offset(y: showContent ? 0 : 15)
@@ -192,7 +189,7 @@ struct CategoryListView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
                         .font(.system(size: 14, weight: .bold))
-                    LText("planning.create_new")
+                    Text("Tạo mới")
                         .font(.system(size: 14, weight: .bold))
                 }
                 .padding(.horizontal, 24)

@@ -1,17 +1,17 @@
 import SwiftUI
 
 enum HistoryMode: String, CaseIterable {
-    case timeline = "history.timeline"
-    case calendar = "history.calendar"
+    case timeline = "Dòng thời gian"
+    case calendar = "Lịch"
     
     var localizedName: String {
-        self.rawValue.localized
+        self.rawValue
     }
 }
 
 struct HistoryView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
+
     @State private var selectedMode: HistoryMode = .timeline
     @Namespace private var budgetNamespace
     @State private var showingSearchSheet = false
@@ -103,7 +103,7 @@ struct HistoryView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(.gray.opacity(0.4))
             
-            LText("history.no_transactions")
+            Text("Chưa có giao dịch nào")
                 .font(.system(size: 14))
                 .foregroundStyle(.gray)
         }
@@ -175,9 +175,9 @@ struct HistoryView: View {
     private func dateHeader(for date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
-            return "history.today".localized
+            return "Hôm nay"
         } else if calendar.isDateInYesterday(date) {
-            return "history.yesterday".localized
+            return "Hôm qua"
         } else {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd MMMM"
@@ -193,13 +193,13 @@ struct HistoryView: View {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencySymbol = loc.currentLanguage == "vi" ? "đ" : "$"
-        return formatter.string(from: NSNumber(value: total)) ?? (loc.currentLanguage == "vi" ? "0đ" : "$0.00")
+        formatter.currencySymbol = "đ"
+        return formatter.string(from: NSNumber(value: total)) ?? "0đ"
     }
 
     private var spendingIntensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            LText("history.spending_intensity")
+            Text("Cường độ chi tiêu")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -207,8 +207,8 @@ struct HistoryView: View {
                 intensityGrid
                 
                 HStack(spacing: 30) {
-                    legendItem(label: "history.no_spend".localized, level: 0)
-                    legendItem(label: "history.high_intensity".localized, level: 4)
+                    legendItem(label: "Không chi tiêu", level: 0)
+                    legendItem(label: "Cường độ cao", level: 4)
                     Spacer()
                 }
             }
@@ -278,7 +278,7 @@ struct HistoryView: View {
 
     private var monthlyOverview: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("history.monthly_overview")
+            Text("Tổng quan hàng tháng")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
                 .padding(.horizontal, 16)
@@ -287,8 +287,8 @@ struct HistoryView: View {
                 overviewItem(
                     icon: "chart.bar.fill",
                     color: .orange,
-                    title: "history.total_spending".localized,
-                    value: "\(loc.currentLanguage == "vi" ? "" : "$")1,234\(loc.currentLanguage == "vi" ? "đ" : "")",
+                    title: "Tổng chi tiêu",
+                    value: "1,234đ",
                     trend: "-8%",
                     isPositive: true
                 )
@@ -296,18 +296,18 @@ struct HistoryView: View {
                 overviewItem(
                     icon: "calendar.badge.clock",
                     color: .blue,
-                    title: "history.no_spending_days".localized,
-                    value: "history.days_count".localized,
-                    trend: "history.good_saving".localized,
+                    title: "Số ngày không chi tiêu",
+                    value: "14 ngày",
+                    trend: "Tiết kiệm tốt",
                     isPositive: true
                 )
                 
                 overviewItem(
                     icon: "star.fill",
                     color: .purple,
-                    title: "history.top_category".localized,
-                    value: "categories.shopping".localized,
-                    trend: "\(loc.currentLanguage == "vi" ? "" : "$")860\(loc.currentLanguage == "vi" ? "đ" : "")",
+                    title: "Danh mục hàng đầu",
+                    value: "Mua sắm",
+                    trend: "860đ",
                     isPositive: false
                 )
             }
@@ -355,7 +355,7 @@ struct HistoryView: View {
     
     private var header: some View {
         HStack {
-            LText("history.title")
+            Text("Lịch sử")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -399,7 +399,7 @@ struct HistoryView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 FilterTabView(
-                    title: "history.all".localized,
+                    title: "Tất cả",
                     isSelected: selectedBudgetId == nil,
                     namespace: budgetNamespace,
                     action: {

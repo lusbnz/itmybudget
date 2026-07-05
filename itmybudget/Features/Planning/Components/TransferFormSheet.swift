@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TransferFormSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     let budgets: [Budget]
     let currentBudget: Budget
     var onConfirm: (Double, Int) -> Void
@@ -26,14 +25,14 @@ struct TransferFormSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    LText("transfer.description")
+                    Text("Di chuyển tiền của bạn một cách hiệu quả giữa các ngân sách đã định.")
                         .font(.system(size: 14))
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, -8)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("transaction_form.amount")
+                        Text("Số tiền")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -80,7 +79,7 @@ struct TransferFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("transfer.source_budget")
+                        Text("Ngân sách nguồn")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
@@ -88,7 +87,7 @@ struct TransferFormSheet: View {
                             isShowingBudgetSelector = true
                         }) {
                             HStack {
-                                Text(budgets.first(where: { $0.id == selectedSourceBudgetId })?.name ?? "transfer.select_source".localized)
+                                Text(budgets.first(where: { $0.id == selectedSourceBudgetId })?.name ?? "Chọn nguồn")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(selectedSourceBudgetId == nil ? .gray : .black)
                                 Spacer()
@@ -106,7 +105,7 @@ struct TransferFormSheet: View {
                         }
                     }
                     
-                    LText("transfer.stay_on_track")
+                    Text("Việc chuyển tiền giữa các ngân sách giúp bạn duy trì kế hoạch.")
                         .font(.system(size: 12).italic())
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -124,7 +123,7 @@ struct TransferFormSheet: View {
                         dismiss()
                     }
                 }) {
-                    LText("common.confirm")
+                    Text("Xác nhận")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -135,7 +134,7 @@ struct TransferFormSheet: View {
                 .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { dismiss() }) {
-                    LText("common.maybe_later")
+                    Text("Để sau")
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
@@ -161,7 +160,7 @@ struct TransferFormSheet: View {
     
     private var header: some View {
         HStack {
-            LText("transfer.title")
+            Text("Chuyển quỹ")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             

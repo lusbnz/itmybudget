@@ -3,13 +3,12 @@ import MapKit
 
 struct CategorySelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     var onSelect: (Category) -> Void
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                LText("selector.select_category")
+                Text("Chọn danh mục")
                     .font(.system(size: 20, weight: .bold))
                 Spacer()
             }
@@ -66,7 +65,7 @@ struct BudgetSelectorSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                LText("selector.select_budget")
+                Text("Chọn ngân sách")
                     .font(.system(size: 20, weight: .bold))
                 Spacer()
             }
@@ -91,7 +90,6 @@ struct BudgetSelectorSheet: View {
 
 struct LocationSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @State private var searchText = ""
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     
@@ -114,7 +112,7 @@ struct LocationSelectorSheet: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.gray)
                         
-                        TextField("common.search_placeholder".localized, text: $searchText)
+                        TextField("Tìm kiếm địa điểm...", text: $searchText)
                             .font(.system(size: 14))
                         
                         if !searchText.isEmpty {
@@ -134,7 +132,7 @@ struct LocationSelectorSheet: View {
             }
             
             Button(action: { dismiss() }) {
-                LText("selector.confirm_location")
+                Text("Xác nhận vị trí")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -151,9 +149,9 @@ struct LocationSelectorSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                LText("selector.select_location")
+                Text("Chọn vị trí")
                     .font(.system(size: 20, weight: .bold))
-                LText("selector.where_happen")
+                Text("Việc này xảy ra ở đâu?")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }
@@ -165,7 +163,6 @@ struct LocationSelectorSheet: View {
 
 struct TimeSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @State private var selectedDate = Date()
     
     var body: some View {
@@ -189,7 +186,7 @@ struct TimeSelectorSheet: View {
             }
             
             Button(action: { dismiss() }) {
-                LText("selector.confirm_date_time")
+                Text("Xác nhận ngày & giờ")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -206,9 +203,9 @@ struct TimeSelectorSheet: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                LText("selector.date_time")
+                Text("Ngày & Giờ")
                     .font(.system(size: 20, weight: .bold))
-                LText("selector.when_made")
+                Text("Việc này được thực hiện khi nào?")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
             }

@@ -6,8 +6,8 @@ class NotificationsViewModel: ObservableObject {
     @Published var selectedTab: NotificationTab = .all
     
     enum NotificationTab: String, CaseIterable {
-        case all = "notifications.all"
-        case unread = "notifications.unread"
+        case all = "Tất cả"
+        case unread = "Chưa đọc"
     }
     
     var filteredNotifications: [AppNotification] {
@@ -33,9 +33,9 @@ class NotificationsViewModel: ObservableObject {
         return sortedDates.map { date in
             let dateString: String
             if calendar.isDateInToday(date) {
-                dateString = "history.today".localized
+                dateString = "Hôm nay"
             } else if calendar.isDateInYesterday(date) {
-                dateString = "history.yesterday".localized
+                dateString = "Hôm qua"
             } else {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium

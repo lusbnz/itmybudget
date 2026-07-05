@@ -40,7 +40,7 @@ struct NotificationsView: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            LText("notifications.title")
+            Text("Thông báo")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
             
@@ -50,13 +50,13 @@ struct NotificationsView: View {
                 Button(action: {
                     viewModel.markAllAsRead()
                 }) {
-                    Label("notifications.mark_all_read".localized, systemImage: "checkmark.circle")
+                    Label("Đánh dấu tất cả đã đọc", systemImage: "checkmark.circle")
                 }
                 
                 Button(role: .destructive, action: {
                     viewModel.deleteAll()
                 }) {
-                    Label("notifications.delete_all".localized, systemImage: "trash")
+                    Label("Xóa tất cả", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -80,7 +80,7 @@ struct NotificationsView: View {
                     }
                 }) {
                     HStack(spacing: 6) {
-                        LText(tab.rawValue)
+                        Text(tab.rawValue)
                             .font(.system(size: 13, weight: viewModel.selectedTab == tab ? .semibold : .medium))
                         
                         if tab == .unread && viewModel.unreadCount > 0 {
@@ -144,7 +144,7 @@ struct NotificationsView: View {
                         .padding(.horizontal, 40)
                         .padding(.vertical, 20)
                     
-                    LText("notifications.all_caught_up")
+                    Text("Đã xem hết!")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.gray.opacity(0.6))
                     
@@ -183,10 +183,10 @@ struct NotificationsView: View {
             }
             
             VStack(spacing: 8) {
-                LText("notifications.empty")
+                Text("Trống")
                     .font(.system(size: 18, weight: .semibold))
                 
-                LText(viewModel.selectedTab == .all ? "notifications.no_notifications" : "notifications.all_read")
+                Text(viewModel.selectedTab == .all ? "Bạn chưa có thông báo nào" : "Bạn đã đọc hết tất cả thông báo")
                     .font(.system(size: 14))
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)

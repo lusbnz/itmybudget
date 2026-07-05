@@ -11,25 +11,25 @@ struct MainTabView: View {
             TabView(selection: $navState.selectedTab) {
                 HomeView()
                     .tabItem {
-                        Label("tabs.home".localized, systemImage: "house.fill")
+                        Label("Trang chủ", systemImage: "house.fill")
                     }
                     .tag(0)
                 
                 PlanningView()
                     .tabItem {
-                        Label("tabs.planning".localized, systemImage: "calendar.badge.plus")
+                        Label("Kế hoạch", systemImage: "calendar.badge.plus")
                     }
                     .tag(1)
                 
                 HistoryView()
                     .tabItem {
-                        Label("tabs.history".localized, systemImage: "clock.arrow.circlepath")
+                        Label("Lịch sử", systemImage: "clock.arrow.circlepath")
                     }
                     .tag(2)
                 
                 AnalyticsView()
                     .tabItem {
-                        Label("tabs.analytics".localized, systemImage: "chart.bar.xaxis")
+                        Label("Phân tích", systemImage: "chart.bar.xaxis")
                     }
                     .tag(3)
             }

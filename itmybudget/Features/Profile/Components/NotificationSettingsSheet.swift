@@ -16,7 +16,7 @@ struct NotificationSettingsSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
                     VStack(alignment: .leading, spacing: 12) {
-                        LText("notification_settings.channel_settings")
+                        Text("Cài đặt kênh")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.gray)
                         
@@ -29,12 +29,12 @@ struct NotificationSettingsSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        LText("notification_settings.daily_reminder")
+                        Text("Nhắc nhở hàng ngày")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.gray)
                         
                         HStack {
-                            Label("notification_settings.remind_me_at".localized, systemImage: "clock.fill")
+                            Label("Nhắc tôi vào lúc", systemImage: "clock.fill")
                                 .font(.system(size: 14, weight: .medium))
                             Spacer()
                             DatePicker("", selection: $reminderTime, displayedComponents: .hourAndMinute)
@@ -62,7 +62,7 @@ struct NotificationSettingsSheet: View {
                 try? modelContext.save()
                 dismiss()
             }) {
-                LText("notification_settings.save_settings")
+                Text("Lưu cài đặt")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -91,7 +91,7 @@ struct NotificationSettingsSheet: View {
     
     private var header: some View {
         HStack {
-            LText("notification_settings.title")
+            Text("Thông báo")
                 .font(.system(size: 22, weight: .bold))
             Spacer()
         }
@@ -110,7 +110,7 @@ struct NotificationSettingsSheet: View {
             }
             .frame(width: 32, height: 32)
             
-            LText(title)
+            Text(title)
                 .font(.system(size: 14, weight: .medium))
             
             Spacer()

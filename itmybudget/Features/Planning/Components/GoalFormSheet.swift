@@ -2,7 +2,6 @@ import SwiftUI
 
 struct GoalFormSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     
     let goalToEdit: PersonalGoal?
     let budgets: [Budget]
@@ -54,18 +53,18 @@ struct GoalFormSheet: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    LText("goal_form.description")
+                    Text("Đặt tên cho mục tiêu của bạn và hướng tới đích.")
                         .font(.system(size: 14))
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, -8)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("goal_form.goal_name")
+                        Text("Tên mục tiêu")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
-                        TextField("goal_form.goal_name_placeholder".localized, text: $name)
+                        TextField("vd: Ngôi nhà trong mơ", text: $name)
                             .font(.system(size: 16, weight: .medium))
                             .padding(16)
                             .background(Color.white)
@@ -77,13 +76,13 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("transfer.source_budget")
+                        Text("Ngân sách nguồn")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black.opacity(0.8))
                         
                         Button(action: { isShowingBudgetSelector = true }) {
                             HStack {
-                                Text(budgets.first(where: { $0.id == selectedBudgetId })?.name ?? "selector.select_budget".localized)
+                                Text(budgets.first(where: { $0.id == selectedBudgetId })?.name ?? "Chọn ngân sách")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(selectedBudgetId == nil ? .gray : .black)
                                 Spacer()
@@ -103,7 +102,7 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("goal_form.target_amount")
+                        Text("Số tiền mục tiêu")
                             .font(.system(size: 14, weight: .bold))
                         
                         HStack {
@@ -129,7 +128,7 @@ struct GoalFormSheet: View {
                                     Button(action: {
                                         targetAmount = String(format: "%.0f", val)
                                     }) {
-                                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(formatCurrency(val))\(loc.currentLanguage == "vi" ? "đ" : "")")
+                                        Text("\("")\(formatCurrency(val))\("đ")")
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundStyle(.black)
                                             .padding(.horizontal, 16)
@@ -149,7 +148,7 @@ struct GoalFormSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        LText("goal_form.target_date")
+                        Text("Ngày mục tiêu")
                             .font(.system(size: 14, weight: .bold))
                         
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -160,7 +159,7 @@ struct GoalFormSheet: View {
                                             targetMonths = months
                                         }
                                     }) {
-                                        Text("\(months) \("goal_form.months".localized)")
+                                        Text("\(months) \("tháng")")
                                             .font(.system(size: 12, weight: targetMonths == months ? .bold : .medium))
                                             .foregroundStyle(targetMonths == months ? .white : .black)
                                             .padding(.horizontal, 16)
@@ -199,7 +198,7 @@ struct GoalFormSheet: View {
                                     .foregroundStyle(.white)
                             }
                             
-                            LText("goal_form.active")
+                            Text("Đang hoạt động")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.black)
                         }
@@ -222,7 +221,7 @@ struct GoalFormSheet: View {
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            LText("goal_form.est_monthly_saving")
+                            Text("Tiết kiệm hàng tháng ước tính")
                                 .font(.system(size: 14, weight: .bold))
                             Spacer()
                             Image(systemName: "sparkles")
@@ -230,7 +229,7 @@ struct GoalFormSheet: View {
                                 .foregroundStyle(.black)
                         }
                         
-                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(formatCurrency(estimatedMonthlySaving))\(loc.currentLanguage == "vi" ? "đ" : "")")
+                        Text("\("")\(formatCurrency(estimatedMonthlySaving))\("đ")")
                             .font(.system(size: 24, weight: .bold))
                         
                         ZStack(alignment: .leading) {
@@ -243,7 +242,7 @@ struct GoalFormSheet: View {
                                 .frame(width: 40, height: 8)
                         }
                         
-                        LText("goal_form.based_on_today")
+                        Text("Dựa trên thời gian bắt đầu từ hôm nay.")
                             .font(.system(size: 12).italic())
                             .foregroundStyle(.gray)
                     }
@@ -256,7 +255,7 @@ struct GoalFormSheet: View {
                             .stroke(Color.black.opacity(0.05), lineWidth: 1)
                     )
                     
-                    LText("goal_form.quote")
+                    Text("“Bí quyết để dẫn đầu là hãy bắt đầu.”")
                         .font(.system(size: 12).italic())
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -284,7 +283,7 @@ struct GoalFormSheet: View {
                         dismiss()
                     }
                 }) {
-                    LText("goal_form.set_target")
+                    Text("Đặt mục tiêu")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -295,7 +294,7 @@ struct GoalFormSheet: View {
                 .buttonStyle(BouncyButtonStyle())
                 
                 Button(action: { dismiss() }) {
-                    LText("common.maybe_later")
+                    Text("Để sau")
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
@@ -343,7 +342,7 @@ struct GoalFormSheet: View {
     
     private var header: some View {
         HStack(alignment: .center) {
-            LText(isEditMode ? "goal_form.edit_title" : "goal_form.create_title")
+            Text(isEditMode ? "Cập nhật mục tiêu" : "Tạo mục tiêu")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -355,7 +354,7 @@ struct GoalFormSheet: View {
                         onDelete?()
                         dismiss()
                     } label: {
-                        Label("goal_form.delete_goal".localized, systemImage: "trash")
+                        Label("Xóa mục tiêu", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")

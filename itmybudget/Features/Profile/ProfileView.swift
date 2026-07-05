@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocalizationManager.self) private var loc
     @EnvironmentObject private var navState: AppNavigationState
     @Environment(\.modelContext) private var modelContext
     var authManager = AuthManager.shared
@@ -102,19 +101,19 @@ struct ProfileView: View {
                 FeatureSuggestSheet()
                     .presentationDragIndicator(.visible)
             }
-            .alert("auth.logout".localized, isPresented: $isShowingLogoutAlert) {
-                Button("common.cancel".localized, role: .cancel) { }
-                Button("auth.logout".localized, role: .destructive) {
+            .alert("Đăng xuất", isPresented: $isShowingLogoutAlert) {
+                Button("Hủy", role: .cancel) { }
+                Button("Đăng xuất", role: .destructive) {
                 }
             } message: {
-                LText("profile.logout_confirm")
+                Text("Bạn có chắc chắn muốn đăng xuất?")
             }
-            .alert("profile.delete_account".localized, isPresented: $isShowingDeleteAlert) {
-                Button("common.cancel".localized, role: .cancel) { }
-                Button("budget_detail.delete".localized, role: .destructive) {
+            .alert("Xóa tài khoản", isPresented: $isShowingDeleteAlert) {
+                Button("Hủy", role: .cancel) { }
+                Button("Xóa", role: .destructive) {
                 }
             } message: {
-                LText("profile.delete_account_confirm")
+                Text("Bạn có chắc chắn muốn xóa tài khoản? Hành động này là vĩnh viễn và toàn bộ dữ liệu sẽ bị mất.")
             }
         }
     }
@@ -133,7 +132,7 @@ struct ProfileView: View {
             }
             .buttonStyle(BouncyButtonStyle())
 
-            LText("profile.title")
+            Text("Hồ sơ")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.black)
         }
@@ -212,17 +211,17 @@ struct ProfileView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    LText("profile.upgrade_premium")
+                    Text("Nâng cấp Premium")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(.black)
-                    LText("profile.unlock_features")
+                    Text("Mở khóa tất cả tính năng nâng cao")
                         .font(.system(size: 12))
                         .foregroundStyle(.gray)
                 }
                 
                 Spacer()
                 
-                LText("profile.upgrade")
+                Text("Nâng cấp")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
@@ -246,7 +245,7 @@ struct ProfileView: View {
     @ViewBuilder
     private var transactionImagesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "profile.transaction_images".localized, actionTitle: "profile.see_all".localized) {
+            sectionHeader(title: "Ảnh giao dịch", actionTitle: "Xem tất cả") {
                 isShowingGallery = true
             }
             
@@ -282,7 +281,7 @@ struct ProfileView: View {
     @ViewBuilder
     private var badgesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "profile.earned_badges".localized, actionTitle: "profile.see_all".localized) {
+            sectionHeader(title: "Huy hiệu đã đạt", actionTitle: "Xem tất cả") {
                 isShowingBadges = true
             }
             
@@ -301,15 +300,15 @@ struct ProfileView: View {
     @ViewBuilder
     private var premiumToolsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("profile.premium_tools")
+            Text("Công cụ Premium")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
             VStack(spacing: 8) {
-                premiumToolItem(icon: "app.badge", title: "profile.custom_app_icon".localized, desc: "profile.personalize_look".localized, color: .orange)
-                premiumToolItem(icon: "arrow.triangle.2.circlepath", title: "profile.bank_sync".localized, desc: "profile.auto_sync".localized, color: .blue)
-                premiumToolItem(icon: "person.2.fill", title: "profile.shared_budgets".localized, desc: "profile.plan_partner".localized, color: .green)
-                premiumToolItem(icon: "chart.line.uptrend.xyaxis", title: "profile.forecast".localized, desc: "profile.predict_savings".localized, color: .purple)
+                premiumToolItem(icon: "app.badge", title: "Biểu tượng ứng dụng tùy chỉnh", desc: "Cá nhân hóa giao diện ứng dụng", color: .orange)
+                premiumToolItem(icon: "arrow.triangle.2.circlepath", title: "Đồng bộ ngân hàng", desc: "Tự động đồng bộ giao dịch", color: .blue)
+                premiumToolItem(icon: "person.2.fill", title: "Ngân sách chia sẻ", desc: "Lập kế hoạch với đối tác", color: .green)
+                premiumToolItem(icon: "chart.line.uptrend.xyaxis", title: "Dự báo 12 tháng", desc: "Dự đoán tiết kiệm tương lai", color: .purple)
             }
         }
         .offset(y: showContent ? 0 : 70)
@@ -319,15 +318,15 @@ struct ProfileView: View {
     @ViewBuilder
     private var permissionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("profile.permissions")
+            Text("Quyền hạn")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
-                rowItem(title: "profile.notifications".localized, value: "profile.push_email_location".localized) {
+                rowItem(title: "Thông báo", value: "Push, Email, Vị trí") {
                     isShowingNotifications = true
                 }
                 HStack {
-                    LText("profile.auto_detect_location")
+                    Text("Tự động nhận diện vị trí")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     Spacer()
@@ -350,12 +349,12 @@ struct ProfileView: View {
     @ViewBuilder
     private var dataSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("profile.data_privacy")
+            Text("Dữ liệu & Quyền riêng tư")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    LText("onboarding.currency")
+                    Text("Tiền tệ")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     
@@ -386,22 +385,17 @@ struct ProfileView: View {
                 Divider().opacity(0.3).padding(.vertical, 4)
                 
                 HStack(spacing: 12) {
-                    LText("profile.language")
+                    Text("Ngôn ngữ")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.black)
                     
                     Spacer()
                     
                     Menu {
-                        Button("English") {
-                            loc.currentLanguage = "en"
-                        }
-                        Button("Tiếng Việt") {
-                            loc.currentLanguage = "vi"
-                        }
+                        Button("Tiếng Việt") { }
                     } label: {
                         HStack(spacing: 4) {
-                            Text(loc.currentLanguage == "en" ? "English" : "Tiếng Việt")
+                            Text("Tiếng Việt")
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(.gray)
                             Image(systemName: "chevron.up.chevron.down")
@@ -418,11 +412,11 @@ struct ProfileView: View {
                 
                 Divider().opacity(0.3).padding(.vertical, 4)
                 
-                rowItem(title: "categories.title".localized, icon: "list.bullet.indent") {
+                rowItem(title: "Danh mục", icon: "list.bullet.indent") {
                     isShowingCategories = true
                 }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "profile.export_data".localized, value: "auth.upgrade".localized, icon: "lock.fill", isLocked: true) {
+                rowItem(title: "Xuất dữ liệu", value: "Nâng cấp", icon: "lock.fill", isLocked: true) {
                     isShowingUpgrade = true
                 }
             }
@@ -438,19 +432,19 @@ struct ProfileView: View {
     @ViewBuilder
     private var applicationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("profile.application")
+            Text("Ứng dụng")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
-                rowItem(title: "profile.suggest_feature".localized) {
+                rowItem(title: "Gợi ý tính năng") {
                     isShowingSuggest = true
                 }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "profile.rate_app".localized)
+                rowItem(title: "Đánh giá ứng dụng")
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "profile.privacy_policy".localized) { }
+                rowItem(title: "Chính sách bảo mật") { }
                 Divider().opacity(0.3).padding(.vertical, 4)
-                rowItem(title: "profile.terms_service".localized) { }
+                rowItem(title: "Điều khoản dịch vụ") { }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 8)
@@ -464,13 +458,13 @@ struct ProfileView: View {
     @ViewBuilder
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("profile.account")
+            Text("Tài khoản")
                 .font(.system(size: 16, weight: .bold))
             
             VStack(spacing: 0) {
                 Button(action: { isShowingLogoutAlert = true }) {
                     HStack {
-                        LText("auth.logout")
+                        Text("Đăng xuất")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.black)
                         Spacer()
@@ -485,7 +479,7 @@ struct ProfileView: View {
                 
                 Button(action: { isShowingDeleteAlert = true }) {
                     HStack {
-                        LText("profile.delete_account")
+                        Text("Xóa tài khoản")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.red)
                         Spacer()
@@ -507,13 +501,13 @@ struct ProfileView: View {
     
     private func sectionHeader(title: String, actionTitle: String? = nil, onAction: (() -> Void)? = nil) -> some View {
         HStack {
-            LText(title)
+            Text(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             Spacer()
             if let action = actionTitle {
                 Button(action: { onAction?() }) {
-                    LText(action)
+                    Text(action)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(BouncyButtonStyle())
@@ -533,10 +527,10 @@ struct ProfileView: View {
                 .frame(width: 44, height: 44)
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    LText(title)
+                    Text(title)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.black)
-                    LText(desc)
+                    Text(desc)
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
                 }
@@ -557,14 +551,14 @@ struct ProfileView: View {
     private func rowItem(title: String, value: String? = nil, icon: String? = nil, isLocked: Bool = false, action: @escaping () -> Void = {}) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                LText(title)
+                Text(title)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.black)
                 
                 Spacer()
                 
                 if let v = value {
-                    LText(v)
+                    Text(v)
                         .font(.system(size: 12, weight: isLocked ? .bold : .medium))
                         .foregroundStyle(isLocked ? .orange : .gray)
                         .padding(.horizontal, 8)
@@ -584,7 +578,7 @@ struct ProfileView: View {
     }
     
     private func badgeTag(text: String, color: Color) -> some View {
-        LText(text)
+        Text(text)
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
@@ -603,14 +597,14 @@ struct ProfileView: View {
             VStack {
                 Text(title)
                     .font(.headline)
-                LText("profile.coming_soon")
+                Text("Tính năng này sắp ra mắt...")
                     .foregroundStyle(.gray)
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("history.done".localized) {
+                    Button("Xong") {
                         isShowingEditProfile = false
                         isShowingUpgrade = false
                         isShowingCategories = false
@@ -624,16 +618,16 @@ struct ProfileView: View {
     private var currencySelectionSheet: some View {
         NavigationStack {
             List {
-                currencyRow(flag: "🇺🇸", code: "USD", name: "profile.usd_name".localized)
-                currencyRow(flag: "🇻🇳", code: "VND", name: "profile.vnd_name".localized)
-                currencyRow(flag: "🇪🇺", code: "EUR", name: "profile.eur_name".localized)
-                currencyRow(flag: "🇯🇵", code: "JPY", name: "profile.jpy_name".localized)
+                currencyRow(flag: "🇺🇸", code: "USD", name: "Đô la Mỹ")
+                currencyRow(flag: "🇻🇳", code: "VND", name: "Việt Nam Đồng")
+                currencyRow(flag: "🇪🇺", code: "EUR", name: "Euro")
+                currencyRow(flag: "🇯🇵", code: "JPY", name: "Yên Nhật")
             }
-            .navigationTitle("onboarding.currency".localized)
+            .navigationTitle("Tiền tệ")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("history.done".localized) { isShowingCurrency = false }
+                    Button("Xong") { isShowingCurrency = false }
                 }
             }
         }

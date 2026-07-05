@@ -2,11 +2,11 @@ import SwiftUI
 import SwiftData
 
 enum BudgetSortOption: String, CaseIterable {
-    case recent = "planning.sort_recent"
-    case leastRemaining = "planning.sort_least_remaining"
+    case recent = "Gần đây nhất"
+    case leastRemaining = "Còn lại ít nhất"
     
     var localizedName: String {
-        self.rawValue.localized
+        self.rawValue
     }
 }
 
@@ -14,7 +14,7 @@ struct PlanningView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var navState: AppNavigationState
-    @Environment(LocalizationManager.self) private var loc
+
     @Query(sort: \DBBudget.updatedAt, order: .reverse) private var dbBudgets: [DBBudget]
     @State private var budgets: [Budget] = []
     @State private var goals: [PersonalGoal] = PersonalGoal.sampleData
@@ -255,7 +255,7 @@ struct PlanningView: View {
     @ViewBuilder
     private var planningHeader: some View {
         HStack(spacing: 16) {
-            LText("planning.title")
+            Text("Kế hoạch")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -266,7 +266,7 @@ struct PlanningView: View {
                 showingBudgetSheet = true
             }) {
                 HStack(spacing: 4) {
-                    LText("planning.create_new")
+                    Text("Tạo mới")
                         .font(.system(size: 12, weight: .bold))
                     Image(systemName: "plus")
                         .font(.system(size: 12, weight: .bold))
@@ -293,7 +293,7 @@ struct PlanningView: View {
     private var budgetTrackerSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                LText("planning.budget_tracker")
+                Text("Theo dõi ngân sách")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.black)
                 
@@ -326,7 +326,7 @@ struct PlanningView: View {
                                 }
                             }) {
                                 HStack {
-                                    Text(option.localizedName)
+                                    Text(option.rawValue)
                                     if sortOption == option {
                                         Image(systemName: "checkmark")
                                     }
@@ -367,7 +367,7 @@ struct PlanningView: View {
                         }
                     }) {
                         HStack(spacing: 4) {
-                            LText(isExpanded ? "planning.show_less" : "planning.view_more")
+                            Text(isExpanded ? "Ẩn bớt" : "Xem thêm")
                                 .font(.system(size: 13, weight: .semibold))
                             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                                 .font(.system(size: 10, weight: .bold))
@@ -398,8 +398,8 @@ struct PlanningView: View {
     private var recurringExpensesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "planning.recurring_expenses".localized,
-                extraActionTitle: "planning.create".localized,
+                title: "Chi phí định kỳ",
+                extraActionTitle: "Tạo",
                 onExtraAction: {
                     selectedRecurringTransaction = RecurringExpense(
                         name: "New Recurring",
@@ -436,8 +436,8 @@ struct PlanningView: View {
     private var personalGoalsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "planning.personal_goals".localized,
-                extraActionTitle: "planning.create".localized,
+                title: "Mục tiêu cá nhân",
+                extraActionTitle: "Tạo",
                 onExtraAction: {
                     selectedGoalToEdit = nil
                     showingGoalSheet = true
@@ -482,7 +482,6 @@ struct PlanningView: View {
 }
 
 struct RecurringExpenseCard: View {
-    @Environment(LocalizationManager.self) private var loc
     let expense: RecurringExpense
     
     var body: some View {
@@ -510,7 +509,7 @@ struct RecurringExpenseCard: View {
                 .foregroundStyle(.black)
                 .lineLimit(1)
             
-            Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(expense.amount))\(loc.currentLanguage == "vi" ? "đ" : "")")
+            Text("\("")\(Int(expense.amount))\("đ")")
                 .font(.system(size: 12))
                 .foregroundStyle(.gray)
         }
@@ -526,7 +525,6 @@ struct RecurringExpenseCard: View {
 }
 
 struct PersonalGoalItem: View {
-    @Environment(LocalizationManager.self) private var loc
     let goal: PersonalGoal
     var onTap: (() -> Void)? = nil
     
@@ -546,7 +544,7 @@ struct PersonalGoalItem: View {
                 
                 HStack(alignment: .bottom) {
                     HStack(spacing: 0) {
-                        LText("planning.completed_by")
+                        Text("Hoàn thành trước ")
                         Text(goal.targetDate).fontWeight(.bold)
                     }
                     .font(.system(size: 12))
@@ -555,8 +553,8 @@ struct PersonalGoalItem: View {
                     Spacer()
                     
                     HStack(spacing: 0) {
-                        Text("\(loc.currentLanguage == "vi" ? "" : "$")\(Int(goal.monthlyAmount))\(loc.currentLanguage == "vi" ? "đ" : "")").fontWeight(.bold)
-                        LText("planning.every_month")
+                        Text("\("")\(Int(goal.monthlyAmount))\("đ")").fontWeight(.bold)
+                        Text(" / tháng")
                     }
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)

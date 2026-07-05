@@ -10,7 +10,6 @@ struct PulseData: Identifiable {
 
 struct HomeView: View {
     @EnvironmentObject private var navState: AppNavigationState
-    @Environment(LocalizationManager.self) private var loc
     @Environment(\.modelContext) private var modelContext
     var authManager = AuthManager.shared
     @State private var showHeader: Bool = false
@@ -76,7 +75,7 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showAllTransactions) {
                 SimpleTransactionListSheet(
-                    title: "home.latest_transactions".localized,
+                    title: "Giao dịch mới nhất",
                     transactions: filteredTransactions
                 )
                 .presentationDragIndicator(.visible)
@@ -88,11 +87,11 @@ struct HomeView: View {
                 ProfileView()
             }
             .sheet(isPresented: $showingJourneySheet) {
-                JourneyDetailSheet(title: "home.journey_details".localized)
+                JourneyDetailSheet(title: "Chi tiết hành trình")
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingAnalyticSheet) {
-                AnalyticDetailSheet(title: "home.detailed_analysis".localized)
+                AnalyticDetailSheet(title: "Phân tích chi tiết")
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingBadgeList) {
@@ -209,12 +208,12 @@ struct HomeView: View {
     private var overviewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(
-                title: "home.weekly_overview".localized,
+                title: "Tổng quan hàng tuần",
             )
             
             AIInsightCarousel(
-                content: "home.friday_combo".localized,
-                cta: "home.view_journey_detail".localized,
+                content: "Mỗi khi bạn đi uống nước vào tối thứ Sáu, bạn thường chi thêm **20$** cho *mua sắm trực tuyến* vào thứ Bảy.",
+                cta: "Xem chi tiết hành trình",
                 onCTATap: {
                     showingJourneySheet = true
                 }
@@ -229,22 +228,22 @@ struct HomeView: View {
     private var pulseSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(
-                title: "home.financial_pulse".localized,
+                title: "Nhịp đập tài chính",
             )
             
             HStack(spacing: 12) {
                 FinancialPulseCard(
-                    title: "home.balance".localized,
-                    value: "\(loc.currentLanguage == "vi" ? "" : "$")12.450\(loc.currentLanguage == "vi" ? "đ" : "")",
+                    title: "Số dư",
+                    value: "\("")12.450\("đ")",
                     trend: "+2.4%",
                     color: .teal,
                     data: balanceSampleData
                 )
                 
                 FinancialPulseCard(
-                    title: "home.burn_rate".localized,
-                    value: "\(loc.currentLanguage == "vi" ? "" : "$")85\(loc.currentLanguage == "vi" ? "đ" : "")",
-                    subtitle: "home.per_day".localized,
+                    title: "Tốc độ chi tiêu",
+                    value: "\("")85\("đ")",
+                    subtitle: "/ngày",
                     trend: "-15%",
                     color: .orange,
                     data: burnRateSampleData
@@ -260,8 +259,8 @@ struct HomeView: View {
     private var transactionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "home.latest_transactions".localized,
-                extraActionTitle: "home.see_all".localized,
+                title: "Giao dịch mới nhất",
+                extraActionTitle: "Xem tất cả",
                 onExtraAction: {
                     showAllTransactions = true
                 }
@@ -305,8 +304,8 @@ struct HomeView: View {
     private var budgetSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(
-                title: "home.budget_tracking".localized,
-                extraActionTitle: "home.see_all".localized,
+                title: "Theo dõi ngân sách",
+                extraActionTitle: "Xem tất cả",
                 onExtraAction: {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                         navState.selectedTab = 1
@@ -330,7 +329,7 @@ struct HomeView: View {
     @ViewBuilder
     private func sectionHeader(title: String, extraActionTitle: String? = nil, onExtraAction: (() -> Void)? = nil) -> some View {
         HStack(alignment: .center, spacing: 0) {
-            LText(title)
+            Text(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -340,7 +339,7 @@ struct HomeView: View {
                 Button(action: {
                     onExtraAction?()
                 }) {
-                    LText(extra)
+                    Text(extra)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(BouncyButtonStyle())
@@ -350,7 +349,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func badgeTag(text: String, color: Color) -> some View {
-        LText(text)
+        Text(text)
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
@@ -365,7 +364,6 @@ struct HomeView: View {
 }
 
 struct FinancialPulseCard: View {
-    @Environment(LocalizationManager.self) private var loc
     let title: String
     let value: String
     var subtitle: String? = nil
@@ -376,7 +374,7 @@ struct FinancialPulseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                LText(title)
+                Text(title)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.gray)
                 Spacer()
@@ -390,7 +388,7 @@ struct FinancialPulseCard: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
                 if let subtitle = subtitle {
-                    LText(subtitle)
+                    Text(subtitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.gray)
                         .padding(.bottom, 2)

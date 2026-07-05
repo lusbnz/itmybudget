@@ -7,12 +7,12 @@ struct SubscriptionSheet: View {
     
     private var benefits: [(String, String)] {
         [
-            ("profile.bank_sync".localized, "profile.auto_sync".localized),
-            ("profile.shared_budgets".localized, "profile.plan_partner".localized),
-            ("profile.custom_app_icon".localized, "profile.personalize_look".localized),
-            ("profile.forecast".localized, "profile.predict_savings".localized),
-            ("profile.export_data".localized, "subscription.download_history".localized),
-            ("subscription.no_ads".localized, "subscription.clean_experience".localized)
+            ("Đồng bộ ngân hàng", "Tự động đồng bộ giao dịch"),
+            ("Ngân sách chia sẻ", "Lập kế hoạch với đối tác"),
+            ("Biểu tượng ứng dụng tùy chỉnh", "Cá nhân hóa giao diện ứng dụng"),
+            ("Dự báo 12 tháng", "Dự đoán tiết kiệm tương lai"),
+            ("Xuất dữ liệu", "Tải xuống lịch sử của bạn"),
+            ("Không quảng cáo", "Trải nghiệm sạch sẽ, liền mạch")
         ]
     }
     
@@ -70,10 +70,10 @@ struct SubscriptionSheet: View {
             }
             
             VStack(spacing: 4) {
-                LText("subscription.unlock_everything")
+                Text("Mở khóa mọi thứ")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
-                LText("subscription.join_users")
+                Text("Tham gia cùng 10.000+ người dùng làm chủ ngân sách")
                     .font(.system(size: 14))
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct SubscriptionSheet: View {
     private var billingToggle: some View {
         HStack(spacing: 0) {
             Button(action: { withAnimation { isYearly = false } }) {
-                LText("subscription.monthly")
+                Text("Hàng tháng")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(isYearly ? .gray : .white)
                     .frame(maxWidth: .infinity)
@@ -97,7 +97,7 @@ struct SubscriptionSheet: View {
             
             Button(action: { withAnimation { isYearly = true } }) {
                 HStack(spacing: 6) {
-                    LText("subscription.yearly")
+                    Text("Hàng năm")
                         .font(.system(size: 14, weight: .bold))
                     Text("-50%")
                         .font(.system(size: 10, weight: .black))
@@ -123,16 +123,16 @@ struct SubscriptionSheet: View {
     private var pricingCardsGrid: some View {
         HStack(spacing: 16) {
             pricingCard(
-                title: isYearly ? "subscription.annual".localized : "subscription.one_month".localized,
+                title: isYearly ? "Năm" : "1 Tháng",
                 price: isYearly ? "$29.99" : "$4.99",
-                billing: isYearly ? "subscription.billed_annually".localized : "subscription.billed_monthly".localized,
+                billing: isYearly ? "Thanh toán hàng năm" : "Thanh toán hàng tháng",
                 isPopular: isYearly
             )
             
             pricingCard(
-                title: "subscription.lifetime".localized,
+                title: "Trọn đời",
                 price: "$79.99",
-                billing: "subscription.pay_once".localized,
+                billing: "Thanh toán một lần, mãi mãi",
                 isPopular: !isYearly
             )
         }
@@ -176,7 +176,7 @@ struct SubscriptionSheet: View {
     
     private var comparisonTable: some View {
         VStack(alignment: .leading, spacing: 16) {
-            LText("subscription.premium_features")
+            Text("Tính năng Premium")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
             
@@ -211,7 +211,7 @@ struct SubscriptionSheet: View {
     private var actionButton: some View {
         VStack(spacing: 12) {
             Button(action: { dismiss() }) {
-                LText("subscription.start_full_access")
+                Text("Bắt đầu truy cập đầy đủ")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -222,7 +222,7 @@ struct SubscriptionSheet: View {
             }
             .buttonStyle(BouncyButtonStyle())
             
-            LText("subscription.no_commitment")
+            Text("Không cam kết, hủy bất cứ lúc nào")
                 .font(.system(size: 11))
                 .foregroundStyle(.gray)
         }

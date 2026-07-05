@@ -6,8 +6,7 @@ import GoogleSignIn
 @main
 struct itmybudgetApp: App {
     @State private var appStateManager = AppStateManager()
-    @State private var localizationManager = LocalizationManager.shared
-    
+
     init() {
         FirebaseApp.configure()
     }
@@ -33,7 +32,7 @@ struct itmybudgetApp: App {
         WindowGroup {
             ContentView()
                 .environment(appStateManager)
-                .environment(localizationManager)
+
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
