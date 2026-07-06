@@ -1,4 +1,5 @@
 import SwiftUI
+import _SwiftData_SwiftUI
 
 enum HistoryMode: String, CaseIterable {
     case timeline = "Dòng thời gian"
@@ -11,6 +12,7 @@ enum HistoryMode: String, CaseIterable {
 
 struct HistoryView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     @State private var selectedMode: HistoryMode = .timeline
     @Namespace private var budgetNamespace
@@ -30,6 +32,10 @@ struct HistoryView: View {
     @State private var selectedDayDate: Date? = nil
     @State private var showDayDetail = false
     @State private var selectedTransaction: Transaction? = nil
+    
+    @Query(sort: \DBTransaction.createdAt, order: .reverse) private var dbTransactions: [DBTransaction]
+    @Query(sort: \DBBudget.updatedAt, order: .reverse) private var dbBudgets: [DBBudget]
+    @State private var densityMap: [String: Int] = [:]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -51,6 +57,20 @@ struct HistoryView: View {
             }
         }
         .background(Color(red: 1.0, green: 0.97, blue: 0.92))
+        .task {
+            await fetchTransactions()
+            await fetchDensity()
+        }
+        .onChange(of: selectedDate) { _, _ in
+            Task {
+                await fetchDensity()
+            }
+        }
+        .onChange(of: selectedBudgetId) { _, _ in
+            Task {
+                await fetchDensity()
+            }
+        }
         .onAppear {
             withAnimation(.easeOut(duration: 0.6)) {
                 showContent = true
@@ -140,30 +160,107 @@ struct HistoryView: View {
         }
     }
 
+    private var transactions: [Transaction] {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        return dbTransactions.map { dbTx -> Transaction in
+            let txType: TransactionType = dbTx.type == "income" ? .income : .outcome
+            let date = formatter.date(from: dbTx.createdAt ?? "") ?? Date()
+            
+            let budgetName = dbBudgets.first(where: { $0.id == dbTx.budgetId })?.name ?? "Ngân sách"
+            return Transaction(
+                name: dbTx.note ?? "Giao dịch",
+                description: "",
+                date: date,
+                images: dbTx.images ?? [],
+                location: "",
+                amount: abs(dbTx.amount),
+                budgetName: budgetName,
+                type: txType,
+                icon: "dollarsign.circle.fill",
+                isImageIcon: false
+            )
+        }
+    }
+
+    private func fetchTransactions() async {
+        do {
+            let response: APITransactionListResponse = try await NetworkManager.shared.request(TransactionEndpoint.list(budgetId: nil, page: 0, size: 100))
+            
+            await MainActor.run {
+                let serverIds = response.items.map { $0.id }
+                
+                for item in response.items {
+                    let amt = Double(item.amount) ?? 0.0
+                    let fetchDescriptor = FetchDescriptor<DBTransaction>(predicate: #Predicate { $0.id == item.id })
+                    
+                    if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                        existing.budgetId = item.budget_id
+                        existing.categoryId = item.category_id
+                        existing.amount = amt
+                        existing.type = item.type
+                        existing.note = item.note
+                        existing.images = item.images
+                        existing.createdAt = item.created_at
+                        existing.updatedAt = item.updated_at
+                    } else {
+                        let newDbTx = DBTransaction(
+                            id: item.id,
+                            budgetId: item.budget_id,
+                            categoryId: item.category_id,
+                            amount: amt,
+                            type: item.type,
+                            note: item.note,
+                            categoryName: nil,
+                            images: item.images,
+                            createdAt: item.created_at,
+                            updatedAt: item.updated_at
+                        )
+                        modelContext.insert(newDbTx)
+                    }
+                }
+                
+                let fetchAllDescriptor = FetchDescriptor<DBTransaction>()
+                if let allDbTxs = try? modelContext.fetch(fetchAllDescriptor) {
+                    for dbTx in allDbTxs {
+                        if !serverIds.contains(dbTx.id) {
+                            modelContext.delete(dbTx)
+                        }
+                    }
+                }
+                
+                try? modelContext.save()
+            }
+        } catch {
+            print("Failed to fetch history transactions: \(error)")
+        }
+    }
+
     private var filteredTransactions: [Transaction] {
-        var transactions = Transaction.sampleData
+        var filtered = transactions
         
         if !searchText.isEmpty {
-            transactions = transactions.filter { 
+            filtered = filtered.filter { 
                 $0.name.localizedCaseInsensitiveContains(searchText) || 
                 $0.description.localizedCaseInsensitiveContains(searchText) 
             }
         }
         
         if selectedType != .all {
-            transactions = transactions.filter { $0.type == selectedType }
+            filtered = filtered.filter { $0.type == selectedType }
         }
         
         if let selectedId = selectedBudgetId {
-            let budgetName = Budget.sampleData.first(where: { $0.id == selectedId })?.name ?? ""
-            transactions = transactions.filter { $0.budgetName == budgetName }
+            let budgetName = dbBudgets.first(where: { $0.id == selectedId })?.name ?? ""
+            filtered = filtered.filter { $0.budgetName == budgetName }
         }
         
         if let selectedCat = selectedCategory {
-            transactions = transactions.filter { $0.icon == selectedCat.icon }
+            filtered = filtered.filter { $0.icon == selectedCat.icon }
         }
         
-        return transactions
+        return filtered
     }
 
     private var groupedTransactions: [Date: [Transaction]] {
@@ -218,13 +315,31 @@ struct HistoryView: View {
     }
 
     private var intensityGrid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 12), spacing: 6) {
-            ForEach(0..<36) { i in
+        let calendar = Calendar.current
+        let daysInMonth = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 30
+        let year = calendar.component(.year, from: selectedDate)
+        let month = calendar.component(.month, from: selectedDate)
+        
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 12), spacing: 6) {
+            ForEach(1...daysInMonth, id: \.self) { day in
+                let dateString = String(format: "%04d-%02d-%02d", year, month, day)
+                let count = densityMap[dateString] ?? 0
+                
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(intensityColor(for: i))
+                    .fill(intensityColor(forCount: count))
                     .aspectRatio(1, contentMode: .fill)
             }
         }
+    }
+
+    private func intensityColor(forCount count: Int) -> Color {
+        let level: Int
+        if count == 0 { level = 0 }
+        else if count <= 2 { level = 1 }
+        else if count <= 5 { level = 2 }
+        else if count <= 10 { level = 3 }
+        else { level = 4 }
+        return intensityColor(forLevel: level)
     }
 
     private func legendItem(label: String, level: Int) -> some View {
@@ -236,12 +351,6 @@ struct HistoryView: View {
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.black.opacity(0.5))
         }
-    }
-
-    private func intensityColor(for index: Int) -> Color {
-        let weights = [0, 0, 0, 0, 1, 1, 2, 2, 3, 4]
-        let level = weights.randomElement() ?? 0
-        return intensityColor(forLevel: level)
     }
 
     private func intensityColor(forLevel level: Int) -> Color {
@@ -262,8 +371,11 @@ struct HistoryView: View {
             
             budgetCategoryTabs
             
-            CalendarGridView(selectedDate: selectedDate, onDaySelect: { transactions, date in
-                selectedDayTransactions = transactions
+            CalendarGridView(
+                selectedDate: selectedDate,
+                transactions: filteredTransactions,
+                onDaySelect: { transactions, date in
+                    selectedDayTransactions = transactions
                 selectedDayDate = date
                 showDayDetail = true
             })
@@ -409,7 +521,7 @@ struct HistoryView: View {
                     }
                 )
                 
-                ForEach(Budget.sampleData) { budget in
+                ForEach(dbBudgets) { budget in
                     FilterTabView(
                         title: budget.name,
                         isSelected: selectedBudgetId == budget.id,
@@ -423,6 +535,29 @@ struct HistoryView: View {
                 }
             }
             .padding(.horizontal, 12)
+        }
+    }
+    
+    private func fetchDensity() async {
+        let calendar = Calendar.current
+        let month = calendar.component(.month, from: selectedDate)
+        let year = calendar.component(.year, from: selectedDate)
+        
+        do {
+            let response: APIDensityResponse = try await NetworkManager.shared.request(TransactionEndpoint.density(month: month, year: year, budgetId: selectedBudgetId))
+            
+            var newDensityMap: [String: Int] = [:]
+            for day in response.days {
+                newDensityMap[day.date] = day.count
+            }
+            
+            await MainActor.run {
+                withAnimation {
+                    self.densityMap = newDensityMap
+                }
+            }
+        } catch {
+            print("Failed to fetch density: \(error)")
         }
     }
 }

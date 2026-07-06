@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CalendarGridView: View {
     let selectedDate: Date
+    let transactions: [Transaction]
     let onDaySelect: ([Transaction], Date) -> Void
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -22,6 +23,7 @@ struct CalendarGridView: View {
                     CalendarCell(
                         day: day,
                         selectedDate: selectedDate,
+                        transactions: transactions,
                         action: onDaySelect
                     )
                 }

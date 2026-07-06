@@ -3,6 +3,7 @@ import SwiftUI
 struct CalendarCell: View {
     let day: Int
     let selectedDate: Date
+    let transactions: [Transaction]
     let action: ([Transaction], Date) -> Void
     
     private var fullDate: Date {
@@ -18,7 +19,7 @@ struct CalendarCell: View {
     }
     
     private var dayTransactions: [Transaction] {
-        Transaction.sampleData.filter {
+        transactions.filter {
             Calendar.current.isDate($0.date, inSameDayAs: fullDate)
         }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import Charts
 
 struct PulseData: Identifiable {
@@ -12,6 +13,11 @@ struct HomeView: View {
     @EnvironmentObject private var navState: AppNavigationState
     @Environment(\.modelContext) private var modelContext
     var authManager = AuthManager.shared
+    
+    @Query(sort: \DBBudget.updatedAt, order: .reverse) private var dbBudgets: [DBBudget]
+    @State private var budgets: [Budget] = []
+    
+    @Query(sort: \DBTransaction.createdAt, order: .reverse) private var dbTransactions: [DBTransaction]
     @State private var showHeader: Bool = false
     @State private var showSections: Bool = false
     @State private var selectedFilter: TransactionType = .all
@@ -110,9 +116,15 @@ struct HomeView: View {
             }
         }
         .task {
+            updateBudgetsFromDB()
+            await fetchBudgets()
+            await fetchTransactions()
             if authManager.currentUser == nil {
                 await authManager.fetchMe(context: modelContext)
             }
+        }
+        .onChange(of: dbBudgets) {
+            updateBudgetsFromDB()
         }
     }
     
@@ -283,14 +295,29 @@ struct HomeView: View {
             .padding(.bottom, 4)
             
             VStack(spacing: 8) {
-                ForEach(filteredTransactions.prefix(3)) { transaction in
-                    TransactionItemView(transaction: transaction) {
-                        selectedTransaction = transaction
+                if filteredTransactions.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.gray.opacity(0.3))
+                        Text("Chưa có giao dịch nào")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.gray)
                     }
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .background(Color.white.opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                } else {
+                    ForEach(filteredTransactions.prefix(3)) { transaction in
+                        TransactionItemView(transaction: transaction) {
+                            selectedTransaction = transaction
+                        }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .bottom).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                    }
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0), value: filteredTransactions)
@@ -428,16 +455,155 @@ struct FinancialPulseCard: View {
 
 extension HomeView {
     private var recentBudgets: [Budget] {
-        Array(Budget.sampleData
+        Array(budgets
             .sorted { $0.lastTransactionDate > $1.lastTransactionDate }
             .prefix(5))
+    }
+    
+    private func updateBudgetsFromDB() {
+        let newBudgets = dbBudgets.map { db in
+            Budget(
+                id: db.id,
+                name: db.name,
+                spent: Double(db.spentAmountStr) ?? 0,
+                total: Double(db.limitStr) ?? 0,
+                dailyLimit: (Double(db.limitStr) ?? 0) / 30,
+                nextTopUp: db.periodType,
+                lastTransactionDate: Date()
+            )
+        }
+        withAnimation {
+            self.budgets = newBudgets
+        }
+    }
+    
+    private func fetchBudgets() async {
+        do {
+            let budgetList: [APIBudgetResponse] = try await NetworkManager.shared.request(BudgetEndpoint.list)
+            
+            await MainActor.run {
+                for serverBudget in budgetList {
+                    let serverId = serverBudget.id
+                    let fetchDescriptor = FetchDescriptor<DBBudget>(predicate: #Predicate { $0.id == serverId })
+                    if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                        existing.name = serverBudget.name
+                        existing.limitStr = serverBudget.limit
+                        existing.amountStr = serverBudget.amount
+                        existing.periodType = serverBudget.period_type
+                        existing.startDate = serverBudget.start_date
+                        existing.endDate = serverBudget.end_date
+                        existing.icon = serverBudget.icon
+                        existing.color = serverBudget.color
+                        existing.budgetType = serverBudget.budget_type
+                        existing.isActive = serverBudget.is_active
+                        existing.spentAmountStr = serverBudget.spent_amount
+                        existing.updatedAt = serverBudget.updated_at
+                    } else {
+                        let dbBudget = DBBudget(
+                            id: serverBudget.id,
+                            userId: serverBudget.user_id,
+                            name: serverBudget.name,
+                            limitStr: serverBudget.limit,
+                            amountStr: serverBudget.amount,
+                            periodType: serverBudget.period_type,
+                            startDate: serverBudget.start_date,
+                            endDate: serverBudget.end_date,
+                            icon: serverBudget.icon,
+                            color: serverBudget.color,
+                            budgetType: serverBudget.budget_type,
+                            isActive: serverBudget.is_active,
+                            spentAmountStr: serverBudget.spent_amount,
+                            createdAt: serverBudget.created_at,
+                            updatedAt: serverBudget.updated_at
+                        )
+                        modelContext.insert(dbBudget)
+                    }
+                }
+                
+                let serverIds = budgetList.map { $0.id }
+                let fetchDescriptor = FetchDescriptor<DBBudget>()
+                if let allDbBudgets = try? modelContext.fetch(fetchDescriptor) {
+                    for dbb in allDbBudgets {
+                        if !serverIds.contains(dbb.id) {
+                            modelContext.delete(dbb)
+                        }
+                    }
+                }
+                
+                try? modelContext.save()
+            }
+        } catch {
+            print("Failed to fetch budgets list: \(error)")
+        }
+    }
+    
+    private func fetchTransactions() async {
+        do {
+            let response: [APIRecentTransactionResponse] = try await NetworkManager.shared.request(TransactionEndpoint.recent(limit: 10, type: nil))
+            
+            await MainActor.run {
+                for item in response {
+                    let fetchDescriptor = FetchDescriptor<DBTransaction>(predicate: #Predicate { $0.id == item.id })
+                    
+                    if let existing = try? modelContext.fetch(fetchDescriptor).first {
+                        existing.budgetId = item.budget_id
+                        existing.amount = abs(item.amount)
+                        existing.type = item.type
+                        existing.note = item.note
+                        existing.categoryName = item.category_name
+                        existing.createdAt = item.created_at
+                    } else {
+                        let newDbTx = DBTransaction(
+                            id: item.id,
+                            budgetId: item.budget_id,
+                            categoryId: nil,
+                            amount: abs(item.amount),
+                            type: item.type,
+                            note: item.note,
+                            categoryName: item.category_name,
+                            images: nil,
+                            createdAt: item.created_at,
+                            updatedAt: nil
+                        )
+                        modelContext.insert(newDbTx)
+                    }
+                }
+                
+                try? modelContext.save()
+            }
+        } catch {
+            print("Failed to fetch transactions: \(error)")
+        }
+    }
+    
+    private var transactions: [Transaction] {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        return dbTransactions.map { dbTx -> Transaction in
+            let txType: TransactionType = dbTx.type == "income" ? .income : .outcome
+            let date = formatter.date(from: dbTx.createdAt ?? "") ?? Date()
+            
+            return Transaction(
+                name: dbTx.note ?? "Giao dịch",
+                description: "",
+                date: date,
+                images: dbTx.images ?? [],
+                location: "",
+                amount: abs(dbTx.amount),
+                budgetName: dbTx.categoryName ?? "Ngân sách",
+                type: txType,
+                icon: "dollarsign.circle.fill",
+                isImageIcon: false
+            )
+        }
     }
 
     private var filteredTransactions: [Transaction] {
         if selectedFilter == .all {
-            return Transaction.sampleData
+            return transactions
         }
-        return Transaction.sampleData.filter { $0.type == selectedFilter }
+        return transactions.filter { $0.type == selectedFilter }
     }
     
     private var balanceSampleData: [PulseData] {

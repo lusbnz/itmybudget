@@ -57,6 +57,44 @@ class NetworkManager {
                 throw NetworkError.decodingError(error)
             }
         case 401:
+            if let refreshToken = AuthManager.shared.refreshToken {
+                print("🔄 Token expired, attempting to refresh...")
+                do {
+                    let refreshEndpoint = AuthEndpoint.refreshToken(refreshToken)
+                    let refreshRequest = try refreshEndpoint.urlRequest()
+                    
+                    let (refreshData, refreshResponse) = try await session.data(for: refreshRequest)
+                    
+                    if let refreshHttp = refreshResponse as? HTTPURLResponse, refreshHttp.statusCode >= 200, refreshHttp.statusCode <= 299 {
+                        let token: AuthToken = try JSONDecoder().decode(AuthToken.self, from: refreshData)
+                        AuthManager.shared.accessToken = token.access_token
+                        AuthManager.shared.refreshToken = token.refresh_token
+                        print("✅ Token refreshed successfully!")
+                        
+                        // Retry original request with new token
+                        urlRequest.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
+                        let (retryData, retryResponse) = try await session.data(for: urlRequest)
+                        
+                        if let retryHttp = retryResponse as? HTTPURLResponse, retryHttp.statusCode >= 200, retryHttp.statusCode <= 299 {
+                            do {
+                                if retryData.isEmpty, let empty = EmptyResponse() as? T {
+                                    return empty
+                                }
+                                let decoder = JSONDecoder()
+                                decoder.keyDecodingStrategy = .useDefaultKeys 
+                                return try decoder.decode(T.self, from: retryData)
+                            } catch {
+                                throw NetworkError.decodingError(error)
+                            }
+                        }
+                    } else {
+                        print("❌ Refresh token failed or rejected")
+                    }
+                } catch {
+                    print("❌ Failed to refresh token: \(error)")
+                }
+            }
+            
             AuthManager.shared.logout()
             throw NetworkError.unauthorized
         default:

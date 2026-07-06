@@ -18,6 +18,7 @@ struct itmybudgetApp: App {
             DBCategory.self,
             DBBudget.self,
             DBUser.self,
+            DBTransaction.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
