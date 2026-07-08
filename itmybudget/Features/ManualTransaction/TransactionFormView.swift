@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import SwiftData
 
 enum TransactionEntryMode: String, CaseIterable, Identifiable {
     case manual = "Thủ công"
@@ -23,6 +24,15 @@ enum TransactionEntryMode: String, CaseIterable, Identifiable {
 
 struct TransactionFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(sort: \DBCategory.createdAt, order: .reverse) private var dbCategories: [DBCategory]
+    @Query(sort: \DBBudget.updatedAt, order: .reverse) private var dbBudgets: [DBBudget]
+    
+    @State private var isSaving = false
+    @State private var selectedCategory: Category?
+    @State private var selectedBudget: Budget?
+    @State private var isShowingImageSourceActionSheet = false
 
     @State private var selectedMode: TransactionEntryMode = .manual
     @Namespace private var modeNamespace
@@ -112,11 +122,29 @@ struct TransactionFormView: View {
             }
         }
         .sheet(isPresented: $isShowingCategorySelector) {
-            CategorySelectorSheet { category in
+            CategorySelectorSheet(
+                categories: dbCategories.map { db in
+                    Category(dbId: db.id, name: db.name, icon: db.icon, color: Color(hex: db.colorHex), isActive: !db.isHidden)
+                }
+            ) { category in
+                self.selectedCategory = category
             }
         }
         .sheet(isPresented: $isShowingBudgetSelector) {
-            BudgetSelectorSheet { budget in
+            BudgetSelectorSheet(
+                budgets: dbBudgets.map { db in
+                    Budget(
+                        id: db.id,
+                        name: db.name,
+                        spent: Double(db.spentAmountStr) ?? 0.0,
+                        total: Double(db.amountStr) ?? 0.0,
+                        dailyLimit: 0,
+                        nextTopUp: db.endDate,
+                        lastTransactionDate: Date()
+                    )
+                }
+            ) { budget in
+                self.selectedBudget = budget
             }
         }
         .sheet(isPresented: $isShowingLocationMap) {
@@ -196,18 +224,110 @@ struct TransactionFormView: View {
     }
     
     private var saveButton: some View {
-        Button(action: {
-            dismiss()
-        }) {
-            Text("Lưu")
-                .font(.system(size: 13, weight: .bold))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.black)
-                .clipShape(Capsule())
-                .foregroundStyle(.white)
+        Button(action: saveTransaction) {
+            if isSaving {
+                ProgressView().tint(.white).scaleEffect(0.8)
+                    .frame(height: 16)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.black)
+                    .clipShape(Capsule())
+            } else {
+                Text("Lưu")
+                    .font(.system(size: 13, weight: .bold))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.black)
+                    .clipShape(Capsule())
+                    .foregroundStyle(.white)
+            }
         }
+        .disabled(isSaving)
         .buttonStyle(BouncyButtonStyle())
+    }
+    
+    private func saveTransaction() {
+        guard let budget = selectedBudget else { return } // Should show alert in real app
+        guard let category = selectedCategory else { return }
+        guard let amountValue = Double(amount.replacingOccurrences(of: ",", with: "")) else { return }
+        
+        let finalAmount: Double
+        if transactionType == .outcome {
+            finalAmount = -abs(amountValue)
+        } else if transactionType == .income {
+            finalAmount = abs(amountValue)
+        } else {
+            finalAmount = amountValue // Adjustment
+        }
+        
+        isSaving = true
+        
+        Task {
+            do {
+                var uploadedUrls: [String] = []
+                let imagesToUpload = selectedImages + (capturedImage != nil ? [capturedImage!] : [])
+                
+                if !imagesToUpload.isEmpty {
+                    let imageDataArray = imagesToUpload.compactMap { $0.jpegData(compressionQuality: 0.8) }
+                    let uploadEndpoint = UploadEndpoint.uploadFiles(images: imageDataArray)
+                    let uploadResponse: APIUploadResponse = try await NetworkManager.shared.request(uploadEndpoint)
+                    print("✅ Upload success: \(uploadResponse)")
+                    if let urls = uploadResponse.urls {
+                        uploadedUrls = urls
+                    } else if let url = uploadResponse.url {
+                        uploadedUrls = [url]
+                    } else if let fileUrl = uploadResponse.fileUrl {
+                        uploadedUrls = [fileUrl]
+                    } else if let data = uploadResponse.data {
+                        uploadedUrls = data
+                    }
+                }
+                
+                let createRequest = APICreateTransactionRequest(
+                    budget_id: budget.id,
+                    amount: finalAmount,
+                    type: transactionType == .outcome ? "expense" : "income",
+                    category_id: category.dbId ?? 1,
+                    note: name.isEmpty ? nil : name,
+                    images: uploadedUrls.isEmpty ? nil : uploadedUrls
+                )
+                
+                let createEndpoint = TransactionEndpoint.create(request: createRequest)
+                let _: EmptyResponse = try await NetworkManager.shared.request(createEndpoint)
+                
+                // Update local SwiftData
+                await MainActor.run {
+                    let dbTransaction = DBTransaction(
+                        id: Int.random(in: 1...9999999), // Mock ID for offline consistency
+                        budgetId: budget.id,
+                        categoryId: category.dbId ?? 1,
+                        amount: finalAmount,
+                        type: transactionType == .outcome ? "expense" : "income",
+                        note: name,
+                        categoryName: category.name,
+                        images: uploadedUrls
+                    )
+                    modelContext.insert(dbTransaction)
+                    
+                    // Update Budget Balance locally
+                    let bId = budget.id
+                    let descriptor = FetchDescriptor<DBBudget>(predicate: #Predicate { $0.id == bId })
+                    if let dbBudget = try? modelContext.fetch(descriptor).first {
+                        let currentSpent = Double(dbBudget.spentAmountStr) ?? 0.0
+                        dbBudget.spentAmountStr = String(format: "%.2f", currentSpent + finalAmount)
+                    }
+                    
+                    isSaving = false
+                    dismiss()
+                }
+                
+            } catch {
+                print("❌ Failed to save transaction: \(error)")
+                await MainActor.run {
+                    isSaving = false
+                }
+            }
+        }
     }
     
     private var modeSelectorTabs: some View {
@@ -509,8 +629,7 @@ struct TransactionFormView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     Button(action: {
-                        imagePickerSourceType = .camera
-                        isShowingImagePicker = true
+                        isShowingImageSourceActionSheet = true
                     }) {
                         VStack(spacing: 8) {
                             Image(systemName: "plus.viewfinder")
@@ -529,6 +648,17 @@ struct TransactionFormView: View {
                         )
                     }
                     .buttonStyle(BouncyButtonStyle())
+                    .confirmationDialog("Chọn nguồn ảnh", isPresented: $isShowingImageSourceActionSheet) {
+                        Button("Thư viện ảnh") {
+                            imagePickerSourceType = .photoLibrary
+                            isShowingImagePicker = true
+                        }
+                        Button("Máy ảnh") {
+                            imagePickerSourceType = .camera
+                            isShowingImagePicker = true
+                        }
+                        Button("Hủy", role: .cancel) { }
+                    }
 
                     ForEach(selectedImages, id: \.self) { img in
                         Image(uiImage: img)
@@ -668,15 +798,25 @@ struct TransactionFormView: View {
                     }
                     .buttonStyle(BouncyButtonStyle())
                     
-                    Button(action: { dismiss() }) {
-                        Text("Xác nhận và tạo")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.black)
-                            .clipShape(Capsule())
+                    Button(action: saveTransaction) {
+                        if isSaving {
+                            ProgressView().tint(.white).scaleEffect(0.8)
+                                .frame(height: 16)
+                                .padding(.vertical, 16)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.black)
+                                .clipShape(Capsule())
+                        } else {
+                            Text("Xác nhận và tạo")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.black)
+                                .clipShape(Capsule())
+                        }
                     }
+                    .disabled(isSaving)
                     .buttonStyle(BouncyButtonStyle())
                 }
                 
@@ -1053,13 +1193,21 @@ struct TransactionFormView: View {
                 .foregroundStyle(.black)
             
             FlowLayout(spacing: 8) {
-                metadataTag(text: "Food & Drinks", icon: "fork.knife", color: .orange) {
+                metadataTag(
+                    text: selectedCategory?.name ?? "Chọn danh mục",
+                    icon: selectedCategory?.icon ?? "square.grid.2x2",
+                    color: selectedCategory?.color ?? .orange
+                ) {
                     isShowingCategorySelector = true
                 }
-                metadataTag(text: "Main Budget", icon: "wallet.pass.fill", color: .blue) {
+                metadataTag(
+                    text: selectedBudget?.name ?? "Chọn Budget",
+                    icon: "wallet.pass.fill", // Assuming Budget doesn't have an icon property directly mapped or we just use default
+                    color: .blue
+                ) {
                     isShowingBudgetSelector = true
                 }
-                metadataTag(text: "Today, 10:30 AM", icon: "calendar", color: .purple) {
+                metadataTag(text: "Hôm nay", icon: "calendar", color: .purple) {
                     isShowingTimePicker = true
                 }
             }

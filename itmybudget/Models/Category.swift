@@ -2,6 +2,7 @@ import SwiftUI
 
 struct Category: Identifiable {
     let id = UUID()
+    var dbId: Int? // Store the real DB ID
     let name: String
     let icon: String
     let color: Color

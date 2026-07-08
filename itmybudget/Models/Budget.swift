@@ -20,7 +20,8 @@ struct Budget: Identifiable, Equatable {
     }
     
     var progress: Double {
-        total > 0 ? spent / total : 0
+        let p = total > 0 ? spent / total : 0
+        return max(0, min(1, p))
     }
     
     var remaining: Double {

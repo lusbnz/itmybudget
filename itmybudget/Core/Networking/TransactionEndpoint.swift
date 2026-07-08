@@ -42,10 +42,20 @@ struct APITransactionListResponse: Codable {
     let total_pages: Int
 }
 
+struct APICreateTransactionRequest: Codable {
+    let budget_id: Int?
+    let amount: Double
+    let type: String
+    let category_id: Int?
+    let note: String?
+    let images: [String]?
+}
+
 enum TransactionEndpoint: APIEndpoint {
     case list(budgetId: Int? = nil, page: Int = 0, size: Int = 100)
     case recent(limit: Int = 10, type: String? = nil)
     case density(month: Int, year: Int, budgetId: Int? = nil)
+    case create(request: APICreateTransactionRequest)
     
     var path: String {
         switch self {
@@ -55,12 +65,15 @@ enum TransactionEndpoint: APIEndpoint {
             return "/transactions/recent"
         case .density:
             return "/transactions/density"
+        case .create:
+            return "/transactions/"
         }
     }
     
     var method: HTTPMethod {
         switch self {
         case .list, .recent, .density: return .get
+        case .create: return .post
         }
     }
     
@@ -94,10 +107,17 @@ enum TransactionEndpoint: APIEndpoint {
                 params["budget_id"] = budgetId
             }
             return params
+        case .create:
+            return nil
         }
     }
     
     var body: Data? {
-        return nil
+        switch self {
+        case .create(let request):
+            return try? JSONEncoder().encode(request)
+        default:
+            return nil
+        }
     }
 }

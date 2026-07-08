@@ -3,6 +3,7 @@ import MapKit
 
 struct CategorySelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    var categories: [Category] = Category.sampleData
     var onSelect: (Category) -> Void
     
     var body: some View {
@@ -16,7 +17,7 @@ struct CategorySelectorSheet: View {
             
             ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-                    ForEach(Category.sampleData) { category in
+                    ForEach(categories) { category in
                         Button(action: {
                             onSelect(category)
                             dismiss()

@@ -25,6 +25,10 @@ struct NotificationsView: View {
             .ignoresSafeArea()
         )
         .navigationBarHidden(true)
+        .onAppear {
+            viewModel.fetchUnreadCount()
+            viewModel.fetchNotifications(reset: true)
+        }
     }
     
     private var header: some View {
@@ -53,11 +57,7 @@ struct NotificationsView: View {
                     Label("Đánh dấu tất cả đã đọc", systemImage: "checkmark.circle")
                 }
                 
-                Button(role: .destructive, action: {
-                    viewModel.deleteAll()
-                }) {
-                    Label("Xóa tất cả", systemImage: "trash")
-                }
+
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 16))
@@ -130,9 +130,11 @@ struct NotificationsView: View {
                     Section(header: sectionHeader(dateStr)) {
                         VStack(spacing: 8) {
                             ForEach(items) { notification in
-                                NotificationItem(notification: notification) {
+                                NotificationItem(notification: notification, action: {
                                     viewModel.toggleReadState(for: notification)
-                                }
+                                }, deleteAction: {
+                                    viewModel.delete(notification: notification)
+                                })
                             }
                         }
                         .padding(.horizontal, 16)
@@ -140,13 +142,24 @@ struct NotificationsView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Divider()
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 20)
-                    
-                    Text("Đã xem hết!")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.gray.opacity(0.6))
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .padding(.vertical, 20)
+                    } else if viewModel.hasReachedEnd {
+                        Divider()
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 10)
+                        
+                        Text("Đã xem hết!")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.gray.opacity(0.6))
+                    } else {
+                        Color.clear
+                            .frame(height: 20)
+                            .onAppear {
+                                viewModel.fetchNotifications()
+                            }
+                    }
                     
                     Spacer()
                         .frame(height: 40)
@@ -202,6 +215,7 @@ struct NotificationsView: View {
 struct NotificationItem: View {
     let notification: AppNotification
     let action: () -> Void
+    let deleteAction: () -> Void
     
     var body: some View {
         Button(action: action) {
@@ -256,6 +270,13 @@ struct NotificationItem: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .contextMenu {
+            Button(role: .destructive) {
+                deleteAction()
+            } label: {
+                Label("Xóa", systemImage: "trash")
+            }
+        }
     }
     
     private func formatTime(_ date: Date) -> String {
