@@ -37,6 +37,9 @@ struct AnalyticsView: View {
     @State private var showContent = false
     @State private var showingAnalyticDetail = false
     
+    @State private var currentTotalSpending: String = "0đ"
+    @State private var transactionTrendData: [TrendData] = []
+    
     private var spendingCategories: [SpendingCategory] {
         [
             SpendingCategory(name: "Ăn uống", icon: "cup.and.saucer.fill", amount: 450, percentage: 45, color: .orange, status: "Cảnh báo"),
@@ -47,12 +50,14 @@ struct AnalyticsView: View {
         ]
     }
     
-    private let trendData = [
-        TrendData(period: "Week 1", amount: 1200),
-        TrendData(period: "Week 2", amount: 800),
-        TrendData(period: "Week 3", amount: 1500),
-        TrendData(period: "Week 4", amount: 1650)
-    ]
+    private var mockTrendData: [TrendData] {
+        [
+            TrendData(period: "Week 1", amount: 1200),
+            TrendData(period: "Week 2", amount: 800),
+            TrendData(period: "Week 3", amount: 1500),
+            TrendData(period: "Week 4", amount: 1650)
+        ]
+    }
     
     var body: some View {
         NavigationStack {
@@ -92,6 +97,9 @@ struct AnalyticsView: View {
                     withAnimation(.easeOut(duration: 0.6)) {
                         showContent = true
                     }
+                }
+                .task {
+                    await fetchAnalyticsData()
                 }
                 .sheet(isPresented: $showDatePicker) {
                     dateRangePickerSheet
@@ -194,7 +202,7 @@ struct AnalyticsView: View {
                     .chartLegend(.hidden)
                     
                     VStack(spacing: 0) {
-                        Text("\("")2,450\("đ")")
+                        Text(currentTotalSpending)
                             .font(.system(size: 24, weight: .black))
                         Text("Tổng chi tiêu")
                             .font(.system(size: 12))
@@ -300,7 +308,8 @@ struct AnalyticsView: View {
                     .foregroundStyle(.gray)
                 
                 Chart {
-                    ForEach(trendData) { data in
+                    let dataToShow = transactionTrendData.isEmpty ? mockTrendData : transactionTrendData
+                    ForEach(dataToShow) { data in
                         BarMark(
                             x: .value("Period", data.period),
                             y: .value("Amount", data.amount)
@@ -443,5 +452,60 @@ struct AnalyticsView: View {
             .background(Color(red: 1.0, green: 0.98, blue: 0.96))
         }
         .background(Color(red: 1.0, green: 0.98, blue: 0.96).ignoresSafeArea())
+    }
+}
+
+extension AnalyticsView {
+    private func fetchAnalyticsData() async {
+        let calendar = Calendar.current
+        let now = Date()
+        let month = calendar.component(.month, from: now)
+        let year = calendar.component(.year, from: now)
+        
+        do {
+            async let spendingRes: AverageSpendingResponse? = try? NetworkManager.shared.request(BudgetEndpoint.averageSpendingChart(month: month, year: year))
+            async let trendRes: AvgTransactionChartResponse? = try? NetworkManager.shared.request(BudgetEndpoint.avgTransactionChart(viewType: "month", year: year, month: month, date: nil, budgetId: nil))
+            
+            let sRes = await spendingRes
+            let tRes = await trendRes
+            
+            await MainActor.run {
+                if let s = sRes, let last = s.data.last {
+                    self.currentTotalSpending = formatHugeNumber(last.average_amount)
+                }
+                
+                if let t = tRes {
+                    var newTrends: [TrendData] = []
+                    for item in t.data {
+                        newTrends.append(TrendData(period: item.label, amount: parseHugeNumber(item.average)))
+                    }
+                    self.transactionTrendData = newTrends
+                }
+            }
+        }
+    }
+    
+    private func parseHugeNumber(_ string: String) -> Double {
+        var str = string.replacingOccurrences(of: "+", with: "")
+        while str.hasPrefix("0") && str.count > 1 && !str.hasPrefix("0.") {
+            str.removeFirst()
+        }
+        return Double(str) ?? 0.0
+    }
+    
+    private func formatHugeNumber(_ string: String) -> String {
+        var str = string.replacingOccurrences(of: "+", with: "")
+        while str.hasPrefix("0") && str.count > 1 && !str.hasPrefix("0.") {
+            str.removeFirst()
+        }
+        
+        if let val = Double(str) {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = Locale(identifier: "vi_VN")
+            formatter.maximumFractionDigits = 0
+            return formatter.string(from: NSNumber(value: val)) ?? "\(val)đ"
+        }
+        return str + "đ"
     }
 }

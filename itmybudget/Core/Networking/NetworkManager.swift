@@ -30,6 +30,7 @@ class NetworkManager {
         
         // Log request for debugging
         print("🚀 Request: \(urlRequest.httpMethod ?? "") \(urlRequest.url?.absoluteString ?? "")")
+        print("💻 cURL:\n\(urlRequest.curlString)")
         
         let (data, response) = try await session.data(for: urlRequest)
         
@@ -101,5 +102,29 @@ class NetworkManager {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown server error"
             throw NetworkError.serverError(errorMessage)
         }
+    }
+}
+
+extension URLRequest {
+    var curlString: String {
+        guard let url = url else { return "" }
+        var baseCommand = #"curl "\#(url.absoluteString)""#
+
+        if let method = httpMethod {
+            baseCommand += #" -X \#(method)"#
+        }
+
+        if let headers = allHTTPHeaderFields {
+            for (key, value) in headers {
+                baseCommand += #" -H "\#(key): \#(value)""#
+            }
+        }
+
+        if let data = httpBody, let bodyString = String(data: data, encoding: .utf8) {
+            let escapedBody = bodyString.replacingOccurrences(of: "'", with: "'\\''")
+            baseCommand += #" -d '\#(escapedBody)'"#
+        }
+
+        return baseCommand
     }
 }

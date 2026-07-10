@@ -31,6 +31,11 @@ struct HomeView: View {
     @State private var showingAnalyticSheet = false
     @State private var showingBadgeList = false
     
+    @State private var balanceChartData: [PulseData] = []
+    @State private var burnRateChartData: [PulseData] = []
+    @State private var currentBalance: String = "0đ"
+    @State private var currentBurnRate: String = "0đ"
+    
     var body: some View {
         NavigationStack {
             ScrollViewReader { proxy in
@@ -119,6 +124,7 @@ struct HomeView: View {
             updateBudgetsFromDB()
             await fetchBudgets()
             await fetchTransactions()
+            await fetchPulseData()
             if authManager.currentUser == nil {
                 await authManager.fetchMe(context: modelContext)
             }
@@ -246,19 +252,19 @@ struct HomeView: View {
             HStack(spacing: 12) {
                 FinancialPulseCard(
                     title: "Số dư",
-                    value: "\("")12.450\("đ")",
-                    trend: "+2.4%",
+                    value: currentBalance,
+                    trend: "",
                     color: .teal,
-                    data: balanceSampleData
+                    data: balanceChartData.isEmpty ? balanceSampleData : balanceChartData
                 )
                 
                 FinancialPulseCard(
                     title: "Tốc độ chi tiêu",
-                    value: "\("")85\("đ")",
+                    value: currentBurnRate,
                     subtitle: "/ngày",
-                    trend: "-15%",
+                    trend: "",
                     color: .orange,
-                    data: burnRateSampleData
+                    data: burnRateChartData.isEmpty ? burnRateSampleData : burnRateChartData
                 )
             }
         }
@@ -405,9 +411,11 @@ struct FinancialPulseCard: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.gray)
                 Spacer()
-                Text(trend)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.black)
+                if !trend.isEmpty {
+                    Text(trend)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.black)
+                }
             }
             
             HStack(alignment: .bottom, spacing: 2) {
@@ -628,5 +636,89 @@ extension HomeView {
                 isPrediction: false
             )
         }
+    }
+
+    private func fetchPulseData() async {
+        let calendar = Calendar.current
+        let now = Date()
+        let month = calendar.component(.month, from: now)
+        let year = calendar.component(.year, from: now)
+        
+        do {
+            async let balanceResponse: BalanceChartResponse? = try? NetworkManager.shared.request(BudgetEndpoint.balanceChart(month: month, year: year))
+            async let spendingResponse: AverageSpendingResponse? = try? NetworkManager.shared.request(BudgetEndpoint.averageSpendingChart(month: month, year: year))
+            
+            let bRes = await balanceResponse
+            let sRes = await spendingResponse
+            
+            await MainActor.run {
+                if let b = bRes {
+                    self.processBalanceData(b)
+                }
+                if let s = sRes {
+                    self.processSpendingData(s)
+                }
+            }
+        }
+    }
+
+    private func processBalanceData(_ response: BalanceChartResponse) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        var newData: [PulseData] = []
+        for item in response.data {
+            if let date = formatter.date(from: item.date) {
+                let value = parseHugeNumber(item.total_amount)
+                newData.append(PulseData(date: date, value: value, isPrediction: false))
+            }
+        }
+        self.balanceChartData = newData.sorted(by: { $0.date < $1.date })
+        
+        if let last = response.data.last {
+            self.currentBalance = formatHugeNumber(last.total_amount)
+        }
+    }
+
+    private func processSpendingData(_ response: AverageSpendingResponse) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        var newData: [PulseData] = []
+        for item in response.data {
+            if let date = formatter.date(from: item.date) {
+                let value = parseHugeNumber(item.average_amount)
+                newData.append(PulseData(date: date, value: value, isPrediction: false))
+            }
+        }
+        self.burnRateChartData = newData.sorted(by: { $0.date < $1.date })
+        
+        if let last = response.data.last {
+            self.currentBurnRate = formatHugeNumber(last.average_amount)
+        }
+    }
+
+    private func parseHugeNumber(_ string: String) -> Double {
+        var str = string.replacingOccurrences(of: "+", with: "")
+        while str.hasPrefix("0") && str.count > 1 && !str.hasPrefix("0.") {
+            str.removeFirst()
+        }
+        return Double(str) ?? 0.0
+    }
+    
+    private func formatHugeNumber(_ string: String) -> String {
+        var str = string.replacingOccurrences(of: "+", with: "")
+        while str.hasPrefix("0") && str.count > 1 && !str.hasPrefix("0.") {
+            str.removeFirst()
+        }
+        
+        if let val = Double(str) {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = Locale(identifier: "vi_VN")
+            formatter.maximumFractionDigits = 0
+            return formatter.string(from: NSNumber(value: val)) ?? "\(val)đ"
+        }
+        return str + "đ"
     }
 }

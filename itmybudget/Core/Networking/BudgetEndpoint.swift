@@ -59,6 +59,44 @@ struct APIBudgetStatusResponse: Codable {
     let is_over: Bool
 }
 
+struct BalanceChartData: Codable {
+    let date: String
+    let total_amount: String
+}
+
+struct BalanceChartResponse: Codable {
+    let month: Int
+    let year: Int
+    let data: [BalanceChartData]
+}
+
+struct AverageSpendingData: Codable {
+    let date: String
+    let average_amount: String
+}
+
+struct AverageSpendingResponse: Codable {
+    let month: Int
+    let year: Int
+    let data: [AverageSpendingData]
+}
+
+struct AvgTransactionData: Codable {
+    let label: String
+    let total_transactions: Int
+    let num_days: Int
+    let average: String
+}
+
+struct AvgTransactionChartResponse: Codable {
+    let view_type: String
+    let year: Int
+    let month: Int?
+    let week_start: String?
+    let week_end: String?
+    let data: [AvgTransactionData]
+}
+
 enum BudgetEndpoint: APIEndpoint {
     case create(name: String, amount: Double, icon: String, color: String)
     case get(id: Int)
@@ -66,6 +104,9 @@ enum BudgetEndpoint: APIEndpoint {
     case delete(id: Int)
     case list
     case status
+    case balanceChart(month: Int, year: Int)
+    case averageSpendingChart(month: Int, year: Int)
+    case avgTransactionChart(viewType: String, year: Int?, month: Int?, date: String?, budgetId: Int?)
     
     var path: String {
         switch self {
@@ -75,13 +116,19 @@ enum BudgetEndpoint: APIEndpoint {
             return "/budgets/\(id)"
         case .status:
             return "/budgets/status"
+        case .balanceChart:
+            return "/budgets/balance-chart"
+        case .averageSpendingChart:
+            return "/budgets/average-spending-chart"
+        case .avgTransactionChart:
+            return "/budgets/avg-transaction-chart"
         }
     }
     
     var method: HTTPMethod {
         switch self {
         case .create: return .post
-        case .get, .list, .status: return .get
+        case .get, .list, .status, .balanceChart, .averageSpendingChart, .avgTransactionChart: return .get
         case .update: return .put
         case .delete: return .delete
         }
@@ -92,7 +139,22 @@ enum BudgetEndpoint: APIEndpoint {
     }
     
     var queryParameters: [String : Any]? {
-        return nil
+        switch self {
+        case .balanceChart(let month, let year), .averageSpendingChart(let month, let year):
+            return [
+                "month": month,
+                "year": year
+            ]
+        case .avgTransactionChart(let viewType, let year, let month, let date, let budgetId):
+            var params: [String: Any] = ["view_type": viewType]
+            if let y = year { params["year"] = y }
+            if let m = month { params["month"] = m }
+            if let d = date { params["date"] = d }
+            if let b = budgetId { params["budget_id"] = b }
+            return params
+        default:
+            return nil
+        }
     }
     
     var body: Data? {
@@ -132,7 +194,7 @@ enum BudgetEndpoint: APIEndpoint {
                 categories: []
             )
             return try? JSONEncoder().encode(input)
-        case .get, .list, .status, .delete:
+        case .get, .list, .status, .delete, .balanceChart, .averageSpendingChart, .avgTransactionChart:
             return nil
         }
     }
