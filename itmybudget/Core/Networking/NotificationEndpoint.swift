@@ -37,15 +37,15 @@ enum NotificationEndpoint: APIEndpoint {
     var path: String {
         switch self {
         case .getUnreadCount:
-            return "/api/v1/notifications/unread-count"
+            return "/notifications/unread-count"
         case .getList:
-            return "/api/v1/notifications/"
+            return "/notifications/"
         case .readAll:
-            return "/api/v1/notifications/read-all"
+            return "/notifications/read-all"
         case .readSingle(let id):
-            return "/api/v1/notifications/\(id)/read"
+            return "/notifications/\(id)/read"
         case .delete(let id):
-            return "/api/v1/notifications/\(id)"
+            return "/notifications/\(id)"
         }
     }
     
